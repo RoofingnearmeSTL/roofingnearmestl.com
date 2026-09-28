@@ -3,89 +3,758 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>React Artifact</title>
-  <style>*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-drop-shadow: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-drop-shadow: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: }</style>
+  <title>Roofing Near Me STL | Roofing, Siding & Gutters in Missouri and Illinois</title>
+  <meta name="description" content="Roofing Near Me STL by Mike Williamson provides residential and commercial roofing, siding, gutter, cleaning, and repair services. Call Illinois 618-612-5192 or Missouri 314-202-7663 for a fast quote.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Roofing Near Me STL | Roofing, Siding & Gutters in Missouri and Illinois">
+  <meta property="og:description" content="Need roofing help fast? Contact Mike Williamson for residential and commercial roofing, siding, gutters, softwash, and repair services in Missouri and Illinois.">
+  <meta property="og:url" content="https://roofingnearmestl.com/">
+  <meta property="og:site_name" content="Roofing Near Me STL">
+  <meta name="theme-color" content="#0f172a">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --primary: #b91c1c;
+      --primary-dark: #991b1b;
+      --secondary: #0f172a;
+      --secondary-soft: #1e293b;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #dbe4ee;
+      --accent: #f59e0b;
+      --shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .topbar {
+      background: var(--secondary);
+      color: #fff;
+      padding: 0.85rem 1rem;
+      font-size: 0.95rem;
+    }
+
+    .topbar-inner,
+    .section-inner,
+    .footer-inner {
+      width: min(1120px, calc(100% - 2rem));
+      margin: 0 auto;
+    }
+
+    .topbar-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.75rem 1rem;
+      align-items: center;
+    }
+
+    .topbar-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      align-items: center;
+    }
+
+    .hero {
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.9)),
+        linear-gradient(180deg, rgba(185, 28, 28, 0.2), transparent 35%);
+      color: #fff;
+      padding: 4.5rem 0 3rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.18);
+      color: #fde68a;
+      font-weight: bold;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 1rem;
+      line-height: 1.15;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 4.3rem);
+      max-width: 13ch;
+    }
+
+    .hero p {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 1.08rem;
+      max-width: 60ch;
+      margin-bottom: 1.5rem;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .button,
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.55rem;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 0.95rem 1.35rem;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .button:hover,
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .button-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .button-secondary {
+      background: #fff;
+      color: var(--secondary);
+    }
+
+    .button-outline {
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #fff;
+      background: transparent;
+    }
+
+    .hero-points,
+    .trust-list,
+    .faq-list,
+    .service-grid,
+    .credibility-grid,
+    .footer-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .hero-points {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 1.5rem;
+    }
+
+    .hero-point,
+    .service-card,
+    .credibility-card,
+    .faq-item,
+    .footer-card,
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-point {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+      padding: 1rem;
+    }
+
+    .hero-point strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .hero-point span {
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 0.94rem;
+    }
+
+    .form-card {
+      padding: 1.35rem;
+      color: var(--text);
+    }
+
+    .form-card h2 {
+      font-size: 1.55rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .form-card p {
+      margin: 0 0 1rem;
+      color: var(--muted);
+    }
+
+    form {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      border-radius: 14px;
+      border: 1px solid #cbd5e1;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+      margin-top: 0.35rem;
+    }
+
+    textarea {
+      min-height: 132px;
+      resize: vertical;
+    }
+
+    .form-note,
+    .microcopy {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .form-success {
+      display: none;
+      margin-top: 0.9rem;
+      padding: 0.9rem 1rem;
+      border-radius: 14px;
+      background: #ecfdf5;
+      color: #166534;
+      font-weight: bold;
+    }
+
+    section {
+      padding: 4.5rem 0;
+    }
+
+    .section-heading {
+      display: grid;
+      gap: 0.7rem;
+      margin-bottom: 2rem;
+      max-width: 60ch;
+    }
+
+    .section-heading h2 {
+      font-size: clamp(1.9rem, 3vw, 3rem);
+    }
+
+    .section-heading p,
+    .service-card p,
+    .credibility-card p,
+    .faq-item p,
+    .footer-card p {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .service-grid,
+    .credibility-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .service-card,
+    .credibility-card,
+    .faq-item,
+    .footer-card {
+      padding: 1.4rem;
+    }
+
+    .service-card h3,
+    .credibility-card h3,
+    .faq-item h3,
+    .footer-card h3 {
+      font-size: 1.18rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .service-icon {
+      width: 2.6rem;
+      height: 2.6rem;
+      border-radius: 14px;
+      background: #fee2e2;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 0.9rem;
+    }
+
+    .trust-section {
+      background: linear-gradient(180deg, #fff, #f8fafc);
+    }
+
+    .trust-list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .trust-pill {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.9rem 1rem;
+      text-align: center;
+      font-weight: bold;
+      color: var(--secondary-soft);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    .faq-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    footer {
+      background: var(--secondary);
+      color: #fff;
+      padding: 3rem 0 5rem;
+    }
+
+    .footer-grid {
+      grid-template-columns: 1.2fr 0.8fr 0.8fr;
+    }
+
+    .footer-card {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+    }
+
+    .footer-card p,
+    .footer-card a {
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .footer-bottom {
+      margin-top: 1.5rem;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.92rem;
+    }
+
+    .sticky-mobile {
+      display: none;
+    }
+
+    @media (max-width: 960px) {
+      .hero-grid,
+      .service-grid,
+      .credibility-grid,
+      .trust-list,
+      .faq-list,
+      .footer-grid,
+      .hero-points {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 3.5rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        font-size: 0.88rem;
+      }
+
+      .topbar-inner {
+        align-items: flex-start;
+      }
+
+      .button,
+      button {
+        width: 100%;
+      }
+
+      .sticky-mobile {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem calc(0.85rem + env(safe-area-inset-bottom));
+        background: rgba(15, 23, 42, 0.96);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        z-index: 50;
+      }
+
+      footer {
+        padding-bottom: 6.5rem;
+      }
+    }
+  </style>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "RoofingContractor",
+      "name": "Roofing Near Me STL",
+      "description": "Residential and commercial roofing, siding, gutters, softwash, exterior cleaning, and repair services in Missouri and Illinois.",
+      "email": "Michael@roofingnearmestl.com",
+      "telephone": "+1-314-202-7663",
+      "areaServed": [
+        "Missouri",
+        "Illinois",
+        "St. Louis Metropolitan Area"
+      ],
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "117 S Lexington Street STE 100",
+        "addressLocality": "Harrisonville",
+        "addressRegion": "MO",
+        "postalCode": "64701",
+        "addressCountry": "US"
+      },
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "telephone": "+1-618-612-5192",
+          "areaServed": "Illinois"
+        },
+        {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "telephone": "+1-314-202-7663",
+          "areaServed": "Missouri"
+        }
+      ],
+      "url": "https://roofingnearmestl.com/"
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What types of roofing projects do you handle?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Roofing Near Me STL handles residential and commercial roofing solutions, repairs, siding, gutters, fascia, soffit, and softwash exterior cleaning."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How can I request a quote?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Call the Illinois line at 618-612-5192, the Missouri line at 314-202-7663, or use the lead form on this page to send your project details."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you work in both Missouri and Illinois?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Roofing Near Me STL serves property owners on both sides of the river with dedicated Missouri and Illinois call lines."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What information should I include when I reach out?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Share your name, best phone number, property address, and the roofing or exterior issue you want looked at so the team can respond quickly."
+          }
+        }
+      ]
+    }
+  </script>
 </head>
 <body>
-  <div id="root"></div>
-  
-  <script type="module">var x8=Object.create;var{getPrototypeOf:h8,defineProperty:rt,getOwnPropertyNames:B8}=Object;var y8=Object.prototype.hasOwnProperty;var $o=(o,A,i)=>{i=o!=null?x8(h8(o)):{};let n=!0;for(let e in o)y8.call(o,e)&&(n?n=!1:rt(i,e,Object.getOwnPropertyDescriptor(o,e)));return i};function wi(o,A,i){if(!o)return o;if(typeof o=="function")return o;let n=typeof Symbol<"u"&&Symbol.hasInstance?Symbol.hasInstance:Symbol.toStringTag;if(o[n]==="Promise")return o;return i===!1?o:{then(e){try{return Promise.resolve(o.apply(A,[])).then(e)}catch(t){return Promise.reject(t)}}}}function qo(o,A){function i(){return wi(o.apply(this,arguments),A)}return i.prototype=Object.create(Object.getPrototypeOf(o)),i}const Pt=new Set;let Xt=!1;function jn(o){Pt.add(o);let A=!1;try{if(o.length===0)return o();return function(){A||(A=!0,Pt.delete(o),o())}}catch(i){throw A||(A=!0,Pt.delete(o)),i}}function Ht(o,A){if(!o||Xt)return"";Xt=!0;var i=Error.prepareStackTrace;Error.prepareStackTrace=void 0;try{if(A)if(A=function(){throw Error()},Object.defineProperty(A.prototype,"props",{set(){throw A()},get(){throw A()}}),new A)try{A()}catch(n){if(!(n instanceof A))throw n}}else{if(typeof Error.captureStackTrace=="function")return Error.captureStackTrace(A,Ht),``;let n=Object.create(Object.getPrototypeOf(A));if(Object.defineProperty(n,"message",{value:"",writable:!0,configurable:!0,enumerable:!1}),Object.defineProperty(n,"name",{value:"Error",writable:!0,configurable:!0,enumerable:!1}),A=Error.apply.call(A,n,[]),"stack"in A){let e=Error.prototype.toString.call(n);n.stack=`${e}
-`+A.stack.split(`
-`).slice(1).join(`
-`)}}let t=o.apply(A,arguments);if(t instanceof Promise)return"";let n=t.stack.split(`
-`),f=Error.prototype.toString.call(A).split(`
-`)[0],l=n.length-1;for(;1<=l;l--){let K=n[l].replace(" at new "," at ");if(f.includes(K.replace(/at /,""))){n.splice(l,1);break}}return n.join(`
-`).replace(uF,"")}function iK(o,A,i){if(A=pf(A),pf(o)!==A&&i)throw Error(R(425))}function hK(){}function Un(o,A){return o==="textarea"||o==="noscript"||typeof A.children==="string"||typeof A.children==="number"||typeof A.dangerouslySetInnerHTML=="object"&&A.dangerouslySetInnerHTML!==null&&typeof A.dangerouslySetInnerHTML.__html==="string"}var uF=/^Error: (?:x|y) is reserved by Infima\.(?:x|y) is [a-zA-Z ]*not [A-Z ]*\.$/;function _K(o,A){try{var i=function(n,e){if(n[e])return;n[e]=!0}(Error.prototype,"stack",{configurable:!0,get(n){let e=Error.prototype.toString.call(n),t=jn(function(){return e}),u=Ht(Pt.values().next().value??hK);u.length>0&&(t+=`
-`+u);var K={value:o.apply(n,arguments),source:A,stack:t,digest:null};Object.freeze(K),Object.defineProperty(K,"value",{enumerable:!0}),Object.defineProperty(K,"source",{enumerable:!0}),Object.defineProperty(K,"stack",{enumerable:!0}),Object.defineProperty(K,"digest",{enumerable:!0}),n._owner=n.stack=n.message=null;let h=Object.create(n);return h.stack=t,Object.defineProperty(h,"message",{value:e,enumerable:!1,writable:!0,configurable:!0}),Object.defineProperty(h,"source",{value:A,enumerable:!1,writable:!0,configurable:!0}),Object.defineProperty(h,"digest",{value:null,enumerable:!1,writable:!0,configurable:!0}),h});return i;}}catch(n){return function(e,t){try{console.error(t.value)}catch(u){Error generating stack: `+u.message+`
-`+u.stack}return{value:e,source:t,stack:n!=null?n:null,digest:null}}}}();
-      h1,h2,h3{font-family:'Sora',sans-serif}
-      `}),o!=="ppc"&&r("div",{className:"sticky top-0 z-[60] bg-[#05080F] border-b border-white/10",children:u("div",{className:"mx-auto max-w-[1200px] px-4 h-12 flex items-center justify-between",children:[r("div",{className:"text-white font-bold",children:"RoofingNearMeSTL"}),u("nav",{className:"hidden md:flex gap-6 text-sm text-gray-300",children:[r("a",{href:"/",children:"Home"}),r("a",{href:"/roof-repair-st-louis",children:"Roof Repair"}),r("a",{href:"/roof-replacement-st-louis",children:"Roof Replacement"}),r("a",{href:"/gutters-st-louis",children:"Gutters"}),r("a",{href:"/siding-repair-st-louis",children:"Siding"})]}),r("button",{className:"md:hidden text-white",children:"☰"})]})}),r("div",{className:"mx-auto max-w-[1200px] px-4 py-20",children:u("div",{className:"text-center",children:[r("h1",{className:"text-4xl md:text-5xl font-bold text-white mb-4",children:"Professional Roofing Services in St. Louis"}),r("p",{className:"text-xl text-gray-300 mb-8",children:"24/7 Emergency Tarping • Licensed MO & IL • Serving St. Louis & Surrounding Counties"}),r("button",{className:"bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-bold text-lg",children:"Get Free Inspection"}),r("div",{className:"grid lg:grid-cols-2 gap-6",children:[u("div",{className:"bg-white rounded-[16px] p-6 border",children:[r("h3",{className:"font-black text-[14px] uppercase tracking-widest",children:"schema.org structured data"}),r("pre",{className:"mt-4 text-xs overflow-x-auto bg-gray-100 p-3 rounded",children:`{
-  "@context": "https://schema.org",
-  "@type": "RoofingContractor",
-  "name": "RoofingNearMeSTL",
-  "image": "https://roofingnearmestl.com/logo.jpg",
-  "telephone": "${lo}",
-  "email": "${B}",
-  "description": "Local St Louis roofer. Call ${V} or ${T} (${zA}) or email ${B} - 24/7 emergency tarping. Licensed MO & IL. Serving St. Louis MO & Surrounding Counties. Forms POST to ${Oo}",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "St. Louis",
-    "addressRegion": "MO",
-    "addressCountry": "US"
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": 38.6270,
-    "longitude": -90.1994
-  },
-  "areaServed": [
-    "St. Louis City", "St. Louis County",
-    "St. Charles County", "Jefferson County",
-    "Franklin County", "Monroe County IL",
-    "Madison County IL", "St. Clair County IL"
-  ],
-  "contactPoint": [
-    {
-      "@type": "ContactPoint",
-      "telephone": "${lo}",
-      "contactType": "customer service",
-      "areaServed": "US"
-    },
-    {
-      "@type": "ContactPoint",
-      "telephone": "${Bo}",
-      "contactType": "customer service",
-      "areaServed": "US"
-    }
-  ],
-  "sameAs": ["https://roofingnearmestl.com"],
-  "priceRange": "$$",
-  "openingHours": "Mo-Sa 07:00-19:00",
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": "283"
-  }
-}`})]})]}),u("div",{className:"bg-white rounded-[16px] p-6 border",children:[r("h3",{className:"font-black text-[14px] uppercase tracking-widest",children:"sitemap.xml"}),r("pre",{className:"mt-4 text-xs overflow-x-auto bg-gray-100 p-3 rounded",children:`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://roofingnearmestl.com/</loc><priority>1.0</priority></url>
-  <url><loc>https://roofingnearmestl.com/roof-repair-st-louis</loc></url>
-  <url><loc>https://roofingnearmestl.com/roof-replacement-st-louis</loc></url>
-  <url><loc>https://roofingnearmestl.com/gutters-st-louis</loc></url>
-  <url><loc>https://roofingnearmestl.com/siding-repair-st-louis</loc></url>
-  <url><loc>https://roofingnearmestl.com/service-areas/st-charles</loc></url>
-  <url><loc>https://roofingnearmestl.com/service-areas/jefferson-county</loc></url>
-  <url><loc>https://roofingnearmestl.com/blog/</loc></url>
-  <url><loc>https://roofingnearmestl.com/lp/roof-free-inspection</loc></url>
-</urlset>`}),r("h3",{className:"font-black text-[14px] uppercase tracking-widest mt-6",children:"robots.txt"}),r("pre",{className:"mt-4 text-xs overflow-x-auto bg-gray-100 p-3 rounded",children:`User-agent: *
-Allow: /
-Disallow: /wp-admin/
-Sitemap: https://roofingnearmestl.com/sitemap.xml
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div><strong>Roofing Near Me STL</strong> &mdash; Mike Williamson</div>
+      <div class="topbar-links">
+        <a href="tel:+16186125192">Illinois: 618-612-5192</a>
+        <a href="tel:+13142027663">Missouri: 314-202-ROOF (7663)</a>
+        <a href="mailto:Michael@roofingnearmestl.com">Michael@roofingnearmestl.com</a>
+      </div>
+    </div>
+  </div>
 
-# No Facebook SDK
-# GA4 + Google Ads only`}),r("h3",{className:"font-black text-[14px] uppercase tracking-widest mt-6",children:"Tracking Notes - AW + GA4"}),u("div",{className:"mt-3 text-[12px] leading-relaxed space-y-2",children:[r("p",{children:"✓ GA4 tracking code implemented"}),r("p",{children:"✓ Google Ads conversion tracking"}),r("p",{children:"✓ No Facebook Pixel"}),r("p",{children:"✓ Robots.txt allows crawling"}),r("p",{children:"✓ Structured data for SEO"})]})]})]})]})})}),o!=="ppc"&&r("footer",{className:"bg-gray-900 text-gray-300 text-center py-4 border-t border-gray-800",children:"© 2024 RoofingNearMeSTL. All rights reserved."})]})]})];}}}})(document.getElementById("root"));
+  <header class="hero">
+    <div class="section-inner hero-grid">
+      <div>
+        <div class="eyebrow">Fast roofing and exterior help in Missouri &amp; Illinois</div>
+        <h1>Protect your home or business with roofing that gets done right.</h1>
+        <p>
+          Mike Williamson and Roofing Near Me STL provide residential and commercial roofing solutions,
+          siding, gutters, fascia, soffit, softwash exterior cleaning, and repair work with fast, direct communication.
+        </p>
+        <div class="cta-row">
+          <a class="button button-primary" href="tel:+16186125192">Call Illinois: 618-612-5192</a>
+          <a class="button button-secondary" href="tel:+13142027663">Call Missouri: 314-202-7663</a>
+          <a class="button button-outline" href="#lead-form">Get a Free Quote</a>
+        </div>
+        <div class="hero-points">
+          <div class="hero-point">
+            <strong>Residential &amp; Commercial</strong>
+            <span>Solutions for homes, offices, retail, and multi-property needs.</span>
+          </div>
+          <div class="hero-point">
+            <strong>Repair to Full Replacement</strong>
+            <span>From active leaks and storm damage to larger roof system projects.</span>
+          </div>
+          <div class="hero-point">
+            <strong>Exterior Services</strong>
+            <span>Siding, gutters, fascia, soffit, and exterior softwashing support.</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="form-card" id="lead-form">
+        <h2>Request your free quote</h2>
+        <p>Tell us what is happening at the property and we&rsquo;ll make it easy to take the next step.</p>
+        <form id="quote-form">
+          <label for="name">Name
+            <input id="name" name="name" type="text" autocomplete="name" required>
+          </label>
+          <label for="phone">Phone
+            <input id="phone" name="phone" type="tel" autocomplete="tel" required>
+          </label>
+          <label for="address">Property Address
+            <input id="address" name="address" type="text" autocomplete="street-address" required>
+          </label>
+          <label for="issue">Roof Issue
+            <textarea id="issue" name="issue" placeholder="Leak, storm damage, replacement estimate, gutters, siding, cleaning, or repair details" required></textarea>
+          </label>
+          <button class="button-primary" type="submit">Email My Request</button>
+          <div class="form-note">Prefer to talk now? Call <a href="tel:+16186125192">618-612-5192</a> or <a href="tel:+13142027663">314-202-7663</a>.</div>
+          <div class="form-success" id="form-success" aria-live="polite">Your email app should open with the request details ready to send.</div>
+        </form>
+      </aside>
+    </div>
+  </header>
+
+  <section class="trust-section">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2>Built to win trust before we ever step on the roof</h2>
+        <p>Clear contact information, direct ownership, and broad exterior service coverage help property owners move quickly when a roof problem can&rsquo;t wait.</p>
+      </div>
+      <div class="trust-list">
+        <div class="trust-pill">Owner-led service from Mike Williamson</div>
+        <div class="trust-pill">Dedicated Missouri and Illinois phone lines</div>
+        <div class="trust-pill">Residential and commercial project support</div>
+        <div class="trust-pill">Roofing plus siding, gutters, and cleaning</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2>Services that keep the entire exterior covered</h2>
+        <p>Whether you need a targeted repair or a larger exterior project, the homepage now highlights every primary service the business offers.</p>
+      </div>
+      <div class="service-grid">
+        <article class="service-card">
+          <div class="service-icon">R</div>
+          <h3>Residential &amp; Commercial Roofing Solutions</h3>
+          <p>Roofing support for homes and commercial properties, from evaluations and scope planning to full project execution.</p>
+        </article>
+        <article class="service-card">
+          <div class="service-icon">S</div>
+          <h3>Siding</h3>
+          <p>Refresh and protect exterior walls with siding work that improves curb appeal and weather resistance.</p>
+        </article>
+        <article class="service-card">
+          <div class="service-icon">G</div>
+          <h3>Gutters / Fascia / Soffit</h3>
+          <p>Protect drainage and roof edges with coordinated gutter, fascia, and soffit solutions.</p>
+        </article>
+        <article class="service-card">
+          <div class="service-icon">C</div>
+          <h3>Softwash &amp; Exterior Cleaning</h3>
+          <p>Restore the look of the property with gentle exterior cleaning designed for dirty surfaces and buildup.</p>
+        </article>
+        <article class="service-card">
+          <div class="service-icon">P</div>
+          <h3>Repair</h3>
+          <p>When you have a leak, visible wear, or storm-related trouble, get repair-focused help before the damage spreads.</p>
+        </article>
+        <article class="service-card">
+          <div class="service-icon">Q</div>
+          <h3>Fast Quote Requests</h3>
+          <p>Use the lead form, email, or either phone line to share your address and issue so the team can respond faster.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2>Why property owners choose Roofing Near Me STL</h2>
+        <p>This page focuses on the proof points a lead needs to feel confident reaching out right away.</p>
+      </div>
+      <div class="credibility-grid">
+        <article class="credibility-card">
+          <h3>Direct communication</h3>
+          <p>Owner Mike Williamson&rsquo;s contact details are front and center, so leads know exactly who they are reaching.</p>
+        </article>
+        <article class="credibility-card">
+          <h3>Coverage on both sides of the river</h3>
+          <p>Separate Missouri and Illinois call buttons make it simple for homeowners and commercial clients to connect from either market.</p>
+        </article>
+        <article class="credibility-card">
+          <h3>More than roofing</h3>
+          <p>Projects often involve gutters, siding, fascia, soffit, or exterior cleaning, and those services are already built into the offer.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2>Frequently asked questions</h2>
+        <p>Helpful answers for homeowners and commercial property managers who want a faster decision path.</p>
+      </div>
+      <div class="faq-list">
+        <article class="faq-item">
+          <h3>What types of properties do you work on?</h3>
+          <p>Roofing Near Me STL offers residential and commercial roofing solutions, along with supporting exterior services.</p>
+        </article>
+        <article class="faq-item">
+          <h3>How should I request help?</h3>
+          <p>Call the Illinois or Missouri phone line for the fastest response, or use the quote form to send your contact details and address.</p>
+        </article>
+        <article class="faq-item">
+          <h3>Can I reach out for more than roofing?</h3>
+          <p>Yes. Siding, gutters, fascia, soffit, softwash exterior cleaning, and repair work are all highlighted services.</p>
+        </article>
+        <article class="faq-item">
+          <h3>What details should I include?</h3>
+          <p>Share your name, phone number, property address, and a short description of the roof or exterior issue so follow-up can be more efficient.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <article class="footer-card">
+          <h3>Roofing Near Me STL</h3>
+          <p>Lead-focused roofing and exterior help for Missouri and Illinois property owners.</p>
+          <p class="microcopy">Owner: Mike Williamson</p>
+        </article>
+        <article class="footer-card">
+          <h3>Contact</h3>
+          <p><a href="tel:+16186125192">Illinois: 618-612-5192</a></p>
+          <p><a href="tel:+13142027663">Missouri: 314-202-ROOF (7663)</a></p>
+          <p><a href="mailto:Michael@roofingnearmestl.com">Michael@roofingnearmestl.com</a></p>
+        </article>
+        <article class="footer-card">
+          <h3>Office</h3>
+          <p>117 S Lexington Street STE 100<br>Harrisonville, MO 64701</p>
+        </article>
+      </div>
+      <div class="footer-bottom">&copy; <span id="year">2026</span> Roofing Near Me STL. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <div class="sticky-mobile">
+    <a class="button button-primary" href="tel:+16186125192">Call IL</a>
+    <a class="button button-secondary" href="tel:+13142027663">Call MO</a>
+  </div>
+
+  <script>
+    (function () {
+      var form = document.getElementById('quote-form');
+      var success = document.getElementById('form-success');
+      var year = document.getElementById('year');
+
+      if (year) {
+        year.textContent = String(new Date().getFullYear());
+      }
+
+      if (!form) {
+        return;
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        var name = document.getElementById('name').value.trim();
+        var phone = document.getElementById('phone').value.trim();
+        var address = document.getElementById('address').value.trim();
+        var issue = document.getElementById('issue').value.trim();
+
+        var subject = encodeURIComponent('Quote request from roofingnearmestl.com');
+        var body = encodeURIComponent(
+          'Name: ' + name + '\n' +
+          'Phone: ' + phone + '\n' +
+          'Address: ' + address + '\n' +
+          'Roof issue: ' + issue
+        );
+
+        window.location.href = 'mailto:Michael@roofingnearmestl.com?subject=' + subject + '&body=' + body;
+
+        if (success) {
+          success.style.display = 'block';
+        }
+      });
+    }());
   </script>
-   <script>(function(){function m(a){var h=a.getAttribute("href");if(!h)return;try{var u=new URL(h,document.baseURI);if((u.protocol==="http:"||u.protocol==="https:")&&u.host!==location.host){a.target="_blank";a.rel="noreferrer";}}catch(w){}}document.addEventListener("click",function(a){a.target instanceof HTMLAnchorElement&&m(a.target)})})();
-   </script>
-   
 </body>
 </html>
