@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>React Artifact</title>
+  <style>*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-drop-shadow: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-drop-shadow: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: }</style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="module">var x8=Object.create;var{getPrototypeOf:h8,defineProperty:rt,getOwnPropertyNames:B8}=Object;var y8=Object.prototype.hasOwnProperty;var $o=(o,A,i)=>{i=o!=null?x8(h8(o)):{};let n=!0;for(let e in o)y8.call(o,e)&&(n?n=!1:rt(i,e,Object.getOwnPropertyDescriptor(o,e)));return i};function wi(o,A,i){if(!o)return o;if(typeof o=="function")return o;let n=typeof Symbol<"u"&&Symbol.hasInstance?Symbol.hasInstance:Symbol.toStringTag;if(o[n]==="Promise")return o;return i===!1?o:{then(e){try{return Promise.resolve(o.apply(A,[])).then(e)}catch(t){return Promise.reject(t)}}}}function qo(o,A){function i(){return wi(o.apply(this,arguments),A)}return i.prototype=Object.create(Object.getPrototypeOf(o)),i}const Pt=new Set;let Xt=!1;function jn(o){Pt.add(o);let A=!1;try{if(o.length===0)return o();return function(){A||(A=!0,Pt.delete(o),o())}}catch(i){throw A||(A=!0,Pt.delete(o)),i}}function Ht(o,A){if(!o||Xt)return"";Xt=!0;var i=Error.prepareStackTrace;Error.prepareStackTrace=void 0;try{if(A)if(A=function(){throw Error()},Object.defineProperty(A.prototype,"props",{set(){throw A()},get(){throw A()}}),new A)try{A()}catch(n){if(!(n instanceof A))throw n}}else{if(typeof Error.captureStackTrace=="function")return Error.captureStackTrace(A,Ht),``;let n=Object.create(Object.getPrototypeOf(A));if(Object.defineProperty(n,"message",{value:"",writable:!0,configurable:!0,enumerable:!1}),Object.defineProperty(n,"name",{value:"Error",writable:!0,configurable:!0,enumerable:!1}),A=Error.apply.call(A,n,[]),"stack"in A){let e=Error.prototype.toString.call(n);n.stack=`${e}
+`+A.stack.split(`
+`).slice(1).join(`
+`)}}let t=o.apply(A,arguments);if(t instanceof Promise)return"";let n=t.stack.split(`
+`),f=Error.prototype.toString.call(A).split(`
+`)[0],l=n.length-1;for(;1<=l;l--){let K=n[l].replace(" at new "," at ");if(f.includes(K.replace(/at /,""))){n.splice(l,1);break}}return n.join(`
+`).replace(uF,"")}function iK(o,A,i){if(A=pf(A),pf(o)!==A&&i)throw Error(R(425))}function hK(){}function Un(o,A){return o==="textarea"||o==="noscript"||typeof A.children==="string"||typeof A.children==="number"||typeof A.dangerouslySetInnerHTML=="object"&&A.dangerouslySetInnerHTML!==null&&typeof A.dangerouslySetInnerHTML.__html==="string"}var uF=/^Error: (?:x|y) is reserved by Infima\.(?:x|y) is [a-zA-Z ]*not [A-Z ]*\.$/;function _K(o,A){try{var i=function(n,e){if(n[e])return;n[e]=!0}(Error.prototype,"stack",{configurable:!0,get(n){let e=Error.prototype.toString.call(n),t=jn(function(){return e}),u=Ht(Pt.values().next().value??hK);u.length>0&&(t+=`
+`+u);var K={value:o.apply(n,arguments),source:A,stack:t,digest:null};Object.freeze(K),Object.defineProperty(K,"value",{enumerable:!0}),Object.defineProperty(K,"source",{enumerable:!0}),Object.defineProperty(K,"stack",{enumerable:!0}),Object.defineProperty(K,"digest",{enumerable:!0}),n._owner=n.stack=n.message=null;let h=Object.create(n);return h.stack=t,Object.defineProperty(h,"message",{value:e,enumerable:!1,writable:!0,configurable:!0}),Object.defineProperty(h,"source",{value:A,enumerable:!1,writable:!0,configurable:!0}),Object.defineProperty(h,"digest",{value:null,enumerable:!1,writable:!0,configurable:!0}),h});return i;}}catch(n){return function(e,t){try{console.error(t.value)}catch(u){Error generating stack: `+u.message+`
+`+u.stack}return{value:e,source:t,stack:n!=null?n:null,digest:null}}}}();
+      h1,h2,h3{font-family:'Sora',sans-serif}
+      `}),o!=="ppc"&&r("div",{className:"sticky top-0 z-[60] bg-[#05080F] border-b border-white/10",children:u("div",{className:"mx-auto max-w-[1200px] px-4 h-12 flex items-center justify-between",children:[r("div",{className:"text-white font-bold",children:"RoofingNearMeSTL"}),u("nav",{className:"hidden md:flex gap-6 text-sm text-gray-300",children:[r("a",{href:"/",children:"Home"}),r("a",{href:"/roof-repair-st-louis",children:"Roof Repair"}),r("a",{href:"/roof-replacement-st-louis",children:"Roof Replacement"}),r("a",{href:"/gutters-st-louis",children:"Gutters"}),r("a",{href:"/siding-repair-st-louis",children:"Siding"})]}),r("button",{className:"md:hidden text-white",children:"☰"})]})}),r("div",{className:"mx-auto max-w-[1200px] px-4 py-20",children:u("div",{className:"text-center",children:[r("h1",{className:"text-4xl md:text-5xl font-bold text-white mb-4",children:"Professional Roofing Services in St. Louis"}),r("p",{className:"text-xl text-gray-300 mb-8",children:"24/7 Emergency Tarping • Licensed MO & IL • Serving St. Louis & Surrounding Counties"}),r("button",{className:"bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-bold text-lg",children:"Get Free Inspection"}),r("div",{className:"grid lg:grid-cols-2 gap-6",children:[u("div",{className:"bg-white rounded-[16px] p-6 border",children:[r("h3",{className:"font-black text-[14px] uppercase tracking-widest",children:"schema.org structured data"}),r("pre",{className:"mt-4 text-xs overflow-x-auto bg-gray-100 p-3 rounded",children:`{
+  "@context": "https://schema.org",
+  "@type": "RoofingContractor",
+  "name": "RoofingNearMeSTL",
+  "image": "https://roofingnearmestl.com/logo.jpg",
+  "telephone": "${lo}",
+  "email": "${B}",
+  "description": "Local St Louis roofer. Call ${V} or ${T} (${zA}) or email ${B} - 24/7 emergency tarping. Licensed MO & IL. Serving St. Louis MO & Surrounding Counties. Forms POST to ${Oo}",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "St. Louis",
+    "addressRegion": "MO",
+    "addressCountry": "US"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 38.6270,
+    "longitude": -90.1994
+  },
+  "areaServed": [
+    "St. Louis City", "St. Louis County",
+    "St. Charles County", "Jefferson County",
+    "Franklin County", "Monroe County IL",
+    "Madison County IL", "St. Clair County IL"
+  ],
+  "contactPoint": [
+    {
+      "@type": "ContactPoint",
+      "telephone": "${lo}",
+      "contactType": "customer service",
+      "areaServed": "US"
+    },
+    {
+      "@type": "ContactPoint",
+      "telephone": "${Bo}",
+      "contactType": "customer service",
+      "areaServed": "US"
+    }
+  ],
+  "sameAs": ["https://roofingnearmestl.com"],
+  "priceRange": "$$",
+  "openingHours": "Mo-Sa 07:00-19:00",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "reviewCount": "283"
+  }
+}`})]})]}),u("div",{className:"bg-white rounded-[16px] p-6 border",children:[r("h3",{className:"font-black text-[14px] uppercase tracking-widest",children:"sitemap.xml"}),r("pre",{className:"mt-4 text-xs overflow-x-auto bg-gray-100 p-3 rounded",children:`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://roofingnearmestl.com/</loc><priority>1.0</priority></url>
+  <url><loc>https://roofingnearmestl.com/roof-repair-st-louis</loc></url>
+  <url><loc>https://roofingnearmestl.com/roof-replacement-st-louis</loc></url>
+  <url><loc>https://roofingnearmestl.com/gutters-st-louis</loc></url>
+  <url><loc>https://roofingnearmestl.com/siding-repair-st-louis</loc></url>
+  <url><loc>https://roofingnearmestl.com/service-areas/st-charles</loc></url>
+  <url><loc>https://roofingnearmestl.com/service-areas/jefferson-county</loc></url>
+  <url><loc>https://roofingnearmestl.com/blog/</loc></url>
+  <url><loc>https://roofingnearmestl.com/lp/roof-free-inspection</loc></url>
+</urlset>`}),r("h3",{className:"font-black text-[14px] uppercase tracking-widest mt-6",children:"robots.txt"}),r("pre",{className:"mt-4 text-xs overflow-x-auto bg-gray-100 p-3 rounded",children:`User-agent: *
+Allow: /
+Disallow: /wp-admin/
+Sitemap: https://roofingnearmestl.com/sitemap.xml
+
+# No Facebook SDK
+# GA4 + Google Ads only`}),r("h3",{className:"font-black text-[14px] uppercase tracking-widest mt-6",children:"Tracking Notes - AW + GA4"}),u("div",{className:"mt-3 text-[12px] leading-relaxed space-y-2",children:[r("p",{children:"✓ GA4 tracking code implemented"}),r("p",{children:"✓ Google Ads conversion tracking"}),r("p",{children:"✓ No Facebook Pixel"}),r("p",{children:"✓ Robots.txt allows crawling"}),r("p",{children:"✓ Structured data for SEO"})]})]})]})]})})}),o!=="ppc"&&r("footer",{className:"bg-gray-900 text-gray-300 text-center py-4 border-t border-gray-800",children:"© 2024 RoofingNearMeSTL. All rights reserved."})]})]})];}}}})(document.getElementById("root"));
+  </script>
+   <script>(function(){function m(a){var h=a.getAttribute("href");if(!h)return;try{var u=new URL(h,document.baseURI);if((u.protocol==="http:"||u.protocol==="https:")&&u.host!==location.host){a.target="_blank";a.rel="noreferrer";}}catch(w){}}document.addEventListener("click",function(a){a.target instanceof HTMLAnchorElement&&m(a.target)})})();
+   </script>
+   
+</body>
+</html>
