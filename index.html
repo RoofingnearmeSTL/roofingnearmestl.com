@@ -4,272 +4,296 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#000000" />
-  <title>RoofingNearMeSTL | Local. Reliable. Protecting What Matters.</title>
-  <meta name="description" content="RoofingNearMeSTL provides residential and commercial roofing, siding, gutters, soffit, fascia, softwash, and repairs in the St. Louis area. Call 618-612-5192 or 314-202-7663." />
-  <meta property="og:title" content="RoofingNearMeSTL" />
-  <meta property="og:description" content="Local. Reliable. Protecting What Matters. Roofing, siding, gutters, and repair services for St. Louis and surrounding areas." />
+  <title>RoofingNearMeSTL | Free Roof Inspection in the St. Louis Metro Area</title>
+  <meta name="description" content="RoofingNearMeSTL helps Missouri and Illinois homeowners with roofing, siding, gutters, soffit, fascia, softwash, and repair services. Request a free roof inspection or call 618-612-5192 / 314-202-7663." />
+  <link rel="canonical" href="https://roofingnearmestl.com/" />
+  <meta property="og:title" content="RoofingNearMeSTL | Free Roof Inspection in the St. Louis Metro Area" />
+  <meta property="og:description" content="Simple, fast roofing help for homeowners and property managers in Missouri and Illinois. Call now or request a free inspection online." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://roofingnearmestl.com/" />
-  <meta property="og:image" content="https://roofingnearmestl.com/logo.jpg" />
-  <style>
-    :root {
-      --bg: #000000;
-      --panel: #0a0a0a;
-      --panel-2: #111111;
-      --text: #ffffff;
-      --muted: #c9d2dc;
-      --blue: #2ea8e6;
-      --blue-2: #1f87c9;
-      --line: rgba(255,255,255,.14);
-      --shadow: 0 20px 60px rgba(0,0,0,.45);
-      --radius: 24px;
-      --max: 1180px;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: radial-gradient(circle at top, #111 0%, #000 60%);
-      color: var(--text);
-      line-height: 1.5;
-    }
-    a { color: inherit; text-decoration: none; }
-    img { max-width: 100%; display: block; }
-    .wrap { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
-    .topbar {
-      position: sticky; top: 0; z-index: 50;
-      backdrop-filter: blur(14px);
-      background: rgba(0,0,0,.72);
-      border-bottom: 1px solid var(--line);
-    }
-    .topbar-inner { display:flex; justify-content:space-between; align-items:center; gap:16px; padding: 12px 0; }
-    .brand { display:flex; align-items:center; gap:12px; font-weight: 800; letter-spacing: .02em; }
-    .brand-badge { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #58c4ff); box-shadow: 0 0 0 3px rgba(46,168,230,.15); }
-    .cta-row { display:flex; gap:10px; flex-wrap: wrap; }
-    .btn {
-      display:inline-flex; align-items:center; justify-content:center;
-      padding: 14px 18px; border-radius: 999px; font-weight: 800;
-      border: 1px solid transparent; transition: transform .15s ease, background .15s ease, border-color .15s ease;
-    }
-    .btn:hover { transform: translateY(-1px); }
-    .btn-primary { background: linear-gradient(135deg, var(--blue-2), var(--blue)); color:#fff; }
-    .btn-ghost { background: rgba(255,255,255,.04); border-color: var(--line); }
-    .hero { padding: 56px 0 34px; }
-    .hero-grid { display:grid; grid-template-columns: 1.15fr .85fr; gap: 28px; align-items: stretch; }
-    .hero-copy, .card {
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-    .hero-copy { padding: 34px; }
-    .eyebrow { color: var(--blue); text-transform: uppercase; letter-spacing: .16em; font-weight: 900; font-size: .82rem; }
-    h1, h2, h3 { margin: 0; line-height: 1.05; }
-    h1 { font-size: clamp(2.5rem, 6vw, 5rem); margin: 14px 0 16px; }
-    .subhead { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
-    .hero-points { display:flex; flex-wrap:wrap; gap:10px; margin: 22px 0; }
-    .pill { padding: 10px 14px; border-radius: 999px; background: rgba(46,168,230,.12); border: 1px solid rgba(46,168,230,.35); color:#dff4ff; font-weight:700; font-size:.95rem; }
-    .trust { display:flex; flex-wrap:wrap; gap:12px; margin-top: 24px; color:#e8eef5; }
-    .trust span { padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,.05); border: 1px solid var(--line); }
-    .hero-side { display:grid; gap: 18px; }
-    .brand-panel { padding: 22px; text-align:center; }
-    .logo {
-      width: 100%; max-width: 450px; margin: 0 auto 8px;
-      border-radius: 18px; background: #000; padding: 10px; border: 1px solid rgba(255,255,255,.08);
-    }
-    .contact-box, .form-box, .section-box { padding: 24px; }
-    .contact-list { display:grid; gap: 10px; margin-top: 16px; }
-    .contact-item { display:flex; justify-content:space-between; gap:14px; padding: 14px 0; border-top: 1px solid var(--line); }
-    .contact-item strong { color: var(--blue); }
-    .grid-3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    .grid-2 { display:grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-    .section { padding: 18px 0 34px; }
-    .section h2 { font-size: clamp(1.75rem, 3vw, 2.8rem); margin-bottom: 12px; }
-    .section p.lead { color: var(--muted); margin-bottom: 0; max-width: 70ch; }
-    .feature, .service, .faq, .review {
-      background: rgba(255,255,255,.03);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 20px;
-    }
-    .service h3, .feature h3, .faq h3 { margin-bottom: 10px; font-size: 1.12rem; }
-    .muted { color: var(--muted); }
-    .services-grid { margin-top: 18px; }
-    .form-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
-    input, textarea {
-      width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line);
-      background: #050505; color: var(--text); font: inherit;
-    }
-    textarea { min-height: 120px; resize: vertical; grid-column: 1 / -1; }
-    label { display:block; font-weight: 700; font-size: .92rem; margin-bottom: 6px; }
-    .full { grid-column: 1 / -1; }
-    .small { font-size: .92rem; color: var(--muted); }
-    .footer {
-      margin-top: 28px; padding: 28px 0 40px; border-top: 1px solid var(--line); color: var(--muted);
-    }
-    .map {
-      height: 280px; border-radius: 20px; border: 1px solid var(--line);
-      overflow:hidden; background: #050505;
-    }
-    .map iframe { width:100%; height:100%; border:0; filter: grayscale(1) contrast(1.1) brightness(.85); }
-    @media (max-width: 920px) {
-      .hero-grid, .grid-3, .grid-2 { grid-template-columns: 1fr; }
-      .form-grid { grid-template-columns: 1fr; }
-      .topbar-inner { flex-direction:column; align-items:flex-start; }
-    }
-  </style>
+  <meta property="og:image" content="https://roofingnearmestl.com/logo-social.svg" />
+  <link rel="stylesheet" href="styles.css" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "RoofingContractor",
-    "name": "RoofingNearMeSTL",
-    "image": "https://roofingnearmestl.com/logo.jpg",
-    "url": "https://roofingnearmestl.com/",
-    "telephone": ["+1-618-612-5192", "+1-314-202-7663"],
-    "email": "Michael@roofingnearmestl.com",
-    "priceRange": "$$",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "117 S Lexington Street STE 100",
-      "addressLocality": "Harrisonville",
-      "addressRegion": "MO",
-      "postalCode": "64701",
-      "addressCountry": "US"
-    },
-    "areaServed": ["St. Louis MO", "St. Louis County", "St. Charles County", "Jefferson County", "Franklin County", "Monroe County IL", "Madison County IL", "St. Clair County IL"],
-    "sameAs": ["https://roofingnearmestl.com"],
-    "openingHours": "Mo-Sa 07:00-19:00"
+    "@graph": [
+      {
+        "@type": "RoofingContractor",
+        "name": "RoofingNearMeSTL",
+        "url": "https://roofingnearmestl.com/",
+        "telephone": ["+1-618-612-5192", "+1-314-202-7663"],
+        "email": "Michael@roofingnearmestl.com",
+        "priceRange": "$$",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "117 S Lexington Street STE 100",
+          "addressLocality": "Harrisonville",
+          "addressRegion": "MO",
+          "postalCode": "64701",
+          "addressCountry": "US"
+        },
+        "areaServed": [
+          "St. Louis MO",
+          "Belleville IL",
+          "Waterloo IL",
+          "St. Charles MO",
+          "St. Clair County IL",
+          "Madison County IL",
+          "St. Louis County MO"
+        ],
+        "openingHours": "Mo-Sa 07:00-19:00"
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Do you offer free roof inspections?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Call either office line or submit the quote form to request a free roof inspection."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What roofing and exterior services do you provide?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "RoofingNearMeSTL provides residential and commercial roofing solutions, siding, gutters, fascia, soffit, softwash and exterior cleaning, and repair services."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do you serve both Missouri and Illinois?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. RoofingNearMeSTL serves customers on both sides of the river, including areas like Belleville, Waterloo, St. Charles, and the greater St. Louis metro area."
+            }
+          }
+        ]
+      }
+    ]
   }
   </script>
 </head>
 <body>
   <header class="topbar">
     <div class="wrap topbar-inner">
-      <div class="brand"><div class="brand-badge"></div><div>RoofingNearMeSTL</div></div>
+      <a class="brand" href="index.html" aria-label="RoofingNearMeSTL home">
+        <span class="brand-badge" aria-hidden="true"></span>
+        <span class="brand-text"><strong>RoofingNearMeSTL</strong><span>Mike Williamson · Missouri &amp; Illinois</span></span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#services">Services</a>
+        <a href="#gallery">Before &amp; After</a>
+        <a href="#service-areas">Service Areas</a>
+        <a href="#quote">Contact</a>
+      </nav>
       <div class="cta-row">
         <a class="btn btn-ghost" href="tel:+16186125192">Call IL: 618-612-5192</a>
-        <a class="btn btn-primary" href="tel:+13142027663">Call MO: 314-202-7663</a>
+        <a class="btn btn-primary" href="#quote">Get Free Quote</a>
       </div>
     </div>
   </header>
 
   <main>
     <section class="hero">
-      <div class="wrap hero-grid">
-        <div class="hero-copy">
-          <div class="eyebrow">Local. Reliable. Protecting What Matters.</div>
-          <h1>Roofing in St. Louis with fast, friendly service that gets leads answered now.</h1>
-          <p class="subhead">Residential and commercial roofing, siding, gutters, fascia, soffit, softwash, and repair work — built to earn trust and turn visitors into calls.</p>
-          <div class="hero-points">
-            <span class="pill">Free roof inspection</span>
-            <span class="pill">24hr response</span>
-            <span class="pill">Licensed &amp; insured</span>
-            <span class="pill">Financing available</span>
+      <div class="wrap">
+        <div class="notice">
+          <div>
+            <strong>Storm damage or an active leak?</strong>
+            <div class="small">Call now for a quick response and practical next steps.</div>
           </div>
-          <div class="cta-row">
-            <a class="btn btn-primary" href="#quote">Get Free Quote</a>
-            <a class="btn btn-ghost" href="tel:+16186125192">Emergency Call Now</a>
-          </div>
-          <div class="trust">
-            <span>5-star service</span>
-            <span>Local owner: Mike Williamson</span>
-            <span>Serving MO + IL</span>
-          </div>
+          <a class="btn btn-primary" href="tel:+13142027663">Call Missouri Line: 314-202-ROOF</a>
         </div>
-
-        <div class="hero-side">
-          <div class="card brand-panel">
-            <img class="logo" src="logo.jpg" alt="RoofingNearMeSTL logo" />
-            <div class="muted">Use the buttons below to call the right line immediately.</div>
-            <div class="contact-list">
-              <div class="contact-item"><strong>Illinois</strong><a href="tel:+16186125192">618-612-5192</a></div>
-              <div class="contact-item"><strong>Missouri</strong><a href="tel:+13142027663">314-202-7663</a></div>
-              <div class="contact-item"><strong>Email</strong><a href="mailto:Michael@roofingnearmestl.com">Michael@roofingnearmestl.com</a></div>
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow">Local. Reliable. Protecting What Matters.</div>
+            <h1>Free roof inspections with a simple, friendly path to help.</h1>
+            <p class="subhead">RoofingNearMeSTL keeps it easy: call, email, or send a short form with your address and roof issue. We handle residential and commercial roofing, siding, gutters, fascia, soffit, softwash, and repairs across the St. Louis metro area.</p>
+            <div class="hero-points">
+              <span class="pill">Free inspection</span>
+              <span class="pill">24-hour response goal</span>
+              <span class="pill">Missouri + Illinois service</span>
+              <span class="pill">Repair to replacement</span>
+            </div>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="#quote">Request Free Quote</a>
+              <a class="btn btn-ghost" href="tel:+16186125192">Call Now</a>
+            </div>
+            <div class="trust">
+              <span>Owner: Mike Williamson</span>
+              <span>Residential &amp; commercial</span>
+              <span>Simple, no-clutter process</span>
             </div>
           </div>
+
+          <div class="hero-side">
+            <div class="card brand-panel">
+              <div class="logo-card">
+                <span class="badge-mark" aria-hidden="true"></span>
+                <div>
+                  <strong>RoofingNearMeSTL</strong>
+                  <div class="muted">Missouri and Illinois roofing support with a simple, no-pressure first conversation.</div>
+                </div>
+              </div>
+              <div class="contact-list">
+                <div class="contact-item"><strong>Illinois</strong><a href="tel:+16186125192">618-612-5192</a></div>
+                <div class="contact-item"><strong>Missouri</strong><a href="tel:+13142027663">314-202-ROOF (7663)</a></div>
+                <div class="contact-item"><strong>Email</strong><a href="mailto:Michael@roofingnearmestl.com">Michael@roofingnearmestl.com</a></div>
+                <div class="contact-item"><strong>Office</strong><span>117 S Lexington Street STE 100, Harrisonville MO 64701</span></div>
+              </div>
+            </div>
+            <div class="card hero-mini">
+              <div class="eyebrow muted">What happens next</div>
+              <h2>Easy first contact</h2>
+              <ul class="inline-list">
+                <li>Send your name, phone, address, and roof issue.</li>
+                <li>Get a call or email follow-up to schedule your inspection.</li>
+                <li>Receive practical recommendations for repair, cleaning, or replacement.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="services">
+      <div class="wrap section-box">
+        <div class="eyebrow">Services</div>
+        <h2>What RoofingNearMeSTL can help with</h2>
+        <p class="lead">Clear service categories help visitors quickly understand whether they should call today.</p>
+        <div class="services-grid grid-3">
+          <div class="service"><h3>Residential &amp; Commercial Roofing Solutions</h3><p class="muted">Inspections, maintenance, repairs, full replacements, and practical guidance.</p></div>
+          <div class="service"><h3>Siding</h3><p class="muted">Refresh curb appeal and protect the structure with siding repairs or replacement.</p></div>
+          <div class="service"><h3>Gutters / Fascia / Soffit</h3><p class="muted">Improve drainage, edge protection, and ventilation around the home.</p></div>
+          <div class="service"><h3>Softwash &amp; Exterior Cleaning</h3><p class="muted">A gentle clean for roofs and exteriors that need a fresher appearance.</p></div>
+          <div class="service"><h3>Roof Repair</h3><p class="muted">Leaks, storm concerns, problem spots, and everyday wear handled quickly.</p></div>
+          <div class="service"><h3>Property Manager Support</h3><p class="muted">A straightforward option for commercial roofs and multi-property needs.</p></div>
         </div>
       </div>
     </section>
 
     <section class="section">
       <div class="wrap grid-3">
-        <div class="feature"><h3>Emergency Roof Tarping</h3><p class="muted">Storm damage response when you need it most.</p></div>
-        <div class="feature"><h3>Roof Repair &amp; Replacement</h3><p class="muted">Small leak or full replacement, handled professionally.</p></div>
-        <div class="feature"><h3>Exterior Protection</h3><p class="muted">Gutters, siding, soffit, fascia, and softwash services.</p></div>
+        <div class="feature"><h3>Call or form — whichever is easier</h3><p class="muted">The site now gives mobile visitors a clear call button and a usable lead form.</p></div>
+        <div class="feature"><h3>Fast answers for urgent issues</h3><p class="muted">Storm damage and active leaks should not require hunting for contact information.</p></div>
+        <div class="feature"><h3>Built for local clarity</h3><p class="muted">Simple service-area pages support SEO without turning the site into clutter.</p></div>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="gallery">
       <div class="wrap section-box">
-        <div class="eyebrow">Services</div>
-        <h2>Everything a roofing lead expects to see in one place.</h2>
-        <p class="lead">Simple, clear service pages and a lead-first layout help visitors understand what you do and contact you faster.</p>
-        <div class="services-grid grid-3">
-          <div class="service"><h3>Residential &amp; Commercial Roofing</h3><p class="muted">Shingle, storm, leak, and replacement work.</p></div>
-          <div class="service"><h3>Siding</h3><p class="muted">Exterior siding repairs and replacement.</p></div>
-          <div class="service"><h3>Gutters / Fascia / Soffit</h3><p class="muted">Water management and trim protection.</p></div>
-          <div class="service"><h3>Softwash &amp; Exterior Cleaning</h3><p class="muted">Clean, maintain, and protect the exterior.</p></div>
-          <div class="service"><h3>Roof Repair</h3><p class="muted">Fast fixes for active problems and leaks.</p></div>
-          <div class="service"><h3>Storm Damage Help</h3><p class="muted">Inspection, documentation, and next steps.</p></div>
+        <div class="eyebrow">Before &amp; After</div>
+        <h2>Representative project gallery for roofing and exterior work</h2>
+        <p class="lead">These stock images match the services discussed on this page and keep the section visually complete until branded project photos are ready.</p>
+        <div class="gallery-grid grid-3">
+          <article class="gallery-card">
+            <div class="media-frame">
+              <img src="https://images.pexels.com/photos/209235/pexels-photo-209235.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Residential roof replacement example" loading="lazy" decoding="async" />
+            </div>
+            <h3>Residential roof replacement look</h3>
+            <p class="muted">Represents the type of clean, finished roofline homeowners ask for after inspection and planning.</p>
+          </article>
+          <article class="gallery-card">
+            <div class="media-frame">
+              <img src="https://images.pexels.com/photos/280222/pexels-photo-280222.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Roof and gutter edge detail example" loading="lazy" decoding="async" />
+            </div>
+            <h3>Roof edge, gutter, and fascia detail</h3>
+            <p class="muted">Shows the kind of exterior edge and water-flow detail customers want to review during service visits.</p>
+          </article>
+          <article class="gallery-card">
+            <div class="media-frame">
+              <img src="https://images.pexels.com/photos/35535/house-roof-residential-construction.jpg?auto=compress&cs=tinysrgb&w=1200" alt="Exterior cleaning and roof care example" loading="lazy" decoding="async" />
+            </div>
+            <h3>Exterior cleaning and roof care</h3>
+            <p class="muted">Represents the finished appearance clients expect from softwash and overall exterior cleanup work.</p>
+          </article>
+        </div>
+        <p class="small gallery-note">Media shown is representative stock photography used as temporary filler for service context.</p>
+      </div>
+    </section>
+
+    <section class="section" id="service-areas">
+      <div class="wrap grid-2">
+        <div class="card section-box">
+          <div class="eyebrow">Service Area Pages</div>
+          <h2>Helpful landing pages for nearby cities</h2>
+          <p class="lead">These city pages are intentionally small and useful so visitors can quickly find the service they need.</p>
+          <div class="city-links">
+            <a class="city-link" href="roof-repair-waterloo-il.html">Waterloo, IL Roof Repair</a>
+            <a class="city-link" href="roofing-belleville-il.html">Belleville, IL Roofing</a>
+            <a class="city-link" href="roofing-st-charles-mo.html">St. Charles, MO Roofing</a>
+          </div>
+          <div class="callout">
+            <strong>Looking for another nearby city?</strong>
+            <p class="small">Call or submit the form and include your address. The team can confirm service coverage quickly.</p>
+          </div>
+        </div>
+
+        <div class="card section-box">
+          <div class="eyebrow">Coverage</div>
+          <h2>Serving homeowners and property managers across the St. Louis region</h2>
+          <p class="lead">Missouri and Illinois customers can use the same site, with the right phone line clearly shown.</p>
+          <div class="map" style="margin-top:18px">
+            <iframe title="Service area map" src="https://www.google.com/maps?q=Harrisonville%20MO&output=embed" loading="lazy"></iframe>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="quote">
       <div class="wrap grid-2">
-        <div class="card form-box" id="quote">
+        <div class="card form-box">
           <div class="eyebrow">Lead Form</div>
-          <h2>Request a free inspection</h2>
-          <p class="lead">Keep it short: name, phone, address, and roof issue. That’s enough to start the conversation.</p>
-          <form>
+          <h2>Request a free roof inspection</h2>
+          <p class="lead">This form now posts to a static-friendly email capture service and redirects to a thank-you page after submission.</p>
+          <form action="https://formsubmit.co/Michael@roofingnearmestl.com" method="POST">
+            <input type="hidden" name="_subject" value="New RoofingNearMeSTL lead" />
+            <input type="hidden" name="_captcha" value="false" />
+            <input type="hidden" name="_template" value="table" />
+            <input type="hidden" name="_next" value="https://roofingnearmestl.com/thanks.html" />
             <div class="form-grid">
-              <div><label for="name">Name</label><input id="name" name="name" type="text" placeholder="Your name" /></div>
-              <div><label for="phone">Phone</label><input id="phone" name="phone" type="tel" placeholder="Your phone" /></div>
-              <div class="full"><label for="address">Address</label><input id="address" name="address" type="text" placeholder="Street, city, state" /></div>
-              <div class="full"><label for="issue">Roof issue</label><textarea id="issue" name="issue" placeholder="Leak, storm damage, replacement, gutters, etc."></textarea></div>
+              <div>
+                <label for="name">Name</label>
+                <input id="name" name="name" type="text" placeholder="Your name" autocomplete="name" required />
+              </div>
+              <div>
+                <label for="phone">Phone</label>
+                <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="Best number" autocomplete="tel" required />
+              </div>
+              <div class="full">
+                <label for="address">Address</label>
+                <input id="address" name="address" type="text" placeholder="Street, city, state" autocomplete="street-address" required />
+              </div>
+              <div class="full">
+                <label for="issue">Roof issue</label>
+                <textarea id="issue" name="issue" placeholder="Leak, storm damage, replacement, gutters, siding, softwash, or another need" required></textarea>
+              </div>
             </div>
             <div style="margin-top:14px" class="cta-row">
-              <button class="btn btn-primary" type="button">Send Request</button>
-              <a class="btn btn-ghost" href="mailto:Michael@roofingnearmestl.com">Email Us</a>
+              <button class="btn btn-primary" type="submit">Send Request</button>
+              <a class="btn btn-ghost" href="mailto:Michael@roofingnearmestl.com?subject=RoofingNearMeSTL%20quote%20request">Email Instead</a>
             </div>
-            <p class="small">Form can later be wired to Formspree, Basin, or your preferred lead capture tool.</p>
+            <p class="small">If you prefer, call now instead of waiting on a form. FormSubmit may ask for a one-time email activation the first time the inbox is used.</p>
           </form>
         </div>
 
         <div class="card contact-box">
-          <div class="eyebrow">Owner &amp; Contact</div>
-          <h2>Mike Williamson</h2>
-          <p class="lead">RoofingNearMeSTL branding, logo colors, and layout are tuned to match the provided theme: black background, white text, and electric blue accents.</p>
+          <div class="eyebrow">Contact</div>
+          <h2>Welcoming, simple, and easy to use on mobile</h2>
+          <p class="lead">The homepage has been tightened up to keep the focus on contact, trust, service clarity, and local coverage.</p>
+          <div class="grid-2" style="margin-top:18px">
+            <div class="process"><h3>1. Reach out</h3><p class="muted">Call, email, or use the short form.</p></div>
+            <div class="process"><h3>2. Schedule</h3><p class="muted">Share your address and what is going on.</p></div>
+            <div class="process"><h3>3. Inspect</h3><p class="muted">Get a practical recommendation, not a confusing pitch.</p></div>
+            <div class="process"><h3>4. Move forward</h3><p class="muted">Repair, replacement, or exterior service based on your needs.</p></div>
+          </div>
           <div class="contact-list">
             <div class="contact-item"><strong>Illinois</strong><a href="tel:+16186125192">618-612-5192</a></div>
-            <div class="contact-item"><strong>Missouri</strong><a href="tel:+13142027663">314-202-7663</a></div>
+            <div class="contact-item"><strong>Missouri</strong><a href="tel:+13142027663">314-202-ROOF (7663)</a></div>
             <div class="contact-item"><strong>Email</strong><a href="mailto:Michael@roofingnearmestl.com">Michael@roofingnearmestl.com</a></div>
             <div class="contact-item"><strong>Address</strong><span>117 S Lexington Street STE 100, Harrisonville MO 64701</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="wrap grid-2">
-        <div class="card section-box">
-          <div class="eyebrow">Trust</div>
-          <h2>Why this page should convert better</h2>
-          <div class="grid-2" style="margin-top:18px">
-            <div class="feature"><h3>Clear calls to action</h3><p class="muted">Prominent phone numbers and quote buttons reduce friction.</p></div>
-            <div class="feature"><h3>Local relevance</h3><p class="muted">City + service language helps with SEO and user trust.</p></div>
-            <div class="feature"><h3>Fast loading</h3><p class="muted">Single static HTML file works well on GitHub Pages.</p></div>
-            <div class="feature"><h3>Mobile friendly</h3><p class="muted">Responsive layout that reads well on phones.</p></div>
-          </div>
-        </div>
-
-        <div class="card section-box">
-          <div class="eyebrow">Service Area</div>
-          <h2>St. Louis &amp; surrounding counties</h2>
-          <p class="lead">Add your city-specific landing pages later for every market you want to rank in.</p>
-          <div class="map" style="margin-top:18px">
-            <iframe title="Service area map" src="https://www.google.com/maps?q=Harrisonville%20MO&output=embed" loading="lazy"></iframe>
           </div>
         </div>
       </div>
@@ -280,10 +304,10 @@
         <div class="eyebrow">FAQ</div>
         <h2>Common questions</h2>
         <div class="grid-2" style="margin-top:18px">
-          <div class="faq"><h3>Do you offer free inspections?</h3><p class="muted">Yes — use the form or call either number to get started.</p></div>
-          <div class="faq"><h3>What areas do you serve?</h3><p class="muted">St. Louis, surrounding counties, and nearby Missouri / Illinois markets.</p></div>
-          <div class="faq"><h3>Can you handle emergency storm damage?</h3><p class="muted">Yes — start with a call for urgent needs and tarping.</p></div>
-          <div class="faq"><h3>Can this page grow later?</h3><p class="muted">Yes — you can add city pages, blog posts, and reviews over time.</p></div>
+          <div class="faq"><h3>Do you offer free inspections?</h3><p class="muted">Yes. Use the form or call either number to request one.</p></div>
+          <div class="faq"><h3>What areas do you serve?</h3><p class="muted">The site now highlights Belleville, Waterloo, St. Charles, and the wider St. Louis metro area across Missouri and Illinois.</p></div>
+          <div class="faq"><h3>Can you help with more than roofing?</h3><p class="muted">Yes. Siding, gutters, fascia, soffit, softwash, and exterior cleaning are all listed clearly.</p></div>
+          <div class="faq"><h3>What if I want to email instead?</h3><p class="muted">The quote section includes both a working form submission path and a direct email option.</p></div>
         </div>
       </div>
     </section>
@@ -293,16 +317,29 @@
     <div class="wrap">
       <div class="grid-2">
         <div>
-          <div class="brand"><div class="brand-badge"></div><div>RoofingNearMeSTL</div></div>
-          <p class="small">Mike Williamson · Roofing, siding, gutters, soffit, fascia, softwash, and repair.</p>
+          <a class="brand" href="index.html">
+            <span class="brand-badge" aria-hidden="true"></span>
+            <span class="brand-text"><strong>RoofingNearMeSTL</strong><span>Local. Reliable. Protecting What Matters.</span></span>
+          </a>
+          <p class="small">Mike Williamson · Residential and commercial roofing, siding, gutters, fascia, soffit, softwash, and repair.</p>
+          <div class="footer-links">
+            <a href="roof-repair-waterloo-il.html">Waterloo, IL</a>
+            <a href="roofing-belleville-il.html">Belleville, IL</a>
+            <a href="roofing-st-charles-mo.html">St. Charles, MO</a>
+          </div>
         </div>
         <div>
-          <div><strong>Call:</strong> <a href="tel:+16186125192">618-612-5192</a> / <a href="tel:+13142027663">314-202-7663</a></div>
+          <div><strong>Call:</strong> <a href="tel:+16186125192">618-612-5192</a> / <a href="tel:+13142027663">314-202-ROOF (7663)</a></div>
           <div><strong>Email:</strong> <a href="mailto:Michael@roofingnearmestl.com">Michael@roofingnearmestl.com</a></div>
           <div><strong>Address:</strong> 117 S Lexington Street STE 100, Harrisonville MO 64701</div>
         </div>
       </div>
     </div>
   </footer>
+
+  <div class="mobile-bar" aria-label="Mobile quick actions">
+    <a class="btn btn-ghost" href="tel:+16186125192">Call Now</a>
+    <a class="btn btn-primary" href="#quote">Free Quote</a>
+  </div>
 </body>
 </html>
