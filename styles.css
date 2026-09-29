@@ -150,6 +150,19 @@ h3 { font-size: 1.12rem; margin-bottom: 10px; }
 }
 .muted { color: var(--muted); }
 .services-grid, .gallery-grid { margin-top: 18px; }
+.media-frame {
+  margin-bottom: 14px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #050505;
+}
+.media-frame img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+.gallery-note { margin-top: 14px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
 input, textarea {
   width: 100%;
