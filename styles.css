@@ -39,18 +39,21 @@ button, input, textarea { font: inherit; }
   gap: 16px;
   padding: 12px 0;
 }
-.brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 0.02em; }
+.brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 0.02em; min-width: 0; }
 .brand-badge,
 .badge-mark {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--blue), #58c4ff);
-  box-shadow: 0 0 0 3px rgba(46, 168, 230, 0.15);
+  width: 52px;
+  height: 52px;
   flex: none;
+  background: center / contain no-repeat url("logo-mark.svg");
 }
-.brand-text { display: grid; gap: 2px; }
-.brand-text strong { font-size: 1rem; }
+.badge-mark {
+  width: 76px;
+  height: 76px;
+}
+.brand-text { display: grid; gap: 2px; min-width: 0; }
+.brand-text strong { font-size: 1rem; line-height: 1.1; }
+.brand-text span { line-height: 1.25; }
 .brand-text span { font-size: 0.77rem; color: var(--muted); }
 .nav-links { display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted); font-size: 0.96rem; }
 .nav-links a:hover { color: var(--text); }
@@ -249,6 +252,7 @@ label { display: block; font-weight: 700; font-size: 0.92rem; margin-bottom: 6px
 }
 @media (max-width: 920px) {
   .topbar-inner, .nav-links { flex-direction: column; align-items: flex-start; }
+  .brand { flex-wrap: wrap; }
   .hero-grid, .grid-3, .grid-2, .grid-4, .comparison, .logo-card { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
   .notice { flex-direction: column; align-items: flex-start; }
