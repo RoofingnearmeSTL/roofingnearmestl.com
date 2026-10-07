@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { Resend } from 'resend'
 
 export async function POST(req: Request) {
   try {
@@ -20,6 +21,32 @@ export async function POST(req: Request) {
     }]).select()
     if (error) { console.error('SUPABASE ERROR', error); return NextResponse.json({ error: error.message }, { status: 500 }) }
     console.log('INSERT OK', data)
+    // A notification failure must not fail an already-saved lead.
+    try {
+      if (!process.env.RESEND_API_KEY) {
+        console.error('RESEND CONFIGURATION MISSING: RESEND_API_KEY')
+      } else {
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        const { error: emailError } = await resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL || 'Roofing Near Me STL <leads@roofingnearmestl.com>',
+          to: 'michael@roofingnearmestl.com',
+          subject: 'New website roofing lead',
+          text: [
+            'New website roofing lead',
+            `Name: ${body.name || 'Not provided'}`,
+            `Phone: ${body.phone || 'Not provided'}`,
+            `Address: ${body.address || 'Not provided'}`,
+          ].join('\n'),
+        })
+        if (emailError) {
+          console.error('RESEND EMAIL FAILED', emailError)
+        } else {
+          console.log('LEAD EMAIL SENT')
+        }
+      }
+    } catch (emailError) {
+      console.error('RESEND EMAIL CRASH', emailError)
+    }
     return NextResponse.json({ ok: true, data })
   // Preserve the explicitly requested catch signature.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
