@@ -27,8 +27,8 @@ export async function POST(req: Request) {
         console.error('RESEND CONFIGURATION MISSING: RESEND_API_KEY')
       } else {
         const resend = new Resend(process.env.RESEND_API_KEY)
-        const { error: emailError } = await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'Roofing Near Me STL <leads@roofingnearmestl.com>',
+        const { data: emailData, error: emailError } = await resend.emails.send({
+          from: 'onboarding@resend.dev',
           to: 'michael@roofingnearmestl.com',
           subject: 'New website roofing lead',
           text: [
@@ -39,9 +39,9 @@ export async function POST(req: Request) {
           ].join('\n'),
         })
         if (emailError) {
-          console.error('RESEND EMAIL FAILED', emailError)
+          console.error('RESEND EMAIL FAILED', JSON.stringify(emailError, null, 2))
         } else {
-          console.log('LEAD EMAIL SENT')
+          console.log('LEAD EMAIL SENT', emailData)
         }
       }
     } catch (emailError) {
