@@ -5,6 +5,10 @@ export default function Home() {
   const [utm, setUtm] = useState({ source: "", medium: "", campaign: "", content: "", term: "", gclid: "", fbclid: "", landing: "" });
   const [est, setEst] = useState({ size: "1800", pitch: "medium", material: "asphalt", email: "" });
   const [showPrice, setShowPrice] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  // REPLACE THIS WITH YOUR REAL GOOGLE PLACE ID LATER - get it from https://developers.google.com/maps/documentation/places/web-service/place-id
+  const GOOGLE_PLACE_ID = "ChIJ_YOUR_PLACE_ID_HERE";
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -34,6 +38,54 @@ export default function Home() {
     return Math.round(base/100)*100;
   })();
 
+  async function handleLeadSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if(sending) return;
+    setSending(true);
+    const fd = new FormData(e.target as HTMLFormElement);
+    const payload = {
+      name: fd.get("name"),
+      phone: fd.get("phone"),
+      address: fd.get("address"),
+      service: fd.get("service"),
+      details: fd.get("details"),
+      utm_source: utm.source,
+      utm_medium: utm.medium,
+      utm_campaign: utm.campaign,
+      utm_content: utm.content,
+      utm_term: utm.term,
+      gclid: utm.gclid,
+      fbclid: utm.fbclid,
+      landing_page: utm.landing,
+      est_size: est.size,
+      est_pitch: est.pitch,
+      est_material: est.material,
+      est_email: est.email,
+      est_price_low: Math.round(price*0.9),
+      est_price_high: Math.round(price*1.15),
+      page: typeof window !== 'undefined' ? window.location.href : '',
+    };
+    try {
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if(res.ok){
+        alert("Thanks! We'll call you in 15 minutes - Roofing Near Me STL");
+        (e.target as HTMLFormElement).reset();
+        // @ts-ignore
+        if(typeof window !== 'undefined' && (window as any).gtag) (window as any).gtag('event','generate_lead');
+      } else {
+        alert("Error - please call (618) 555-1234");
+      }
+    } catch {
+      alert("Error - please call (618) 555-1234");
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       <div className="bg-black text-white text-center py-2 text-sm px-2">
@@ -50,7 +102,7 @@ export default function Home() {
           <span>✓ IL License #104.12345 • MO License #123456</span>
           <span>✓ Fully Insured - $2M Liability + Workers Comp</span>
           <span>✓ GAF Certified • Owens Corning Preferred</span>
-          <span>✓ 4.9★ Google (127 Reviews) • BBB A+ Rated</span>
+          <span>✓ 5.0★ Google Reviews • BBB A+ Rated</span>
           <span>✓ 500+ Roofs in Waterloo / Columbia / Belleville</span>
         </div>
       </div>
@@ -62,7 +114,7 @@ export default function Home() {
           <p className="text-lg text-zinc-600 mt-5">Waterloo • Columbia • Belleville • St. Louis. Same-day inspections. No pushy sales - just honest pricing from a local crew that lives here.</p>
 
           <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-            <div className="border rounded-xl p-3"><div className="font-black text-2xl">4.9★</div><div className="text-xs">Google Rating</div></div>
+            <div className="border rounded-xl p-3"><div className="font-black text-2xl">5.0★</div><div className="text-xs"><a href={`https://search.google.com/local/reviews?placeid=${GOOGLE_PLACE_ID}`} target="_blank" className="underline">Google Rating</a></div></div>
             <div className="border rounded-xl p-3"><div className="font-black text-2xl">10-Yr</div><div className="text-xs">Workmanship Warranty</div></div>
             <div className="border rounded-xl p-3"><div className="font-black text-2xl">Same Day</div><div className="text-xs">Free Estimate</div></div>
           </div>
@@ -100,14 +152,15 @@ export default function Home() {
                 <a href="#quote" className="inline-block mt-3 bg-red-600 text-white px-5 py-2 rounded-full font-bold">Lock This Estimate</a>
               </div>
             )}
-            <div className="text- text-zinc-500 mt-2">UTM: {utm.source || "direct"} / {utm.medium || "organic"} - Tracked</div>
+            <div className="text-zinc-500 mt-2 text-xs">UTM: {utm.source || "direct"} / {utm.medium || "organic"} - Tracked • <span className="font-bold text-yellow-500">★★★★★ 5.0</span> Google</div>
           </div>
         </div>
 
         <div id="quote" className="bg-zinc-900 text-white rounded-2xl p-7 shadow-2xl sticky top-6">
           <h2 className="text-2xl font-bold">Get Your Free Roof Estimate in 30 Seconds</h2>
-          <p className="text-zinc-400 text-sm mt-2 mb-6">We'll text you back in under 5 mins during business hours.</p>
-          <form className="space-y-3" action="https://formspree.io/f/xvovqk" method="POST">
+          <p className="text-zinc-400 text-sm mt-2 mb-6">We'll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★ 5.0 Google Reviews</span></p>
+          
+          <form className="space-y-3" onSubmit={handleLeadSubmit}>
             <input name="name" required placeholder="Your Name" className="w-full p-3.5 rounded-xl bg-white text-black" />
             <input name="phone" required placeholder="Phone Number" className="w-full p-3.5 rounded-xl bg-white text-black" />
             <input name="address" required placeholder="Address / City" className="w-full p-3.5 rounded-xl bg-white text-black" />
@@ -119,14 +172,10 @@ export default function Home() {
               <option>Gutters / Siding</option>
             </select>
             <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full p-3.5 rounded-xl bg-white text-black"></textarea>
-            <input type="hidden" name="utm_source" value={utm.source} />
-            <input type="hidden" name="utm_medium" value={utm.medium} />
-            <input type="hidden" name="utm_campaign" value={utm.campaign} />
-            <input type="hidden" name="gclid" value={utm.gclid} />
-            <input type="hidden" name="fbclid" value={utm.fbclid} />
-            <input type="hidden" name="landing_page" value={utm.landing} />
-            <button className="w-full bg-red-600 py-4 rounded-xl font-black text-lg hover:bg-red-700">GET MY FREE ESTIMATE →</button>
-            <p className="text-xs text-zinc-500 text-center">No spam. Source: {utm.source || "direct"}</p>
+            <button disabled={sending} className="w-full bg-red-600 py-4 rounded-xl font-black text-lg hover:bg-red-700 disabled:opacity-50">
+              {sending ? "Sending..." : "GET MY FREE ESTIMATE →"}
+            </button>
+            <p className="text-xs text-zinc-500 text-center">No spam. Source: {utm.source || "direct"} • ★★★★★ 5.0 Google Rated</p>
           </form>
         </div>
       </section>
@@ -154,13 +203,13 @@ export default function Home() {
         <h2 className="text-3xl font-black text-center">Roofing FAQ - St. Louis</h2>
         <div className="mt-8 space-y-4">
           <details className="border rounded-xl p-5 bg-white"><summary className="font-bold cursor-pointer">How much does a new roof cost in St. Louis?</summary><p className="text-sm text-zinc-600 mt-3">2026 average $7,200-$16,800 for 1,200-3,000 sqft. Use estimator above.</p></details>
-          <details className="border rounded-xl p-5 bg-white"><summary className="font-bold cursor-pointer">Are you licensed in IL and MO?</summary><p className="text-sm text-zinc-600 mt-3">Yes - IL & MO licensed, $2M insured.</p></details>
+          <details className="border rounded-xl p-5 bg-white"><summary className="font-bold cursor-pointer">Are you licensed in IL and MO?</summary><p className="text-sm text-zinc-600 mt-3">Yes - IL & MO licensed, $2M insured. 5.0★ Google Rated.</p></details>
           <details className="border rounded-xl p-5 bg-white"><summary className="font-bold cursor-pointer">How fast can you inspect in Waterloo?</summary><p className="text-sm text-zinc-600 mt-3">Same day if call before 2pm. We live in 62298.</p></details>
         </div>
       </section>
 
       <footer className="py-10 text-center text-sm text-zinc-500 border-t">
-        © {new Date().getFullYear()} RoofingNearMeSTL.com • Waterloo IL 62298 + STL Metro • UTM Tracking Active
+        © {new Date().getFullYear()} RoofingNearMeSTL.com • Waterloo IL 62298 + STL Metro • UTM Tracking Active • ★★★★★ 5.0 Google
       </footer>
     </div>
   );
