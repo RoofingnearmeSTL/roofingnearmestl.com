@@ -46,6 +46,8 @@ export default function Home() {
     const payload = {
       name: fd.get("name"),
       phone: fd.get("phone"),
+      email: fd.get("email") || est.email || null,
+      city: fd.get("city") || null,
       address: fd.get("address"),
       service: fd.get("service"),
       details: fd.get("details"),
@@ -163,7 +165,9 @@ export default function Home() {
           <form className="space-y-3" onSubmit={handleLeadSubmit}>
             <input name="name" required placeholder="Your Name" className="w-full p-3.5 rounded-xl bg-white text-black" />
             <input name="phone" required placeholder="Phone Number" className="w-full p-3.5 rounded-xl bg-white text-black" />
-            <input name="address" required placeholder="Address / City" className="w-full p-3.5 rounded-xl bg-white text-black" />
+            <input name="email" type="email" placeholder="Email (optional)" className="w-full p-3.5 rounded-xl bg-white text-black" />
+            <input name="address" placeholder="Address (optional)" className="w-full p-3.5 rounded-xl bg-white text-black" />
+            <input name="city" placeholder="City (optional)" className="w-full p-3.5 rounded-xl bg-white text-black" />
             <select name="service" className="w-full p-3.5 rounded-xl bg-white text-black">
               <option>Roof Repair</option>
               <option>Roof Replacement</option>
