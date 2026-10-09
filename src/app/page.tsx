@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useState, useEffect, useSyncExternalStore } from "react";
 
 function subscribeToLocation(onChange: () => void) {
@@ -14,6 +15,7 @@ const getLocationSnapshot = () => window.location.href;
 const getServerLocationSnapshot = () => "";
 
 export default function Home() {
+  const router = useRouter();
   const landing = useSyncExternalStore(subscribeToLocation, getLocationSnapshot, getServerLocationSnapshot);
   const p = new URLSearchParams(landing ? new URL(landing).search : "");
   const utm = {
@@ -98,12 +100,15 @@ export default function Home() {
         body: JSON.stringify(payload),
       });
       if(res.ok){
-        alert("Thanks! We'll call you in 15 minutes - Roofing Near Me STL");
-        (e.target as HTMLFormElement).reset();
-        const analyticsWindow = window as Window & {
-          gtag?: (command: "event", eventName: string) => void;
-        };
-        analyticsWindow.gtag?.("event", "generate_lead");
+        const result: { data?: { id?: string | number }[] } = await res.json();
+        try {
+          sessionStorage.setItem("roofing-lead-conversion", JSON.stringify({
+            id: String(result.data?.[0]?.id ?? crypto.randomUUID()),
+          }));
+        } catch {
+          // Storage restrictions must not prevent confirmation of a saved lead.
+        }
+        router.push("/thank-you");
       } else {
         alert("Error - please call (618) 555-1234");
       }
