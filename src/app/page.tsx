@@ -1,8 +1,31 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
+
+function subscribeToLocation(onChange: () => void) {
+  window.addEventListener("popstate", onChange);
+  window.addEventListener("hashchange", onChange);
+  return () => {
+    window.removeEventListener("popstate", onChange);
+    window.removeEventListener("hashchange", onChange);
+  };
+}
+
+const getLocationSnapshot = () => window.location.href;
+const getServerLocationSnapshot = () => "";
 
 export default function Home() {
-  const [utm, setUtm] = useState({ source: "", medium: "", campaign: "", content: "", term: "", gclid: "", fbclid: "", landing: "" });
+  const landing = useSyncExternalStore(subscribeToLocation, getLocationSnapshot, getServerLocationSnapshot);
+  const p = new URLSearchParams(landing ? new URL(landing).search : "");
+  const utm = {
+    source: p.get("utm_source") || p.get("source") || "",
+    medium: p.get("utm_medium") || "",
+    campaign: p.get("utm_campaign") || "",
+    content: p.get("utm_content") || "",
+    term: p.get("utm_term") || "",
+    gclid: p.get("gclid") || "",
+    fbclid: p.get("fbclid") || "",
+    landing,
+  };
   const [est, setEst] = useState({ size: "1800", pitch: "medium", material: "asphalt", email: "" });
   const [showPrice, setShowPrice] = useState(false);
   const [sending, setSending] = useState(false);
@@ -11,20 +34,21 @@ export default function Home() {
   const GOOGLE_PLACE_ID = "ChIJ_YOUR_PLACE_ID_HERE";
 
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const data = {
-      source: p.get("utm_source") || p.get("source") || "",
-      medium: p.get("utm_medium") || "",
-      campaign: p.get("utm_campaign") || "",
-      content: p.get("utm_content") || "",
-      term: p.get("utm_term") || "",
-      gclid: p.get("gclid") || "",
-      fbclid: p.get("fbclid") || "",
-      landing: window.location.href,
+    const params = new URLSearchParams(landing ? new URL(landing).search : "");
+    const data: Record<string, string> = {
+      source: params.get("utm_source") || params.get("source") || "",
+      medium: params.get("utm_medium") || "",
+      campaign: params.get("utm_campaign") || "",
+      content: params.get("utm_content") || "",
+      term: params.get("utm_term") || "",
+      gclid: params.get("gclid") || "",
+      fbclid: params.get("fbclid") || "",
+      landing,
     };
-    setUtm(data);
-    Object.entries(data).forEach(([k,v])=>{ if(v) localStorage.setItem(`utm_${k}`, v); });
-  }, []);
+    Object.entries(data).forEach(([key, value]) => {
+      if (value) localStorage.setItem(`utm_${key}`, value);
+    });
+  }, [landing]);
 
   const price = (() => {
     let base = 9500;
@@ -76,8 +100,10 @@ export default function Home() {
       if(res.ok){
         alert("Thanks! We'll call you in 15 minutes - Roofing Near Me STL");
         (e.target as HTMLFormElement).reset();
-        // @ts-ignore
-        if(typeof window !== 'undefined' && (window as any).gtag) (window as any).gtag('event','generate_lead');
+        const analyticsWindow = window as Window & {
+          gtag?: (command: "event", eventName: string) => void;
+        };
+        analyticsWindow.gtag?.("event", "generate_lead");
       } else {
         alert("Error - please call (618) 555-1234");
       }
@@ -160,7 +186,7 @@ export default function Home() {
 
         <div id="quote" className="bg-zinc-900 text-white rounded-2xl p-7 shadow-2xl sticky top-6">
           <h2 className="text-2xl font-bold">Get Your Free Roof Estimate in 30 Seconds</h2>
-          <p className="text-zinc-400 text-sm mt-2 mb-6">We'll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★ 5.0 Google Reviews</span></p>
+          <p className="text-zinc-400 text-sm mt-2 mb-6">We&apos;ll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★ 5.0 Google Reviews</span></p>
           
           <form className="space-y-3" onSubmit={handleLeadSubmit}>
             <input name="name" required placeholder="Your Name" className="w-full p-3.5 rounded-xl bg-white text-black" />
@@ -186,7 +212,7 @@ export default function Home() {
 
       <section className="bg-zinc-100 py-16">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl font-black text-center">St. Louis' Most Called Roofing Crew For:</h2>
+          <h2 className="text-3xl font-black text-center">St. Louis&apos; Most Called Roofing Crew For:</h2>
           <div className="grid md:grid-cols-4 gap-6 mt-10">
             {[
               ["Roof Replacement", "GAF / Owens Corning. Done in 1-2 days."],
