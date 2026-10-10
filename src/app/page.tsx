@@ -137,10 +137,12 @@ export default function Home() {
         </div>
       </div>
 
-      <section className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
+      <section className="relative isolate bg-white">
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[url('/logo.png')] bg-no-repeat bg-center bg-contain opacity-[0.06] pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
         <div>
           <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">✓ Licensed & Insured - Illinois & Missouri</div>
-          <h1 className="text-5xl font-black leading-[0.9] tracking-tight">Need a Roofer Near <span className="text-brand font-bold">St. Louis?</span><br/>We Answer in 5 Minutes.</h1>
+          <h1 className="text-5xl text-black font-extrabold leading-[0.9] tracking-tight">Need a Roofer Near <span className="text-brand font-extrabold">St. Louis?</span><br/>We Answer in 5 Minutes.</h1>
           <p className="text-lg text-zinc-600 mt-5">Waterloo • Columbia • Belleville • St. Louis. Same-day inspections. No pushy sales - just honest pricing from a local crew that lives here.</p>
 
           <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4 text-center">
@@ -149,7 +151,7 @@ export default function Home() {
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">Same Day</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Free Estimate</div></div>
           </div>
 
-          <div className="mt-10 bg-brand-light border border-brand/30 rounded-2xl p-6 shadow-sm">
+          <div className="mt-10 bg-white border-2 border-brand/25 rounded-2xl p-6 shadow-sm">
             <h3 className="text-black font-bold text-xl">Instant Roof Cost Estimator</h3>
             <p className="text-sm text-zinc-600 mt-1">3 clicks - get a real STL price range.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
@@ -173,13 +175,13 @@ export default function Home() {
             {!showPrice? (
               <div className="mt-4 flex flex-col sm:flex-row gap-2">
                 <input value={est.email} onChange={e=>setEst({...est,email:e.target.value})} placeholder="Enter email to unlock price" className="min-w-0 flex-1 bg-white p-3 border border-zinc-300 rounded-xl" />
-                <button onClick={()=>{ if(est.email.includes("@")) setShowPrice(true)}} className="bg-brand border border-brand hover:bg-brand-dark text-white px-6 py-3 rounded-full font-bold shadow-md">See Price →</button>
+                <button onClick={()=>{ if(est.email.includes("@")) setShowPrice(true)}} className="bg-brand border border-brand hover:bg-brand-dark text-white px-6 py-3 rounded-full font-bold shadow-md shadow-brand/20">See Price →</button>
               </div>
             ) : (
               <div className="mt-4 bg-brand-light border border-brand/20 rounded-xl p-4 text-center">
                 <div className="text-sm">Estimated Replacement Range:</div>
                 <div className="text-3xl font-black text-brand">${(price*0.9).toLocaleString()} - ${(price*1.15).toLocaleString()}</div>
-                <a href="#estimate" className="inline-block mt-3 bg-brand text-white px-5 py-2 rounded-full font-bold">Lock This Estimate</a>
+                <a href="#estimate" className="inline-block mt-3 bg-brand hover:bg-brand-dark text-white px-5 py-2 rounded-full font-bold shadow-md shadow-brand/20">Lock This Estimate</a>
               </div>
             )}
             <div className="text-zinc-500 mt-2 text-xs">UTM: {utm.source || "direct"} / {utm.medium || "organic"} - Tracked • <span className="font-bold text-yellow-500">★★★★★ 5.0</span> Google</div>
@@ -204,11 +206,12 @@ export default function Home() {
               <option>Gutters / Siding</option>
             </select>
             <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none"></textarea>
-            <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-lg shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
+            <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-bold tracking-wide hover:bg-brand-dark disabled:opacity-50">
               {sending ? "Sending..." : "GET MY FREE ESTIMATE →"}
             </button>
             <p className="text-xs text-zinc-500 text-center">No spam. Source: {utm.source || "direct"} • ★★★★★ 5.0 Google Rated</p>
           </form>
+        </div>
         </div>
       </section>
 
