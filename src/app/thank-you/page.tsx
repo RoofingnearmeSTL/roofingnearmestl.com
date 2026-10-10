@@ -29,7 +29,7 @@ export default function ThankYou() {
           <div className="mt-7 text-yellow-500 text-3xl tracking-widest" aria-label="5 stars">★★★★★</div>
           <p className="mt-1 text-sm font-bold text-zinc-600">5.0 Google Reviews</p>
           <div className="mt-8 grid sm:grid-cols-3 gap-3 text-sm font-bold">
-            <div className="border rounded-xl p-4">✓ Licensed in IL &amp; MO</div>
+            <div className="border rounded-xl p-4">✓ Local in IL &amp; MO</div>
             <div className="border rounded-xl p-4">✓ Fully Insured</div>
             <div className="border rounded-xl p-4">✓ 10-Yr Workmanship Warranty</div>
           </div>
