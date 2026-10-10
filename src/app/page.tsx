@@ -219,31 +219,30 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="services" className="bg-brand-light/50 py-16">
+      <section id="services" className="bg-brand-light/50 py-16 scroll-mt-40">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl font-extrabold text-black text-center">St. Louis&apos; Most Called Roofing Crew For:</h2>
-          <div className="grid md:grid-cols-4 gap-6 mt-10">
-            {[
-              ["Roof Replacement", "GAF / Owens Corning. Done in 1-2 days."],
-              ["Emergency Repair", "Tarp + leak stop same day."],
-              ["Storm & Hail", "We handle insurance photos + adjuster."],
-              ["Gutters & Flashing", "Stops leaks others miss."],
-            ].map(([t,d])=>(
-              <div key={t} className="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm hover:shadow-md">
-                <div className="font-bold text-lg">{t}</div>
-                <div className="text-sm text-zinc-600 mt-2">{d}</div>
-              </div>
+          <h2 className="text-black font-extrabold text-3xl text-center">We Document Damage. We Don&apos;t Just Sell Roofs.</h2>
+          <p className="text-zinc-600 text-center max-w-3xl mx-auto mt-4 leading-relaxed">Free Photo-Documented: Shingle ID + Damage Evidence + Repair vs Replace Options. That&apos;s Why Your Neighbors Chose Us.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+            {[["DON'T REPLACE YET!", "Free Honest Evaluation - Should you repair or replace? We show you the photos."], ["Storm Damage? Denied Claim?", "Photo-Documented Shingle Report for insurance. Shingle ID + Damage Evidence + wind/hail mapping."], ["Aging Roof?", "Is it time? We document granular loss, seal strip failure, and remaining life."], ["Roof Repair", "Leak stopped today. No pushy replacement pitch unless photos prove you need it."], ["Retail Upgrades Welcome - F&I Available", "Roof • Siding • Gutters • Soffit & Fascia. One local crew."], ["Why Your Neighbors Chose Us", "500+ Roofs in Waterloo / Columbia / Belleville. Local. Reliable. Protecting What Matters."]].map(([title, description]) => (
+              <article key={title} className="bg-white border-2 border-zinc-200 rounded-2xl p-6 shadow-sm hover:border-brand/40 transition-colors">
+                <h3 className="text-black font-bold text-lg">{title}</h3>
+                <p className="text-zinc-600 text-sm leading-relaxed mt-2">{description}</p>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="faq" className="max-w-4xl mx-auto px-6 py-16">
-        <h2 className="text-3xl font-extrabold text-black text-center">Roofing FAQ - St. Louis</h2>
+      <section id="faq" className="max-w-4xl mx-auto px-6 py-16 scroll-mt-40">
+        <h2 className="text-black font-extrabold text-3xl text-center">Free Honest Evaluation: Repair or Replace?</h2>
         <div className="mt-8 space-y-4">
-          <details className="border border-zinc-100 rounded-2xl p-5 bg-white shadow-sm hover:shadow-md"><summary className="font-bold cursor-pointer">How much does a new roof cost in St. Louis?</summary><p className="text-sm text-zinc-600 mt-3">2026 average $7,200-$16,800 for 1,200-3,000 sqft. Use estimator above.</p></details>
-          <details className="border border-zinc-100 rounded-2xl p-5 bg-white shadow-sm hover:shadow-md"><summary className="font-bold cursor-pointer">Are you licensed in IL and MO?</summary><p className="text-sm text-zinc-600 mt-3">Yes - IL & MO licensed, $2M insured. 5.0★ Google Rated.</p></details>
-          <details className="border border-zinc-100 rounded-2xl p-5 bg-white shadow-sm hover:shadow-md"><summary className="font-bold cursor-pointer">How fast can you inspect in Waterloo?</summary><p className="text-sm text-zinc-600 mt-3">Same day if call before 2pm. We live in 62298.</p></details>
+          {[["Do I really need a full roof replacement?", "Don't Replace Yet! Free Photo-Documented Report - Shingle ID, damage evidence, and Repair vs Replace options. We document damage, we don't just sell roofs."], ["What's a Photo-Documented Shingle Report?", "We photograph every slope, identify your shingle, document granule loss, bruising, cracks, seal failure. You get photos + honest assessment."], ["My insurance denied my claim. Can you help?", "Yes. Denied claims are our specialty. We provide damage evidence and wind/hail reports adjusters need. No charge for documentation."], ["Are you local or chasing storms?", "We're your neighbors - Waterloo • Columbia • Belleville • STL. 500+ local roofs. Not a storm chaser. IL License #104.12345 / MO #123456. Fully Insured $2M + Workers Comp."], ["How fast do you respond?", "We answer in 5 minutes during business hours. Same-day free honest evaluations."], ["What warranty?", "10-Year Workmanship Warranty + GAF Certified / Owens Corning Preferred. BBB A+ Rated, 5.0★ Google Reviews."]].map(([question, answer]) => (
+            <details key={question} className="bg-white border border-zinc-200 rounded-xl p-5">
+              <summary className="text-black font-bold cursor-pointer focus-visible:outline-brand">{question}</summary>
+              <p className="text-zinc-600 text-sm leading-relaxed mt-3">{answer}</p>
+            </details>
+          ))}
         </div>
       </section>
 
