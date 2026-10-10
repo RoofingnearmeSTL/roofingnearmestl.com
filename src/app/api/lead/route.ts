@@ -28,8 +28,11 @@ export async function POST(req: Request) {
       } else {
         const resend = new Resend(process.env.RESEND_API_KEY)
         const { data: emailData, error: emailError } = await resend.emails.send({
-          from: 'onboarding@resend.dev',
+          from: 'Roofing Near Me STL <leads@roofingnearmestl.com>',
           to: 'michael@roofingnearmestl.com',
+          ...(typeof body.email === 'string' && body.email.trim()
+            ? { replyTo: body.email.trim() }
+            : {}),
           subject: 'New website roofing lead',
           text: [
             'New website roofing lead',
