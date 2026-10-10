@@ -141,19 +141,23 @@ export default function Home() {
         <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[url('/logo.png')] bg-no-repeat bg-center bg-contain opacity-[0.06] pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
         <div>
-          <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">✓ Licensed & Insured - Illinois & Missouri</div>
-          <h1 className="text-5xl text-black font-extrabold leading-[0.9] tracking-tight">Need a Roofer Near <span className="text-brand font-extrabold">St. Louis?</span><br/>We Answer in 5 Minutes.</h1>
-          <p className="text-lg text-zinc-600 mt-5">Waterloo • Columbia • Belleville • St. Louis. Same-day inspections. No pushy sales - just honest pricing from a local crew that lives here.</p>
+          <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-bold mb-4">✓ DON&apos;T REPLACE YET! - Free Photo-Documented Report</div>
+          <h1 className="text-black tracking-tight leading-[1.1]">
+            <span className="font-extrabold text-4xl sm:text-5xl">Don&apos;t Replace Yet!</span><br/>
+            <span className="font-bold text-2xl sm:text-3xl">Get a Free Photo-Documented</span><br/>
+            <span className="font-bold text-2xl sm:text-3xl">Roof Report. We Answer in </span><span className="text-brand font-extrabold text-2xl sm:text-3xl">5 Minutes.</span>
+          </h1>
+          <p className="text-zinc-600 text-lg leading-relaxed mt-5">We document damage, we don&apos;t just sell roofs. Free Shingle ID + Damage Evidence + Repair vs Replace Assessment. That&apos;s Why Your Neighbors in Waterloo, Columbia &amp; Belleville Chose Us. Same-day honest evaluation from a local crew that lives here.</p>
 
           <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4 text-center">
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">5.0★</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide"><a href={`https://search.google.com/local/reviews?placeid=${GOOGLE_PLACE_ID}`} target="_blank" className="underline">Google Rating</a></div></div>
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">10-Yr</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Workmanship Warranty</div></div>
-            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">Same Day</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Free Estimate</div></div>
+            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">Same Day</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Free Honest Evaluation</div></div>
           </div>
 
           <div className="mt-10 bg-white border-2 border-brand/25 rounded-2xl p-6 shadow-sm">
             <h3 className="text-black font-bold text-xl">Instant Roof Cost Estimator</h3>
-            <p className="text-sm text-zinc-600 mt-1">3 clicks - get a real STL price range.</p>
+            <p className="text-sm text-zinc-600 mt-1">3 clicks - get a real STL price range. No pushy sales.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
               <select value={est.size} onChange={e=>setEst({...est,size:e.target.value})} className="bg-white border border-zinc-300 rounded-xl px-3 py-3 text-black font-medium">
                 <option value="1200">~1,200 sqft</option>
@@ -189,8 +193,8 @@ export default function Home() {
         </div>
 
         <div id="estimate" className="bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
-          <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Roof Estimate in 30 Seconds</h2>
-          <p className="text-zinc-600 text-sm mt-2 mb-6">We&apos;ll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★</span> <span className="text-brand font-bold">5.0 Google Reviews</span></p>
+          <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Honest Evaluation in 30 Seconds</h2>
+          <p className="text-zinc-600 text-sm mt-2 mb-6">We&apos;ll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★</span> <span className="text-brand font-bold">5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
           
           <form className="space-y-3" onSubmit={handleLeadSubmit}>
             <input name="name" required placeholder="Your Name" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
@@ -206,8 +210,8 @@ export default function Home() {
               <option>Gutters / Siding</option>
             </select>
             <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none"></textarea>
-            <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-bold tracking-wide hover:bg-brand-dark disabled:opacity-50">
-              {sending ? "Sending..." : "GET MY FREE ESTIMATE →"}
+            <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
+              {sending ? "Sending..." : "GET MY FREE PHOTO REPORT →"}
             </button>
             <p className="text-xs text-zinc-500 text-center">No spam. Source: {utm.source || "direct"} • ★★★★★ 5.0 Google Rated</p>
           </form>
