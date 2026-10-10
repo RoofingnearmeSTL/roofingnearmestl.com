@@ -1,4 +1,7 @@
 "use client";
+import BrandHeader from "@/components/brand-header";
+import BrandFooter from "@/components/brand-footer";
+import EmergencyBar from "@/components/emergency-bar";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useSyncExternalStore } from "react";
 
@@ -110,10 +113,10 @@ export default function Home() {
         }
         router.push("/thank-you");
       } else {
-        alert("Error - please call (618) 555-1234");
+        alert("Error - please call Illinois: 618-612-5192 or Missouri: 314-202-7663");
       }
     } catch {
-      alert("Error - please call (618) 555-1234");
+      alert("Error - please call Illinois: 618-612-5192 or Missouri: 314-202-7663");
     } finally {
       setSending(false);
     }
@@ -121,16 +124,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
-      <div className="bg-black text-white font-bold text-center py-2 text-sm px-2">
-        🚨 24/7 Emergency Roof Repair in St. Louis Metro - Call Now: Illinois: <a href="tel:+16186125192" className="font-bold underline">618-612-5192</a> &amp; Missouri: <a href="tel:+13142027663" className="font-bold underline">314-202-7663</a>
-      </div>
+      <EmergencyBar />
+      <BrandHeader />
 
-      <header className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="font-black text-xl tracking-tight">ROOFING NEAR ME<span className="text-red-600"> STL</span>.COM</div>
-        <a href="#quote" className="bg-red-600 text-white px-5 py-2.5 rounded-full font-bold hover:bg-red-700">Get Free Quote</a>
-      </header>
-
-      <div className="border-y bg-zinc-50 py-2">
+      <div className="border-y bg-brand-light/50 py-2">
         <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center lg:justify-between gap-3 text-xs font-bold text-zinc-600">
           <span>✓ IL License #104.12345 • MO License #123456</span>
           <span>✓ Fully Insured - $2M Liability + Workers Comp</span>
@@ -142,17 +139,17 @@ export default function Home() {
 
       <section className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
         <div>
-          <div className="inline-flex bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold mb-4">✓ Licensed & Insured in IL & MO - 500+ Roofs Done</div>
-          <h1 className="text-5xl font-black leading-[0.9] tracking-tight">Need a Roofer Near <span className="text-red-600">St. Louis?</span><br/>We Answer in 5 Minutes.</h1>
+          <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">✓ Licensed & Insured - Illinois & Missouri</div>
+          <h1 className="text-5xl font-black leading-[0.9] tracking-tight">Need a Roofer Near <span className="text-brand font-bold">St. Louis?</span><br/>We Answer in 5 Minutes.</h1>
           <p className="text-lg text-zinc-600 mt-5">Waterloo • Columbia • Belleville • St. Louis. Same-day inspections. No pushy sales - just honest pricing from a local crew that lives here.</p>
 
           <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-            <div className="border rounded-xl p-3"><div className="font-black text-2xl">5.0★</div><div className="text-xs"><a href={`https://search.google.com/local/reviews?placeid=${GOOGLE_PLACE_ID}`} target="_blank" className="underline">Google Rating</a></div></div>
-            <div className="border rounded-xl p-3"><div className="font-black text-2xl">10-Yr</div><div className="text-xs">Workmanship Warranty</div></div>
-            <div className="border rounded-xl p-3"><div className="font-black text-2xl">Same Day</div><div className="text-xs">Free Estimate</div></div>
+            <div className="border border-zinc-100 rounded-2xl shadow-sm hover:shadow-md p-3"><div className="font-black text-2xl text-brand">5.0★</div><div className="text-xs"><a href={`https://search.google.com/local/reviews?placeid=${GOOGLE_PLACE_ID}`} target="_blank" className="underline">Google Rating</a></div></div>
+            <div className="border border-zinc-100 rounded-2xl shadow-sm hover:shadow-md p-3"><div className="font-black text-2xl text-brand">10-Yr</div><div className="text-xs">Workmanship Warranty</div></div>
+            <div className="border border-zinc-100 rounded-2xl shadow-sm hover:shadow-md p-3"><div className="font-black text-2xl text-brand">Same Day</div><div className="text-xs">Free Estimate</div></div>
           </div>
 
-          <div className="mt-10 border-2 border-zinc-900 rounded-2xl p-6">
+          <div className="mt-10 border border-zinc-100 shadow-sm rounded-2xl p-6">
             <h3 className="font-black text-xl">Instant Roof Cost Estimator</h3>
             <p className="text-sm text-zinc-600 mt-1">3 clicks - get a real STL price range.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
@@ -176,22 +173,22 @@ export default function Home() {
             {!showPrice? (
               <div className="mt-4 flex gap-2">
                 <input value={est.email} onChange={e=>setEst({...est,email:e.target.value})} placeholder="Enter email to unlock price" className="flex-1 p-3 rounded-xl border" />
-                <button onClick={()=>{ if(est.email.includes("@")) setShowPrice(true)}} className="bg-zinc-900 text-white px-6 rounded-xl font-bold">See Price →</button>
+                <button onClick={()=>{ if(est.email.includes("@")) setShowPrice(true)}} className="bg-brand hover:bg-brand-dark text-white px-6 rounded-full font-bold">See Price →</button>
               </div>
             ) : (
-              <div className="mt-4 bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+              <div className="mt-4 bg-brand-light border border-brand/20 rounded-xl p-4 text-center">
                 <div className="text-sm">Estimated Replacement Range:</div>
-                <div className="text-3xl font-black">${(price*0.9).toLocaleString()} - ${(price*1.15).toLocaleString()}</div>
-                <a href="#quote" className="inline-block mt-3 bg-red-600 text-white px-5 py-2 rounded-full font-bold">Lock This Estimate</a>
+                <div className="text-3xl font-black text-brand">${(price*0.9).toLocaleString()} - ${(price*1.15).toLocaleString()}</div>
+                <a href="#quote" className="inline-block mt-3 bg-brand text-white px-5 py-2 rounded-full font-bold">Lock This Estimate</a>
               </div>
             )}
             <div className="text-zinc-500 mt-2 text-xs">UTM: {utm.source || "direct"} / {utm.medium || "organic"} - Tracked • <span className="font-bold text-yellow-500">★★★★★ 5.0</span> Google</div>
           </div>
         </div>
 
-        <div id="quote" className="bg-zinc-900 text-white rounded-2xl p-7 shadow-2xl sticky top-6">
-          <h2 className="text-2xl font-bold">Get Your Free Roof Estimate in 30 Seconds</h2>
-          <p className="text-zinc-400 text-sm mt-2 mb-6">We&apos;ll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★ 5.0 Google Reviews</span></p>
+        <div id="quote" className="bg-white text-black border border-zinc-100 rounded-2xl p-7 shadow-sm lg:sticky lg:top-6">
+          <h2 className="text-2xl font-extrabold text-black">Get Your Free Roof Estimate in 30 Seconds</h2>
+          <p className="text-zinc-600 text-sm mt-2 mb-6">We&apos;ll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★ 5.0 Google Reviews</span></p>
           
           <form className="space-y-3" onSubmit={handleLeadSubmit}>
             <input name="name" required placeholder="Your Name" className="w-full p-3.5 rounded-xl bg-white text-black" />
@@ -207,7 +204,7 @@ export default function Home() {
               <option>Gutters / Siding</option>
             </select>
             <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full p-3.5 rounded-xl bg-white text-black"></textarea>
-            <button disabled={sending} className="w-full bg-red-600 py-4 rounded-xl font-black text-lg hover:bg-red-700 disabled:opacity-50">
+            <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-lg shadow-brand/20 text-white text-[16px] font-bold tracking-wide hover:bg-brand-dark disabled:opacity-50">
               {sending ? "Sending..." : "GET MY FREE ESTIMATE →"}
             </button>
             <p className="text-xs text-zinc-500 text-center">No spam. Source: {utm.source || "direct"} • ★★★★★ 5.0 Google Rated</p>
@@ -215,9 +212,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-zinc-100 py-16">
+      <section id="services" className="bg-brand-light/50 py-16">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl font-black text-center">St. Louis&apos; Most Called Roofing Crew For:</h2>
+          <h2 className="text-3xl font-extrabold text-black text-center">St. Louis&apos; Most Called Roofing Crew For:</h2>
           <div className="grid md:grid-cols-4 gap-6 mt-10">
             {[
               ["Roof Replacement", "GAF / Owens Corning. Done in 1-2 days."],
@@ -225,7 +222,7 @@ export default function Home() {
               ["Storm & Hail", "We handle insurance photos + adjuster."],
               ["Gutters & Flashing", "Stops leaks others miss."],
             ].map(([t,d])=>(
-              <div key={t} className="bg-white p-6 rounded-2xl border">
+              <div key={t} className="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm hover:shadow-md">
                 <div className="font-bold text-lg">{t}</div>
                 <div className="text-sm text-zinc-600 mt-2">{d}</div>
               </div>
@@ -234,18 +231,16 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="max-w-4xl mx-auto px-6 py-16">
-        <h2 className="text-3xl font-black text-center">Roofing FAQ - St. Louis</h2>
+      <section id="faq" className="max-w-4xl mx-auto px-6 py-16">
+        <h2 className="text-3xl font-extrabold text-black text-center">Roofing FAQ - St. Louis</h2>
         <div className="mt-8 space-y-4">
-          <details className="border rounded-xl p-5 bg-white"><summary className="font-bold cursor-pointer">How much does a new roof cost in St. Louis?</summary><p className="text-sm text-zinc-600 mt-3">2026 average $7,200-$16,800 for 1,200-3,000 sqft. Use estimator above.</p></details>
-          <details className="border rounded-xl p-5 bg-white"><summary className="font-bold cursor-pointer">Are you licensed in IL and MO?</summary><p className="text-sm text-zinc-600 mt-3">Yes - IL & MO licensed, $2M insured. 5.0★ Google Rated.</p></details>
-          <details className="border rounded-xl p-5 bg-white"><summary className="font-bold cursor-pointer">How fast can you inspect in Waterloo?</summary><p className="text-sm text-zinc-600 mt-3">Same day if call before 2pm. We live in 62298.</p></details>
+          <details className="border border-zinc-100 rounded-2xl p-5 bg-white shadow-sm hover:shadow-md"><summary className="font-bold cursor-pointer">How much does a new roof cost in St. Louis?</summary><p className="text-sm text-zinc-600 mt-3">2026 average $7,200-$16,800 for 1,200-3,000 sqft. Use estimator above.</p></details>
+          <details className="border border-zinc-100 rounded-2xl p-5 bg-white shadow-sm hover:shadow-md"><summary className="font-bold cursor-pointer">Are you licensed in IL and MO?</summary><p className="text-sm text-zinc-600 mt-3">Yes - IL & MO licensed, $2M insured. 5.0★ Google Rated.</p></details>
+          <details className="border border-zinc-100 rounded-2xl p-5 bg-white shadow-sm hover:shadow-md"><summary className="font-bold cursor-pointer">How fast can you inspect in Waterloo?</summary><p className="text-sm text-zinc-600 mt-3">Same day if call before 2pm. We live in 62298.</p></details>
         </div>
       </section>
 
-      <footer className="py-10 text-center text-sm text-zinc-500 border-t">
-        © {new Date().getFullYear()} RoofingNearMeSTL.com • Waterloo IL 62298 + STL Metro • UTM Tracking Active • ★★★★★ 5.0 Google
-      </footer>
+      <BrandFooter />
     </div>
   );
 }

@@ -61,6 +61,7 @@ export async function POST(req: Request) {
           subject: 'New website roofing lead',
           html: `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;border:1px solid #e5e7eb;border-radius:12px">
+  <img src="https://www.roofingnearmestl.com/logo.png" alt="Roofing Near Me STL" width="180" style="margin-bottom:16px" />
   <h2 style="margin:0 0 16px">🏠 New Roofing Lead</h2>
   <table style="width:100%;border-collapse:collapse">
     <tr><td style="padding:8px 0;font-weight:bold">Name:</td><td>${name}</td></tr>
