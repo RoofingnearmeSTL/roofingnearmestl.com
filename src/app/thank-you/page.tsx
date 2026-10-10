@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import BrandHeader from "@/components/brand-header";
+import BrandFooter from "@/components/brand-footer";
+import EmergencyBar from "@/components/emergency-bar";
 import Conversion from "./conversion";
 
 export const metadata: Metadata = {
@@ -12,13 +15,10 @@ export default function ThankYou() {
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       <Conversion />
-      <div className="bg-black text-white text-center py-2 text-sm px-2">Roofing Near Me STL • St. Louis Metro</div>
-      <header className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="font-black text-xl tracking-tight">ROOFING NEAR ME<span className="text-red-600"> STL</span>.COM</Link>
-        <Link href="/" className="text-sm font-bold underline">Back to Home</Link>
-      </header>
-      <main className="bg-zinc-50 border-y px-6 py-16 lg:py-24">
-        <div className="max-w-2xl mx-auto bg-white border rounded-2xl p-7 sm:p-12 shadow-xl text-center">
+      <EmergencyBar />
+      <BrandHeader />
+      <main className="bg-brand-light/50 border-y px-6 py-16 lg:py-24">
+        <div className="max-w-2xl mx-auto bg-white border border-zinc-100 rounded-2xl p-7 sm:p-12 shadow-sm text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-green-700">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="h-10 w-10" role="img" aria-label="Request received"><path d="m5 12 4 4L19 6" /></svg>
           </div>
@@ -33,10 +33,10 @@ export default function ThankYou() {
             <div className="border rounded-xl p-4">✓ Fully Insured</div>
             <div className="border rounded-xl p-4">✓ 10-Yr Workmanship Warranty</div>
           </div>
-          <Link href="/" className="inline-block mt-8 bg-red-600 text-white px-7 py-3 rounded-full font-bold hover:bg-red-700">Back to Home</Link>
+          <Link href="/" className="inline-block mt-8 bg-brand text-white px-7 py-3 rounded-full font-bold hover:bg-brand-dark">Back to Home</Link>
         </div>
       </main>
-      <footer className="px-6 py-6 text-center text-sm text-zinc-500">Waterloo • Columbia • Belleville • St. Louis</footer>
+      <BrandFooter />
     </div>
   );
 }
