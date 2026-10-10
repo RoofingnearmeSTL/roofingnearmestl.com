@@ -127,7 +127,7 @@ export default function Home() {
       <EmergencyBar />
       <BrandHeader />
 
-      <div className="border-y bg-brand-light/50 py-2">
+      <div className="border-y border-zinc-200 bg-zinc-50 py-2">
         <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center lg:justify-between gap-3 text-xs font-bold text-zinc-600">
           <span>✓ IL License #104.12345 • MO License #123456</span>
           <span>✓ Fully Insured - $2M Liability + Workers Comp</span>
@@ -143,68 +143,68 @@ export default function Home() {
           <h1 className="text-5xl font-black leading-[0.9] tracking-tight">Need a Roofer Near <span className="text-brand font-bold">St. Louis?</span><br/>We Answer in 5 Minutes.</h1>
           <p className="text-lg text-zinc-600 mt-5">Waterloo • Columbia • Belleville • St. Louis. Same-day inspections. No pushy sales - just honest pricing from a local crew that lives here.</p>
 
-          <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-            <div className="border border-zinc-100 rounded-2xl shadow-sm hover:shadow-md p-3"><div className="font-black text-2xl text-brand">5.0★</div><div className="text-xs"><a href={`https://search.google.com/local/reviews?placeid=${GOOGLE_PLACE_ID}`} target="_blank" className="underline">Google Rating</a></div></div>
-            <div className="border border-zinc-100 rounded-2xl shadow-sm hover:shadow-md p-3"><div className="font-black text-2xl text-brand">10-Yr</div><div className="text-xs">Workmanship Warranty</div></div>
-            <div className="border border-zinc-100 rounded-2xl shadow-sm hover:shadow-md p-3"><div className="font-black text-2xl text-brand">Same Day</div><div className="text-xs">Free Estimate</div></div>
+          <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4 text-center">
+            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">5.0★</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide"><a href={`https://search.google.com/local/reviews?placeid=${GOOGLE_PLACE_ID}`} target="_blank" className="underline">Google Rating</a></div></div>
+            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">10-Yr</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Workmanship Warranty</div></div>
+            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">Same Day</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Free Estimate</div></div>
           </div>
 
-          <div className="mt-10 border border-zinc-100 shadow-sm rounded-2xl p-6">
-            <h3 className="font-black text-xl">Instant Roof Cost Estimator</h3>
+          <div className="mt-10 bg-brand-light border border-brand/30 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-black font-bold text-xl">Instant Roof Cost Estimator</h3>
             <p className="text-sm text-zinc-600 mt-1">3 clicks - get a real STL price range.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-              <select value={est.size} onChange={e=>setEst({...est,size:e.target.value})} className="p-3 rounded-xl border font-bold">
+              <select value={est.size} onChange={e=>setEst({...est,size:e.target.value})} className="bg-white border border-zinc-300 rounded-xl px-3 py-3 text-black font-medium">
                 <option value="1200">~1,200 sqft</option>
                 <option value="1800">~1,800 sqft (avg)</option>
                 <option value="2400">~2,400 sqft</option>
                 <option value="3000">~3,000+ sqft</option>
               </select>
-              <select value={est.pitch} onChange={e=>setEst({...est,pitch:e.target.value})} className="p-3 rounded-xl border font-bold">
+              <select value={est.pitch} onChange={e=>setEst({...est,pitch:e.target.value})} className="bg-white border border-zinc-300 rounded-xl px-3 py-3 text-black font-medium">
                 <option value="low">Low Pitch</option>
                 <option value="medium">Medium Pitch</option>
                 <option value="steep">Steep Pitch</option>
               </select>
-              <select value={est.material} onChange={e=>setEst({...est,material:e.target.value})} className="p-3 rounded-xl border font-bold">
+              <select value={est.material} onChange={e=>setEst({...est,material:e.target.value})} className="bg-white border border-zinc-300 rounded-xl px-3 py-3 text-black font-medium">
                 <option value="asphalt">3-Tab Asphalt</option>
                 <option value="architectural">Architectural Shingle</option>
                 <option value="metal">Metal Roof</option>
               </select>
             </div>
             {!showPrice? (
-              <div className="mt-4 flex gap-2">
-                <input value={est.email} onChange={e=>setEst({...est,email:e.target.value})} placeholder="Enter email to unlock price" className="flex-1 p-3 rounded-xl border" />
-                <button onClick={()=>{ if(est.email.includes("@")) setShowPrice(true)}} className="bg-brand border border-brand hover:bg-brand-dark text-white px-6 rounded-full font-bold">See Price →</button>
+              <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                <input value={est.email} onChange={e=>setEst({...est,email:e.target.value})} placeholder="Enter email to unlock price" className="min-w-0 flex-1 bg-white p-3 border border-zinc-300 rounded-xl" />
+                <button onClick={()=>{ if(est.email.includes("@")) setShowPrice(true)}} className="bg-brand border border-brand hover:bg-brand-dark text-white px-6 py-3 rounded-full font-bold shadow-md">See Price →</button>
               </div>
             ) : (
               <div className="mt-4 bg-brand-light border border-brand/20 rounded-xl p-4 text-center">
                 <div className="text-sm">Estimated Replacement Range:</div>
                 <div className="text-3xl font-black text-brand">${(price*0.9).toLocaleString()} - ${(price*1.15).toLocaleString()}</div>
-                <a href="#quote" className="inline-block mt-3 bg-brand text-white px-5 py-2 rounded-full font-bold">Lock This Estimate</a>
+                <a href="#estimate" className="inline-block mt-3 bg-brand text-white px-5 py-2 rounded-full font-bold">Lock This Estimate</a>
               </div>
             )}
             <div className="text-zinc-500 mt-2 text-xs">UTM: {utm.source || "direct"} / {utm.medium || "organic"} - Tracked • <span className="font-bold text-yellow-500">★★★★★ 5.0</span> Google</div>
           </div>
         </div>
 
-        <div id="quote" className="bg-white border border-zinc-200 rounded-2xl shadow-xl p-6 md:p-8">
-          <h2 className="text-2xl text-black font-bold">Get Your Free Roof Estimate in 30 Seconds</h2>
-          <p className="text-zinc-600 text-sm mt-2 mb-6">We&apos;ll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★ 5.0 Google Reviews</span></p>
+        <div id="estimate" className="bg-black border border-zinc-800 rounded-2xl p-7 shadow-2xl scroll-mt-32">
+          <h2 className="text-white font-bold text-2xl leading-tight">Get Your Free Roof Estimate in 30 Seconds</h2>
+          <p className="text-zinc-400 text-sm mt-2 mb-6">We&apos;ll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★ 5.0 Google Reviews</span></p>
           
           <form className="space-y-3" onSubmit={handleLeadSubmit}>
-            <input name="name" required placeholder="Your Name" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition" />
-            <input name="phone" required placeholder="Phone Number" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition" />
-            <input name="email" type="email" placeholder="Email (optional)" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition" />
-            <input name="address" placeholder="Address (optional)" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition" />
-            <input name="city" placeholder="City (optional)" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition" />
-            <select name="service" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition">
+            <input name="name" required placeholder="Your Name" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none" />
+            <input name="phone" required placeholder="Phone Number" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none" />
+            <input name="email" type="email" placeholder="Email (optional)" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none" />
+            <input name="address" placeholder="Address (optional)" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none" />
+            <input name="city" placeholder="City (optional)" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none" />
+            <select name="service" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none">
               <option>Roof Repair</option>
               <option>Roof Replacement</option>
               <option>Leak / Emergency</option>
               <option>Storm Damage / Insurance</option>
               <option>Gutters / Siding</option>
             </select>
-            <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition"></textarea>
-            <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-lg shadow-brand/20 text-white text-[16px] font-bold tracking-wide hover:bg-brand-dark disabled:opacity-50">
+            <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none"></textarea>
+            <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-lg shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
               {sending ? "Sending..." : "GET MY FREE ESTIMATE →"}
             </button>
             <p className="text-xs text-zinc-500 text-center">No spam. Source: {utm.source || "direct"} • ★★★★★ 5.0 Google Rated</p>
