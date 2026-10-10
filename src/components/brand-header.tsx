@@ -1,3 +1,4 @@
+import EstimateLink from "./estimate-link";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -21,7 +22,7 @@ export default function BrandHeader() {
             <Link href="/#services" className="hover:text-black">Services</Link>
             <Link href="/#faq" className="hover:text-black">FAQ</Link>
           </nav>
-          <Link href="/#estimate" className="bg-brand hover:bg-brand-dark text-white rounded-full px-4 sm:px-7 py-3 font-bold text-xs sm:text-sm shadow-md shadow-brand/20 whitespace-nowrap">Get Free Quote</Link>
+          <EstimateLink className="bg-brand hover:bg-brand-dark text-white rounded-full px-4 sm:px-7 py-3 font-bold text-xs sm:text-sm shadow-md shadow-brand/20 whitespace-nowrap">Get Free Quote</EstimateLink>
         </div>
       </div>
     </header>
