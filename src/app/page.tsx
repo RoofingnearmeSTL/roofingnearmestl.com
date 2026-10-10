@@ -173,7 +173,7 @@ export default function Home() {
             {!showPrice? (
               <div className="mt-4 flex gap-2">
                 <input value={est.email} onChange={e=>setEst({...est,email:e.target.value})} placeholder="Enter email to unlock price" className="flex-1 p-3 rounded-xl border" />
-                <button onClick={()=>{ if(est.email.includes("@")) setShowPrice(true)}} className="bg-brand hover:bg-brand-dark text-white px-6 rounded-full font-bold">See Price →</button>
+                <button onClick={()=>{ if(est.email.includes("@")) setShowPrice(true)}} className="bg-brand border border-brand hover:bg-brand-dark text-white px-6 rounded-full font-bold">See Price →</button>
               </div>
             ) : (
               <div className="mt-4 bg-brand-light border border-brand/20 rounded-xl p-4 text-center">
@@ -186,24 +186,24 @@ export default function Home() {
           </div>
         </div>
 
-        <div id="quote" className="bg-white text-black border border-zinc-100 rounded-2xl p-7 shadow-sm lg:sticky lg:top-6">
-          <h2 className="text-2xl font-extrabold text-black">Get Your Free Roof Estimate in 30 Seconds</h2>
+        <div id="quote" className="bg-white border border-zinc-200 rounded-2xl shadow-xl p-6 md:p-8">
+          <h2 className="text-2xl text-black font-bold">Get Your Free Roof Estimate in 30 Seconds</h2>
           <p className="text-zinc-600 text-sm mt-2 mb-6">We&apos;ll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★ 5.0 Google Reviews</span></p>
           
           <form className="space-y-3" onSubmit={handleLeadSubmit}>
-            <input name="name" required placeholder="Your Name" className="w-full p-3.5 rounded-xl bg-white text-black" />
-            <input name="phone" required placeholder="Phone Number" className="w-full p-3.5 rounded-xl bg-white text-black" />
-            <input name="email" type="email" placeholder="Email (optional)" className="w-full p-3.5 rounded-xl bg-white text-black" />
-            <input name="address" placeholder="Address (optional)" className="w-full p-3.5 rounded-xl bg-white text-black" />
-            <input name="city" placeholder="City (optional)" className="w-full p-3.5 rounded-xl bg-white text-black" />
-            <select name="service" className="w-full p-3.5 rounded-xl bg-white text-black">
+            <input name="name" required placeholder="Your Name" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition" />
+            <input name="phone" required placeholder="Phone Number" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition" />
+            <input name="email" type="email" placeholder="Email (optional)" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition" />
+            <input name="address" placeholder="Address (optional)" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition" />
+            <input name="city" placeholder="City (optional)" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition" />
+            <select name="service" className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition">
               <option>Roof Repair</option>
               <option>Roof Replacement</option>
               <option>Leak / Emergency</option>
               <option>Storm Damage / Insurance</option>
               <option>Gutters / Siding</option>
             </select>
-            <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full p-3.5 rounded-xl bg-white text-black"></textarea>
+            <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 text-black placeholder:text-zinc-400 focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition"></textarea>
             <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-lg shadow-brand/20 text-white text-[16px] font-bold tracking-wide hover:bg-brand-dark disabled:opacity-50">
               {sending ? "Sending..." : "GET MY FREE ESTIMATE →"}
             </button>
