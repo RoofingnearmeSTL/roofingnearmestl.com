@@ -17,10 +17,6 @@ export default function BrandHeader() {
           </div>
         </div>
         <div className="flex items-center gap-4 xl:gap-6 shrink-0">
-          <div className="hidden md:block text-right">
-            <p className="text-xs text-zinc-500 uppercase tracking-wide">Call Now</p>
-            <a href="tel:+16186125192" className="text-base xl:text-lg font-extrabold text-brand hover:text-brand-dark">618-612-5192</a>
-          </div>
           <nav aria-label="Main navigation" className="hidden md:flex items-center gap-3 xl:gap-6 text-sm font-medium text-zinc-700">
             <Link href="/#services" className="hover:text-black">Services</Link>
             <Link href="/#faq" className="hover:text-black">FAQ</Link>

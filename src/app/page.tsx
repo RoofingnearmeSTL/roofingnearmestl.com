@@ -186,24 +186,24 @@ export default function Home() {
           </div>
         </div>
 
-        <div id="estimate" className="bg-black border border-zinc-800 rounded-2xl p-7 shadow-2xl scroll-mt-32">
-          <h2 className="text-white font-bold text-2xl leading-tight">Get Your Free Roof Estimate in 30 Seconds</h2>
-          <p className="text-zinc-400 text-sm mt-2 mb-6">We&apos;ll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★ 5.0 Google Reviews</span></p>
+        <div id="estimate" className="bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
+          <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Roof Estimate in 30 Seconds</h2>
+          <p className="text-zinc-600 text-sm mt-2 mb-6">We&apos;ll text you back in under 5 mins during business hours. <span className="text-yellow-400 font-bold">★★★★★</span> <span className="text-brand font-bold">5.0 Google Reviews</span></p>
           
           <form className="space-y-3" onSubmit={handleLeadSubmit}>
-            <input name="name" required placeholder="Your Name" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none" />
-            <input name="phone" required placeholder="Phone Number" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none" />
-            <input name="email" type="email" placeholder="Email (optional)" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none" />
-            <input name="address" placeholder="Address (optional)" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none" />
-            <input name="city" placeholder="City (optional)" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none" />
-            <select name="service" className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none">
+            <input name="name" required placeholder="Your Name" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
+            <input name="phone" required placeholder="Phone Number" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
+            <input name="email" type="email" placeholder="Email (optional)" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
+            <input name="address" placeholder="Address (optional)" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
+            <input name="city" placeholder="City (optional)" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
+            <select name="service" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none">
               <option>Roof Repair</option>
               <option>Roof Replacement</option>
               <option>Leak / Emergency</option>
               <option>Storm Damage / Insurance</option>
               <option>Gutters / Siding</option>
             </select>
-            <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/30 outline-none"></textarea>
+            <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none"></textarea>
             <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-lg shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
               {sending ? "Sending..." : "GET MY FREE ESTIMATE →"}
             </button>
