@@ -33,7 +33,7 @@ export default function ThankYou() {
             <div className="border rounded-xl p-4">✓ Fully Insured</div>
             <div className="border rounded-xl p-4">✓ 10-Yr Workmanship Warranty</div>
           </div>
-          <Link href="/" className="inline-block mt-8 bg-brand text-white px-7 py-3 rounded-full font-bold hover:bg-brand-dark">Back to Home</Link>
+          <Link href="/" className="inline-block mt-8 bg-brand text-white px-7 py-3 rounded-full font-bold shadow-md shadow-brand/20 hover:bg-brand-dark">Back to Home</Link>
         </div>
       </main>
       <BrandFooter />
