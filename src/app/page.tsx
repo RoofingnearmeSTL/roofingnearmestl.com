@@ -121,8 +121,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
-      <div className="bg-black text-white text-center py-2 text-sm px-2">
-        🚨 24/7 Emergency Roof Repair in St. Louis Metro - Call Now: <a href="tel:16185551234" className="font-bold underline">(618) 555-1234</a>
+      <div className="bg-black text-white font-bold text-center py-2 text-sm px-2">
+        🚨 24/7 Emergency Roof Repair in St. Louis Metro - Call Now: Illinois: <a href="tel:+16186125192" className="font-bold underline">618-612-5192</a> &amp; Missouri: <a href="tel:+13142027663" className="font-bold underline">314-202-7663</a>
       </div>
 
       <header className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
