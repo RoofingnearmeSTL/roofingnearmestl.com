@@ -194,7 +194,8 @@ export default function Home() {
 
         <div id="estimate" className="bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
           <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Honest Evaluation in 30 Seconds</h2>
-          <p className="text-zinc-600 text-sm mt-2 mb-6">{"During business hours, we call as soon as we receive your request with all the right information to help you take the next step. Fill out what's needed below — we look forward to talking soon and sharing your free photo-documented report. "}<a href="https://www.google.com/search?q=Roofing+Near+Me+STL+Waterloo+reviews" target="_blank" rel="noopener noreferrer" className="text-brand font-bold hover:underline">★★★★★ 5.0 Google Reviews</a> - Why Your Neighbors Chose Us</p>
+          <p className="text-zinc-600 text-sm mt-2">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options."}</p>
+          <p className="text-zinc-600 text-sm mt-2 mb-6"><span className="text-[#28AADC] font-bold">★★★★★ 5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
           
           <form className="space-y-3" onSubmit={handleLeadSubmit}>
             <input name="name" required placeholder="Your Name" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
