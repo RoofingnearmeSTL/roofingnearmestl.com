@@ -15,33 +15,46 @@ function leadValue(value: unknown): string {
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    console.log('NEW LEAD BODY', body)
+    if (!body || typeof body.name !== 'string' || !body.name.trim() ||
+        typeof body.phone !== 'string' || !body.phone.trim()) {
+      return NextResponse.json({ error: 'name and phone required' }, { status: 400 })
+    }
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in Production')
     }
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
-    const { data, error } = await supabase.from('leads').insert([{
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    })
+    const { error } = await supabase.from('leads').insert([{
       name: body.name,
       phone: body.phone,
       email: body.email || null,
       address: body.address || null,
       city: body.city || null,
-      source: 'website',
-      status: 'new'
-    }]).select()
-    if (error) { console.error('SUPABASE ERROR', error); return NextResponse.json({ error: error.message }, { status: 500 }) }
-    console.log('INSERT OK', data)
+      service_type: body.service_type ?? body.service ?? null,
+      issue_type: body.issue_type ?? null,
+      roof_age: body.roof_age ?? null,
+      roof_size: body.roof_size ?? body.est_size ?? null,
+      roof_pitch: body.roof_pitch ?? body.est_pitch ?? null,
+      roof_material: body.roof_material ?? body.est_material ?? null,
+      emergency: body.emergency ?? false,
+      message: body.message ?? body.details ?? null,
+    }])
+    if (error) {
+      console.error('SUPABASE INSERT FAILED', { code: error.code })
+      return NextResponse.json({ error: 'Unable to save lead' }, { status: 500 })
+    }
     // A notification failure must not fail an already-saved lead.
     try {
-      if (!process.env.RESEND_API_KEY) {
-        console.error('RESEND CONFIGURATION MISSING: RESEND_API_KEY')
+      if (!process.env.RESEND_API_KEY || !process.env.LEAD_TO_EMAIL) {
+        console.error('RESEND CONFIGURATION MISSING: RESEND_API_KEY or LEAD_TO_EMAIL')
       } else {
         const lead = {
           name: leadValue(body.name),
           phone: leadValue(body.phone),
           email: leadValue(body.email),
           address: leadValue(body.address),
-          message: leadValue(body.details || body.message),
+          message: leadValue(body.message ?? body.details),
         }
         const name = escapeHtml(lead.name)
         const phone = escapeHtml(lead.phone)
@@ -54,7 +67,7 @@ export async function POST(req: Request) {
         const resend = new Resend(process.env.RESEND_API_KEY)
         const { data: emailData, error: emailError } = await resend.emails.send({
           from: 'Roofing Near Me STL <leads@roofingnearmestl.com>',
-          to: 'michael@roofingnearmestl.com',
+          to: process.env.LEAD_TO_EMAIL,
           ...(typeof body.email === 'string' && body.email.trim()
             ? { replyTo: body.email.trim() }
             : {}),
@@ -84,16 +97,17 @@ export async function POST(req: Request) {
           ].join('\n'),
         })
         if (emailError) {
-          console.error('RESEND EMAIL FAILED', JSON.stringify(emailError, null, 2))
+          console.error('RESEND EMAIL FAILED', { name: emailError.name })
         } else {
-          console.log('LEAD EMAIL SENT', emailData)
+          console.log('LEAD EMAIL SENT', { id: emailData?.id })
         }
       }
     } catch (emailError) {
-      console.error('RESEND EMAIL CRASH', emailError)
+      console.error('RESEND EMAIL CRASH', { name: emailError instanceof Error ? emailError.name : 'UnknownError' })
     }
-    return NextResponse.json({ ok: true, data })
-  // Preserve the explicitly requested catch signature.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (e:any) { console.error('CRASH', e); return NextResponse.json({ error: e.message }, { status: 500 }) }
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    console.error('LEAD API FAILED', { name: error instanceof Error ? error.name : 'UnknownError' })
+    return NextResponse.json({ error: 'Unable to submit lead' }, { status: 500 })
+  }
 }
