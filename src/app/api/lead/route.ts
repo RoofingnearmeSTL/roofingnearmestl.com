@@ -9,7 +9,7 @@ function escapeHtml(value: string): string {
 }
 
 function leadValue(value: unknown): string {
-  return typeof value === 'string' && value.trim() ? value.trim() : 'Not provided'
+  return typeof value === 'string' ? value.trim() : typeof value === 'number' ? String(value) : ''
 }
 
 export async function POST(req: Request) {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     })
-    const { error } = await supabase.from('leads').insert([{
+    const lead = {
       name: body.name,
       phone: body.phone,
       email: body.email || null,
@@ -37,9 +37,10 @@ export async function POST(req: Request) {
       roof_size: body.roof_size ?? body.est_size ?? null,
       roof_pitch: body.roof_pitch ?? body.est_pitch ?? null,
       roof_material: body.roof_material ?? body.est_material ?? null,
-      emergency: body.emergency ?? false,
+      emergency: body.emergency === true,
       message: body.message ?? body.details ?? null,
-    }])
+    }
+    const { error } = await supabase.from('leads').insert([lead])
     if (error) {
       console.error('SUPABASE INSERT FAILED', { code: error.code })
       return NextResponse.json({ error: 'Unable to save lead' }, { status: 500 })
@@ -49,21 +50,20 @@ export async function POST(req: Request) {
       if (!process.env.RESEND_API_KEY || !process.env.LEAD_TO_EMAIL) {
         console.error('RESEND CONFIGURATION MISSING: RESEND_API_KEY or LEAD_TO_EMAIL')
       } else {
-        const lead = {
-          name: leadValue(body.name),
-          phone: leadValue(body.phone),
-          email: leadValue(body.email),
-          address: leadValue(body.address),
-          message: leadValue(body.message ?? body.details),
-        }
-        const name = escapeHtml(lead.name)
-        const phone = escapeHtml(lead.phone)
-        const email = escapeHtml(lead.email)
-        const address = escapeHtml(lead.address)
-        const message = escapeHtml(lead.message).replace(/\r?\n/g, '<br>')
-        const phoneHref = escapeHtml(lead.phone.replace(/[^+0-9]/g, ''))
-        const emailHref = escapeHtml(encodeURIComponent(lead.email))
-        const timestamp = new Date().toLocaleString()
+        const fields = [
+          ['Name', leadValue(lead.name)],
+          ['Phone', leadValue(lead.phone)],
+          ['Email', leadValue(lead.email)],
+          ['Address', [leadValue(lead.address), leadValue(lead.city)].filter(Boolean).join(', ')],
+          ['Service', leadValue(lead.service_type)],
+          ['Issue', leadValue(lead.issue_type)],
+          ['Age of Roof', leadValue(lead.roof_age)],
+          ['Emergency Tarp Needed', lead.emergency === true ? 'YES - Emergency' : 'No'],
+          ['Roof Size', leadValue(lead.roof_size)],
+          ['Pitch', leadValue(lead.roof_pitch)],
+          ['Material', leadValue(lead.roof_material)],
+          ['Message', leadValue(lead.message)],
+        ]
         const resend = new Resend(process.env.RESEND_API_KEY)
         const { data: emailData, error: emailError } = await resend.emails.send({
           from: 'Roofing Near Me STL <leads@roofingnearmestl.com>',
@@ -71,30 +71,15 @@ export async function POST(req: Request) {
           ...(typeof body.email === 'string' && body.email.trim()
             ? { replyTo: body.email.trim() }
             : {}),
-          subject: 'New website roofing lead',
-          html: `
-<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;border:1px solid #e5e7eb;border-radius:12px">
-  <img src="https://www.roofingnearmestl.com/logo.png" alt="Roofing Near Me STL" width="180" style="margin-bottom:16px" />
-  <h2 style="margin:0 0 16px">🏠 New Roofing Lead</h2>
-  <table style="width:100%;border-collapse:collapse">
-    <tr><td style="padding:8px 0;font-weight:bold">Name:</td><td>${name}</td></tr>
-    <tr><td style="padding:8px 0;font-weight:bold">Phone:</td><td>${lead.phone === 'Not provided' ? phone : `<a href="tel:${phoneHref}">${phone}</a>`}</td></tr>
-    <tr><td style="padding:8px 0;font-weight:bold">Email:</td><td>${lead.email === 'Not provided' ? email : `<a href="mailto:${emailHref}">${email}</a>`}</td></tr>
-    <tr><td style="padding:8px 0;font-weight:bold">Address:</td><td>${address}</td></tr>
-    <tr><td style="padding:8px 0;font-weight:bold">Message:</td><td>${message}</td></tr>
-  </table>
-  <p style="margin-top:20px;font-size:12px;color:#6b7280">From roofingnearmestl.com - ${escapeHtml(timestamp)}</p>
-</div>`,
-          text: [
-            '🏠 New Roofing Lead',
-            `Name: ${lead.name}`,
-            `Phone: ${lead.phone}`,
-            `Email: ${lead.email}`,
-            `Address: ${lead.address}`,
-            `Message: ${lead.message}`,
-            '',
-            `From roofingnearmestl.com - ${timestamp}`,
-          ].join('\n'),
+          subject: `New Roofing Lead: ${leadValue(lead.city)} - ${leadValue(lead.service_type)} - ${leadValue(lead.issue_type)}`.replace(/[\r\n]/g, ' '),
+          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+            <img src="https://www.roofingnearmestl.com/logo.png" alt="Roofing Near Me STL" width="180" />
+            <h2>New Roofing Lead</h2>
+            <table style="width:100%;border-collapse:collapse">${fields.map(([label, value]) =>
+              `<tr><th style="text-align:left;padding:8px 0">${escapeHtml(label)}:</th><td>${escapeHtml(value).replace(/\r?\n/g, '<br>')}</td></tr>`
+            ).join('')}</table>
+          </div>`,
+          text: fields.map(([label, value]) => `${label}: ${value}`).join('\n'),
         })
         if (emailError) {
           console.error('RESEND EMAIL FAILED', { name: emailError.name })

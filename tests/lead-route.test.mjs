@@ -115,3 +115,51 @@ test('requires name and phone before inserting', async () => {
   assert.equal((await post({ name: 'Test' })).status, 400)
   assert.equal(calls.inserts.length, 0)
 })
+
+for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate Tile']]) {
+  test(`${label} form payload persists age/emergency and emails every roofing detail`, async () => {
+    const page = fs.readFileSync('src/app/page.tsx', 'utf8')
+    const payloadSource = page.slice(page.indexOf('    const payload = {'), page.indexOf('\n    try {', page.indexOf('    const payload = {')))
+    const compiled = ts.transpileModule(`${payloadSource}\nexports.payload = payload`, {
+      compilerOptions: { module: ts.ModuleKind.CommonJS },
+    }).outputText
+    const form = new Map(Object.entries({ name: 'Tile Customer', phone: '3145550100', email: 'customer@example.invalid',
+      address: '123 Example St', city: 'St Louis', service: 'Roof Repair', issue_type: 'Active leak',
+      roof_age: '15-20 years', emergency: 'on', details: '<Leak>\nPlease tarp' }))
+    const exports = {}
+    vm.runInNewContext(compiled, { exports, fd: form, est: { size: '1800', pitch: 'medium', material, email: '' },
+      utm: {}, price: 9800 })
+    const payload = exports.payload
+    assert.equal(payload.roof_material, label)
+    assert.equal(payload.roof_age, '15-20 years')
+    assert.equal(payload.emergency, true)
+    assert.equal(payload.roof_size, '~1,800 sqft')
+    assert.equal(payload.roof_pitch, 'Medium Pitch')
+    assert.match(page, new RegExp(`<option value="${material}">${label}</option>`))
+    assert.match(page, /name="roof_age"/)
+    assert.match(page, /name="emergency" type="checkbox"/)
+    const { calls, post } = handler()
+    assert.equal((await post(payload)).status, 200)
+    const row = calls.inserts[0][0]
+    assert.deepEqual(Object.keys(row), ['name', 'phone', 'email', 'address', 'city', 'service_type', 'issue_type', 'roof_age', 'roof_size', 'roof_pitch', 'roof_material', 'emergency', 'message'])
+    for (const key of Object.keys(row)) assert.equal(row[key], payload[key])
+    const email = calls.emails[0]
+    assert.equal(email.subject, 'New Roofing Lead: St Louis - Roof Repair - Active leak')
+    for (const line of ['Name: Tile Customer', 'Phone: 3145550100', 'Email: customer@example.invalid',
+      'Address: 123 Example St, St Louis', 'Service: Roof Repair', 'Issue: Active leak',
+      'Age of Roof: 15-20 years', 'Emergency Tarp Needed: YES - Emergency',
+      'Roof Size: ~1,800 sqft', 'Pitch: Medium Pitch', `Material: ${label}`, 'Message: <Leak>\nPlease tarp']) {
+      assert.ok(email.text.includes(line), line)
+    }
+    assert.match(email.html, /&lt;Leak&gt;<br>Please tarp/)
+    for (const value of ['15-20 years', 'YES - Emergency', '~1,800 sqft', 'Medium Pitch', label]) assert.ok(email.html.includes(value))
+  })
+}
+
+test('unchecked emergency is No and numeric roofing details remain visible', async () => {
+  const { calls, post } = handler()
+  await post({ ...lead, emergency: false, roof_age: 0, roof_size: 1800 })
+  assert.match(calls.emails[0].text, /Emergency Tarp Needed: No/)
+  assert.match(calls.emails[0].text, /Age of Roof: 0/)
+  assert.match(calls.emails[0].text, /Roof Size: 1800/)
+})
