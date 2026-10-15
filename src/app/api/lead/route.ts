@@ -90,6 +90,26 @@ export async function POST(req: Request) {
     } catch (emailError) {
       console.error('RESEND EMAIL CRASH', { name: emailError instanceof Error ? emailError.name : 'UnknownError' })
     }
+    // Optional text alert via Twilio; skipped until all four variables are set. Must not fail a saved lead.
+    try {
+      const sid = process.env.TWILIO_ACCOUNT_SID
+      const token = process.env.TWILIO_AUTH_TOKEN
+      const from = process.env.TWILIO_FROM_NUMBER
+      const to = process.env.LEAD_ALERT_PHONE
+      if (sid && token && from && to) {
+        const text = `${lead.emergency === true ? 'EMERGENCY - ' : ''}New roofing lead: ${[
+          leadValue(lead.name), leadValue(lead.phone), leadValue(lead.city), leadValue(lead.service_type), leadValue(lead.issue_type),
+        ].filter(Boolean).join(' | ')}`.replace(/[\r\n]+/g, ' ').slice(0, 320)
+        const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(sid)}/Messages.json`, {
+          method: 'POST',
+          headers: { Authorization: `Basic ${btoa(`${sid}:${token}`)}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ From: from, To: to, Body: text }).toString(),
+        })
+        if (!res.ok) console.error('LEAD SMS FAILED', { status: res.status })
+      }
+    } catch (smsError) {
+      console.error('LEAD SMS CRASH', { name: smsError instanceof Error ? smsError.name : 'UnknownError' })
+    }
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error('LEAD API FAILED', { name: error instanceof Error ? error.name : 'UnknownError' })

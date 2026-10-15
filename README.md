@@ -96,3 +96,14 @@ Clay Tile and Slate Tile tests on the production form with an age range and
 Emergency Tarp Needed checked. Confirm the corresponding Supabase rows, roofing
 fields in the Resend emails, and delivery in the configured recipient inbox.
 The isolated tests do not establish live persistence or inbox delivery.
+
+## Optional settings
+
+- `NEXT_PUBLIC_GOOGLE_REVIEWS_URL`: the review link from Google Business Profile
+  (Profile → Ask for reviews → copy link). Until it is set, the homepage
+  "Google Rating" badge shows as plain text instead of a link.
+- Text alerts for new leads (Twilio): set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
+  `TWILIO_FROM_NUMBER` (your Twilio number, e.g. `+16185550100`) and
+  `LEAD_ALERT_PHONE` (the cell phone to text). Nothing is sent until all four are
+  set. US numbers need an approved A2P 10DLC registration before carriers deliver
+  reliably. A failed text is logged and never fails a saved lead.

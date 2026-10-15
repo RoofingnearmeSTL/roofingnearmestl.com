@@ -5,17 +5,16 @@ import BrandFooter from "@/components/brand-footer";
 import EmergencyBar from "@/components/emergency-bar";
 import LeadForm, { useLandingUtm } from "@/components/lead-form";
 import Link from "next/link";
-import { sitePages } from "@/lib/site-pages";
+import { businessSchema, faqSchema, homeFaqs, jsonLd, sitePages } from "@/lib/site-pages";
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  const utm = useLandingUtm();
-  const { landing } = utm;
+  const { landing } = useLandingUtm();
   const [est, setEst] = useState({ size: "1800", pitch: "medium", material: "asphalt", email: "" });
   const [showPrice, setShowPrice] = useState(false);
 
-  // REPLACE THIS WITH YOUR REAL GOOGLE PLACE ID LATER - get it from https://developers.google.com/maps/documentation/places/web-service/place-id
-  const GOOGLE_PLACE_ID = "ChIJ_YOUR_PLACE_ID_HERE";
+  // Set NEXT_PUBLIC_GOOGLE_REVIEWS_URL in Vercel to the review link from Google Business Profile.
+  const googleReviewsUrl = process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL;
 
   useEffect(() => {
     const params = new URLSearchParams(landing ? new URL(landing).search : "");
@@ -61,6 +60,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", "@graph": [businessSchema, faqSchema(homeFaqs)] })} />
       <EmergencyBar />
       <BrandHeader />
 
@@ -86,7 +86,7 @@ export default function Home() {
           <p className="text-zinc-600 text-lg leading-relaxed mt-5">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options. That's why neighbors find us when searching 'quick response roofer near me' or 'roofing companies that respond fast' in Waterloo, Columbia, Belleville & STL."}</p>
 
           <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4 text-center">
-            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">5.0★</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide"><a href={`https://search.google.com/local/reviews?placeid=${GOOGLE_PLACE_ID}`} target="_blank" className="underline">Google Rating</a></div></div>
+            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">5.0★</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">{googleReviewsUrl ? <a href={googleReviewsUrl} target="_blank" rel="noopener noreferrer" className="underline">Google Rating</a> : "Google Rating"}</div></div>
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">10-Yr</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Workmanship Warranty</div></div>
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">Same Day</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Free Honest Evaluation</div></div>
           </div>
@@ -128,7 +128,7 @@ export default function Home() {
                 <EstimateLink className="inline-block mt-3 bg-brand hover:bg-brand-dark text-white px-5 py-2 rounded-full font-bold shadow-md shadow-brand/20">Lock This Estimate</EstimateLink>
               </div>
             )}
-            <div className="text-zinc-500 mt-2 text-xs">UTM: {utm.source || "direct"} / {utm.medium || "organic"} - Tracked • <span className="font-bold text-yellow-500">★★★★★ 5.0</span> Google</div>
+            <div className="text-zinc-500 mt-2 text-xs"><span className="font-bold text-yellow-500">★★★★★ 5.0</span> Google</div>
           </div>
         </div>
 
@@ -137,7 +137,7 @@ export default function Home() {
           <p className="text-zinc-600 text-sm mt-2">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options."}</p>
           <p className="text-zinc-600 text-sm mt-2 mb-6"><span className="text-[#28AADC] font-bold">★★★★★ 5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
           
-          <LeadForm extras={estimateExtras} footer={<p className="text-xs text-zinc-500 text-center">No spam. Source: {utm.source || "direct"} • ★★★★★ 5.0 Google Rated</p>} />
+          <LeadForm extras={estimateExtras} footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
         </div>
         </div>
       </section>
@@ -172,7 +172,7 @@ export default function Home() {
       <section id="faq" className="max-w-4xl mx-auto px-6 py-16 scroll-mt-40">
         <h2 className="text-black font-extrabold text-3xl text-center">Free Honest Evaluation: Repair or Replace?</h2>
         <div className="mt-8 space-y-4">
-          {[["Do I really need a full roof replacement?", "Don't Replace Yet! Free Photo-Documented Report - Shingle ID, damage evidence, and Repair vs Replace options. We document damage, we don't just sell roofs."], ["What's a Photo-Documented Shingle Report?", "We photograph every slope, identify your shingle, document granule loss, bruising, cracks, seal failure. You get photos + honest assessment."], ["My insurance denied my claim. Can you help?", "We're roofing contractors, not public adjusters - we don't negotiate claims. What we do provide is a Free Photo-Documented Report: Shingle ID + photos of what we see + Repair vs Replace options. It's yours to keep and share with your carrier if you choose. Many neighbors use it for a second look."], ["Are you local or chasing storms?", "We're your neighbors - Waterloo • Columbia • Belleville • STL. Not a storm chaser. Fully Insured $2M Liability + Workers Comp. Local. Reliable. Protecting What Matters."], ["How fast do you respond?", "During business hours, we call as soon as we receive your request to reach out with the right information to help you take the next step. Fill out what's needed and we look forward to talking soon and sharing your free photo-documented options. That's why Google pulls us when you search quick response roofing companies or fast response roofer near me in Waterloo, Columbia, Belleville & STL. Same-day evaluations when available."], ["What warranty?", "10-Year Workmanship Warranty on our work, plus the manufacturer warranty on the materials we install. 5.0★ Google Reviews."]].map(([question, answer]) => (
+          {homeFaqs.map(([question, answer]) => (
             <details key={question} className="bg-white border border-zinc-200 rounded-xl p-5">
               <summary className="text-black font-bold cursor-pointer focus-visible:outline-brand">{question}</summary>
               <p className="text-zinc-600 text-sm leading-relaxed mt-3">{answer}</p>

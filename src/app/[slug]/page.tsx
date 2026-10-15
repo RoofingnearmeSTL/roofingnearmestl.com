@@ -5,7 +5,7 @@ import BrandHeader from "@/components/brand-header";
 import BrandFooter from "@/components/brand-footer";
 import EmergencyBar from "@/components/emergency-bar";
 import LeadForm from "@/components/lead-form";
-import { SITE_URL, getSitePage, sitePages, type SitePage } from "@/lib/site-pages";
+import { SITE_URL, businessSchema, faqSchema, getSitePage, jsonLd, sitePages, type SitePage } from "@/lib/site-pages";
 
 export const dynamicParams = false;
 
@@ -27,15 +27,7 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
 
 function structuredData(page: SitePage) {
   const url = `${SITE_URL}/${page.slug}`;
-  const business = {
-    "@type": "RoofingContractor",
-    "@id": `${SITE_URL}/#business`,
-    name: "Roofing Near Me STL",
-    url: SITE_URL,
-    logo: `${SITE_URL}/logo.png`,
-    telephone: ["+1-618-612-5192", "+1-314-202-7663"],
-    areaServed: ["Waterloo, IL", "Columbia, IL", "Belleville, IL", "St. Louis, MO"].map((name) => ({ "@type": "City", name })),
-  };
+  const business = businessSchema;
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -43,10 +35,7 @@ function structuredData(page: SitePage) {
       page.kind === "service"
         ? { "@type": "Service", "@id": `${url}#service`, name: page.navLabel, serviceType: page.navLabel, url, description: page.description, provider: { "@id": business["@id"] }, areaServed: business.areaServed }
         : { "@type": "WebPage", "@id": url, url, name: page.title, description: page.description, about: { "@id": business["@id"] } },
-      {
-        "@type": "FAQPage",
-        mainEntity: page.faqs.map(([question, answer]) => ({ "@type": "Question", name: question, acceptedAnswer: { "@type": "Answer", text: answer } })),
-      },
+      faqSchema(page.faqs),
       {
         "@type": "BreadcrumbList",
         itemListElement: [
@@ -65,7 +54,7 @@ export default async function SitePageView({ params }: PageProps<"/[slug]">) {
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData(page)).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(structuredData(page))} />
       <EmergencyBar />
       <BrandHeader />
 

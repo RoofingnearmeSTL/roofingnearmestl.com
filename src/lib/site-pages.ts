@@ -355,3 +355,43 @@ export const sitePages: SitePage[] = [
 export function getSitePage(slug: string) {
   return sitePages.find((page) => page.slug === slug);
 }
+
+// Homepage FAQ (also published as FAQPage schema). Same claim rules as above.
+export const homeFaqs: [question: string, answer: string][] = [
+  ["Do I really need a full roof replacement?", "Don't Replace Yet! Free Photo-Documented Report - Shingle ID, damage evidence, and Repair vs Replace options. We document damage, we don't just sell roofs."],
+  ["What's a Photo-Documented Shingle Report?", "We photograph every slope, identify your shingle, document granule loss, bruising, cracks, seal failure. You get photos + honest assessment."],
+  ["My insurance denied my claim. Can you help?", "We're roofing contractors, not public adjusters - we don't negotiate claims. What we do provide is a Free Photo-Documented Report: Shingle ID + photos of what we see + Repair vs Replace options. It's yours to keep and share with your carrier if you choose. Many neighbors use it for a second look."],
+  ["Are you local or chasing storms?", "We're your neighbors - Waterloo • Columbia • Belleville • STL. Not a storm chaser. Fully Insured $2M Liability + Workers Comp. Local. Reliable. Protecting What Matters."],
+  ["How fast do you respond?", "During business hours, we call as soon as we receive your request to reach out with the right information to help you take the next step. Fill out what's needed and we look forward to talking soon and sharing your free photo-documented options. Same-day evaluations when available."],
+  ["What warranty?", "10-Year Workmanship Warranty on our work, plus the manufacturer warranty on the materials we install. 5.0★ Google Reviews."],
+  ["Do you offer emergency tarping?", "Yes. We offer 24/7 emergency roof repair and tarping across the St. Louis metro. Call Illinois: 618-612-5192 or Missouri: 314-202-7663."],
+  ["What areas do you serve?", "Waterloo, Columbia and Belleville in Illinois, plus St. Louis and the surrounding Missouri metro."],
+  ["How much does a new roof cost?", "It depends on roof size, pitch and material. Use our Instant Roof Cost Estimator above for a quick St. Louis price range, then request a free evaluation for an exact quote. Clay and slate tile need an in-person evaluation."],
+  ["Do you offer financing?", "Yes. Financing is available for retail roof, siding and gutter projects. Ask during your free evaluation."],
+  ["What roofing materials do you install?", "Architectural shingles, 3-tab asphalt and metal roofing. Clay and slate tile projects are priced after an in-person evaluation."],
+  ["Are you insured?", "Yes. We're fully insured with $2M general liability and workers' compensation coverage."],
+  ["Do you do gutters and siding too?", "Yes. Roof, siding, gutters, soffit and fascia. One local crew."],
+  ["What happens during the free evaluation?", "We inspect and photograph every slope, identify your shingle, and document any damage. Then we walk you through honest Repair vs Replace options with the photos in front of you."],
+  ["Do I have to hire you after the free report?", "No. The Free Photo-Documented Report is yours to keep, whether you hire us, get other quotes, or share it with your insurance carrier."],
+];
+
+export const businessSchema = {
+  "@type": "RoofingContractor",
+  "@id": `${SITE_URL}/#business`,
+  name: "Roofing Near Me STL",
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
+  telephone: ["+1-618-612-5192", "+1-314-202-7663"],
+  areaServed: ["Waterloo, IL", "Columbia, IL", "Belleville, IL", "St. Louis, MO"].map((name) => ({ "@type": "City", name })),
+};
+
+export function faqSchema(faqs: [question: string, answer: string][]) {
+  return {
+    "@type": "FAQPage",
+    mainEntity: faqs.map(([question, answer]) => ({ "@type": "Question", name: question, acceptedAnswer: { "@type": "Answer", text: answer } })),
+  };
+}
+
+export function jsonLd(data: object) {
+  return { __html: JSON.stringify(data).replace(/</g, "\u003c") };
+}
