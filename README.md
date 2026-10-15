@@ -48,8 +48,9 @@ An email failure is logged without failing an already-saved lead.
 The database must expose these columns with types compatible with the submitted
 values: `name`, `phone`, `email`, `address`, `city`, `service_type`, `issue_type`,
 `roof_age`, `roof_size`, `roof_pitch`, `roof_material`, `emergency`, `message`.
-The current form's `service`, `details`, and `est_size`/`est_pitch`/`est_material`
-are mapped to the corresponding database columns. Absent optional values are
+The form sends canonical column names, including human-readable size, pitch,
+and material labels. The API also accepts legacy `service`, `details`, and
+`est_size`/`est_pitch`/`est_material` fields. Absent optional values are
 null, except `emergency`, which defaults to false.
 
 If PostgREST returns `PGRST204`, inspect the actual `leads` schema in Supabase
@@ -70,3 +71,28 @@ credentials or live side effects) with:
 ```bash
 node --test tests/lead-route.test.mjs
 ```
+
+### Roofing detail rollout
+
+The form now submits roof age ranges as text (including `<5 years` and
+`Unknown`), human-readable roof size text, pitch/material text, and a real
+boolean emergency flag. Verify `roof_age` and `roof_size` accept text before
+rolling out. If existing columns are numeric, review and run this migration in
+Supabase SQL Editor (it retains existing values as their text representation):
+
+```sql
+alter table public.leads
+  alter column roof_age type text using roof_age::text,
+  alter column roof_size type text using roof_size::text;
+NOTIFY pgrst, 'reload schema';
+```
+
+Clay Tile and Slate Tile preserve all existing material options. Because no
+validated tile pricing model is configured, tile selections request an
+individual evaluation instead of displaying an asphalt price range.
+
+After merge and a no-cache Production redeploy, submit separate clearly labeled
+Clay Tile and Slate Tile tests on the production form with an age range and
+Emergency Tarp Needed checked. Confirm the corresponding Supabase rows, roofing
+fields in the Resend emails, and delivery in the configured recipient inbox.
+The isolated tests do not establish live persistence or inbox delivery.

@@ -79,8 +79,14 @@ export default function Home() {
       email: fd.get("email") || est.email || null,
       city: fd.get("city") || null,
       address: fd.get("address"),
-      service: fd.get("service"),
-      details: fd.get("details"),
+      service_type: fd.get("service"),
+      issue_type: fd.get("issue_type"),
+      roof_age: fd.get("roof_age"),
+      emergency: fd.get("emergency") === "on",
+      roof_size: ({ "1200": "~1,200 sqft", "1800": "~1,800 sqft", "2400": "~2,400 sqft", "3000": "~3,000+ sqft" } as Record<string, string>)[est.size],
+      roof_pitch: ({ low: "Low Pitch", medium: "Medium Pitch", steep: "Steep Pitch" } as Record<string, string>)[est.pitch],
+      roof_material: ({ asphalt: "3-Tab Asphalt", architectural: "Architectural Shingle", metal: "Metal Roof", clay: "Clay Tile", slate: "Slate Tile" } as Record<string, string>)[est.material],
+      message: fd.get("details"),
       utm_source: utm.source,
       utm_medium: utm.medium,
       utm_campaign: utm.campaign,
@@ -93,8 +99,8 @@ export default function Home() {
       est_pitch: est.pitch,
       est_material: est.material,
       est_email: est.email,
-      est_price_low: Math.round(price*0.9),
-      est_price_high: Math.round(price*1.15),
+      est_price_low: est.material === "clay" || est.material === "slate" ? null : Math.round(price*0.9),
+      est_price_high: est.material === "clay" || est.material === "slate" ? null : Math.round(price*1.15),
       page: typeof window !== 'undefined' ? window.location.href : '',
     };
     try {
@@ -174,6 +180,8 @@ export default function Home() {
                 <option value="asphalt">3-Tab Asphalt</option>
                 <option value="architectural">Architectural Shingle</option>
                 <option value="metal">Metal Roof</option>
+                <option value="clay">Clay Tile</option>
+                <option value="slate">Slate Tile</option>
               </select>
             </div>
             {!showPrice? (
@@ -184,7 +192,9 @@ export default function Home() {
             ) : (
               <div className="mt-4 bg-brand-light border border-brand/20 rounded-xl p-4 text-center">
                 <div className="text-sm">Estimated Replacement Range:</div>
-                <div className="text-3xl font-black text-brand">${(price*0.9).toLocaleString()} - ${(price*1.15).toLocaleString()}</div>
+                <div className="text-3xl font-black text-brand">{est.material === "clay" || est.material === "slate"
+                  ? "Tile pricing requires an evaluation"
+                  : `$${(price*0.9).toLocaleString()} - $${(price*1.15).toLocaleString()}`}</div>
                 <EstimateLink className="inline-block mt-3 bg-brand hover:bg-brand-dark text-white px-5 py-2 rounded-full font-bold shadow-md shadow-brand/20">Lock This Estimate</EstimateLink>
               </div>
             )}
@@ -211,6 +221,28 @@ export default function Home() {
               <option>Gutters / Siding</option>
             </select>
             <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none"></textarea>
+            <label className="block text-sm font-semibold text-black">
+              Issue
+              <input name="issue_type" placeholder="Leak, storm damage, aging roof, or other issue" className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black" />
+            </label>
+            <label className="block text-sm font-semibold text-black">
+              Age of Roof
+              <select name="roof_age" defaultValue="Unknown" className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black">
+                <option value="<5 years">&lt;5 years</option>
+                <option value="5-10 years">5-10 years</option>
+                <option value="10-15 years">10-15 years</option>
+                <option value="15-20 years">15-20 years</option>
+                <option value="20+ years">20+ years</option>
+                <option value="Unknown">Unknown</option>
+              </select>
+            </label>
+            <fieldset className="text-sm text-black">
+              <legend className="font-semibold">Emergency Tarp Needed</legend>
+              <label className="mt-2 flex items-center gap-2">
+                <input name="emergency" type="checkbox" className="h-5 w-5 accent-brand" />
+                Active leak / Need emergency tarp now
+              </label>
+            </fieldset>
             <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
               {sending ? "Sending..." : "GET MY FREE PHOTO REPORT →"}
             </button>
