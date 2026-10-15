@@ -3,38 +3,16 @@ import EstimateLink from "@/components/estimate-link";
 import BrandHeader from "@/components/brand-header";
 import BrandFooter from "@/components/brand-footer";
 import EmergencyBar from "@/components/emergency-bar";
-import { useRouter } from "next/navigation";
-import { useState, useEffect, useSyncExternalStore } from "react";
-
-function subscribeToLocation(onChange: () => void) {
-  window.addEventListener("popstate", onChange);
-  window.addEventListener("hashchange", onChange);
-  return () => {
-    window.removeEventListener("popstate", onChange);
-    window.removeEventListener("hashchange", onChange);
-  };
-}
-
-const getLocationSnapshot = () => window.location.href;
-const getServerLocationSnapshot = () => "";
+import LeadForm, { useLandingUtm } from "@/components/lead-form";
+import Link from "next/link";
+import { sitePages } from "@/lib/site-pages";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  const router = useRouter();
-  const landing = useSyncExternalStore(subscribeToLocation, getLocationSnapshot, getServerLocationSnapshot);
-  const p = new URLSearchParams(landing ? new URL(landing).search : "");
-  const utm = {
-    source: p.get("utm_source") || p.get("source") || "",
-    medium: p.get("utm_medium") || "",
-    campaign: p.get("utm_campaign") || "",
-    content: p.get("utm_content") || "",
-    term: p.get("utm_term") || "",
-    gclid: p.get("gclid") || "",
-    fbclid: p.get("fbclid") || "",
-    landing,
-  };
+  const utm = useLandingUtm();
+  const { landing } = utm;
   const [est, setEst] = useState({ size: "1800", pitch: "medium", material: "asphalt", email: "" });
   const [showPrice, setShowPrice] = useState(false);
-  const [sending, setSending] = useState(false);
 
   // REPLACE THIS WITH YOUR REAL GOOGLE PLACE ID LATER - get it from https://developers.google.com/maps/documentation/places/web-service/place-id
   const GOOGLE_PLACE_ID = "ChIJ_YOUR_PLACE_ID_HERE";
@@ -68,66 +46,18 @@ export default function Home() {
     return Math.round(base/100)*100;
   })();
 
-  async function handleLeadSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if(sending) return;
-    setSending(true);
-    const fd = new FormData(e.target as HTMLFormElement);
-    const payload = {
-      name: fd.get("name"),
-      phone: fd.get("phone"),
-      email: fd.get("email") || est.email || null,
-      city: fd.get("city") || null,
-      address: fd.get("address"),
-      service_type: fd.get("service"),
-      issue_type: fd.get("issue_type"),
-      roof_age: fd.get("roof_age"),
-      emergency: fd.get("emergency") === "on",
-      roof_size: ({ "1200": "~1,200 sqft", "1800": "~1,800 sqft", "2400": "~2,400 sqft", "3000": "~3,000+ sqft" } as Record<string, string>)[est.size],
-      roof_pitch: ({ low: "Low Pitch", medium: "Medium Pitch", steep: "Steep Pitch" } as Record<string, string>)[est.pitch],
-      roof_material: ({ asphalt: "3-Tab Asphalt", architectural: "Architectural Shingle", metal: "Metal Roof", clay: "Clay Tile", slate: "Slate Tile" } as Record<string, string>)[est.material],
-      message: fd.get("details"),
-      utm_source: utm.source,
-      utm_medium: utm.medium,
-      utm_campaign: utm.campaign,
-      utm_content: utm.content,
-      utm_term: utm.term,
-      gclid: utm.gclid,
-      fbclid: utm.fbclid,
-      landing_page: utm.landing,
-      est_size: est.size,
-      est_pitch: est.pitch,
-      est_material: est.material,
-      est_email: est.email,
-      est_price_low: est.material === "clay" || est.material === "slate" ? null : Math.round(price*0.9),
-      est_price_high: est.material === "clay" || est.material === "slate" ? null : Math.round(price*1.15),
-      page: typeof window !== 'undefined' ? window.location.href : '',
-    };
-    try {
-      const res = await fetch("/api/lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if(res.ok){
-        const result: { data?: { id?: string | number }[] } = await res.json();
-        try {
-          sessionStorage.setItem("roofing-lead-conversion", JSON.stringify({
-            id: String(result.data?.[0]?.id ?? crypto.randomUUID()),
-          }));
-        } catch {
-          // Storage restrictions must not prevent confirmation of a saved lead.
-        }
-        router.push("/thank-you");
-      } else {
-        alert("Error - please call Illinois: 618-612-5192 or Missouri: 314-202-7663");
-      }
-    } catch {
-      alert("Error - please call Illinois: 618-612-5192 or Missouri: 314-202-7663");
-    } finally {
-      setSending(false);
-    }
-  }
+  const tile = est.material === "clay" || est.material === "slate";
+  const estimateExtras = {
+    roof_size: ({ "1200": "~1,200 sqft", "1800": "~1,800 sqft", "2400": "~2,400 sqft", "3000": "~3,000+ sqft" } as Record<string, string>)[est.size],
+    roof_pitch: ({ low: "Low Pitch", medium: "Medium Pitch", steep: "Steep Pitch" } as Record<string, string>)[est.pitch],
+    roof_material: ({ asphalt: "3-Tab Asphalt", architectural: "Architectural Shingle", metal: "Metal Roof", clay: "Clay Tile", slate: "Slate Tile" } as Record<string, string>)[est.material],
+    est_size: est.size,
+    est_pitch: est.pitch,
+    est_material: est.material,
+    est_email: est.email,
+    est_price_low: tile ? null : Math.round(price*0.9),
+    est_price_high: tile ? null : Math.round(price*1.15),
+  };
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
@@ -137,9 +67,9 @@ export default function Home() {
       <div className="bg-[#f9fafb] border-b border-zinc-200 py-2">
         <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center lg:justify-between gap-3 text-xs font-bold text-zinc-600">
           <span>✓ Fully Insured - $2M Liability + Workers Comp</span>
-          <span>✓ GAF Certified • Owens Corning Preferred</span>
-          <span>✓ 5.0★ Google Reviews • BBB A+ Rated</span>
-          <span>✓ 500+ Roofs in Waterloo / Columbia / Belleville</span>
+          <span>✓ 10-Yr Workmanship Warranty</span>
+          <span>✓ 5.0★ Google Reviews</span>
+          <span>✓ Local to Waterloo / Columbia / Belleville / STL</span>
         </div>
       </div>
 
@@ -207,47 +137,7 @@ export default function Home() {
           <p className="text-zinc-600 text-sm mt-2">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options."}</p>
           <p className="text-zinc-600 text-sm mt-2 mb-6"><span className="text-[#28AADC] font-bold">★★★★★ 5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
           
-          <form className="space-y-3" onSubmit={handleLeadSubmit}>
-            <input name="name" required placeholder="Your Name" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
-            <input name="phone" required placeholder="Phone Number" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
-            <input name="email" type="email" placeholder="Email (optional)" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
-            <input name="address" placeholder="Address (optional)" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
-            <input name="city" placeholder="City (optional)" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none" />
-            <select name="service" className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none">
-              <option>Roof Repair</option>
-              <option>Roof Replacement</option>
-              <option>Leak / Emergency</option>
-              <option>Storm Damage / Insurance</option>
-              <option>Gutters / Siding</option>
-            </select>
-            <textarea name="details" placeholder="What's going on with your roof?" rows={3} className="w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none"></textarea>
-            <label className="block text-sm font-semibold text-black">
-              Issue
-              <input name="issue_type" placeholder="Leak, storm damage, aging roof, or other issue" className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black" />
-            </label>
-            <label className="block text-sm font-semibold text-black">
-              Age of Roof
-              <select name="roof_age" defaultValue="Unknown" className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black">
-                <option value="<5 years">&lt;5 years</option>
-                <option value="5-10 years">5-10 years</option>
-                <option value="10-15 years">10-15 years</option>
-                <option value="15-20 years">15-20 years</option>
-                <option value="20+ years">20+ years</option>
-                <option value="Unknown">Unknown</option>
-              </select>
-            </label>
-            <fieldset className="text-sm text-black">
-              <legend className="font-semibold">Emergency Tarp Needed</legend>
-              <label className="mt-2 flex items-center gap-2">
-                <input name="emergency" type="checkbox" className="h-5 w-5 accent-brand" />
-                Active leak / Need emergency tarp now
-              </label>
-            </fieldset>
-            <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
-              {sending ? "Sending..." : "GET MY FREE PHOTO REPORT →"}
-            </button>
-            <p className="text-xs text-zinc-500 text-center">No spam. Source: {utm.source || "direct"} • ★★★★★ 5.0 Google Rated</p>
-          </form>
+          <LeadForm extras={estimateExtras} footer={<p className="text-xs text-zinc-500 text-center">No spam. Source: {utm.source || "direct"} • ★★★★★ 5.0 Google Rated</p>} />
         </div>
         </div>
       </section>
@@ -257,11 +147,23 @@ export default function Home() {
           <h2 className="text-black font-extrabold text-3xl text-center">We Document Damage. We Don&apos;t Just Sell Roofs.</h2>
           <p className="text-zinc-600 text-center max-w-3xl mx-auto mt-4 leading-relaxed">Free Photo-Documented: Shingle ID + Damage Evidence + Repair vs Replace Options. That&apos;s Why Your Neighbors Chose Us.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-            {[["DON'T REPLACE YET!", "Free Honest Evaluation - Should you repair or replace? We show you the photos."], ["Storm Damage? Aging Roof?", "Free Photo-Documented Report - We photograph what we see. Shingle ID + Damage Photos + Repair vs Replace options you keep. We document damage, we don't just sell roofs."], ["Aging Roof?", "Is it time? We document granular loss, seal strip failure, and remaining life."], ["Roof Repair", "Leak stopped today. No pushy replacement pitch unless photos prove you need it."], ["Retail Upgrades Welcome - F&I Available", "Roof • Siding • Gutters • Soffit & Fascia. One local crew."], ["Why Your Neighbors Chose Us", "500+ Roofs in Waterloo / Columbia / Belleville. Local. Reliable. Protecting What Matters."]].map(([title, description]) => (
+            {[["DON'T REPLACE YET!", "Free Honest Evaluation - Should you repair or replace? We show you the photos."], ["Storm Damage? Aging Roof?", "Free Photo-Documented Report - We photograph what we see. Shingle ID + Damage Photos + Repair vs Replace options you keep. We document damage, we don't just sell roofs."], ["Aging Roof?", "Is it time? We document granular loss, seal strip failure, and remaining life."], ["Roof Repair", "Leak stopped today. No pushy replacement pitch unless photos prove you need it."], ["Retail Upgrades Welcome - F&I Available", "Roof • Siding • Gutters • Soffit & Fascia. One local crew."], ["Why Your Neighbors Chose Us", "Serving Waterloo / Columbia / Belleville / STL. Local. Reliable. Protecting What Matters."]].map(([title, description]) => (
               <article key={title} className="bg-white border-2 border-zinc-200 rounded-2xl p-6 shadow-sm hover:border-brand/40 transition-colors">
                 <h3 className="text-black font-bold text-lg">{title}</h3>
                 <p className="text-zinc-600 text-sm leading-relaxed mt-2">{description}</p>
               </article>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+            {([["Roofing Services", "service"], ["Areas We Serve", "city"]] as const).map(([heading, kind]) => (
+              <nav key={kind} aria-label={heading} className="bg-white border-2 border-zinc-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-black font-bold text-lg">{heading}</h3>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {sitePages.filter((page) => page.kind === kind).map((page) => (
+                    <li key={page.slug}><Link href={`/${page.slug}`} className="inline-block bg-brand-light border border-brand/20 text-black hover:border-brand rounded-full px-4 py-2 text-sm font-bold">{page.navLabel} →</Link></li>
+                  ))}
+                </ul>
+              </nav>
             ))}
           </div>
         </div>
@@ -270,7 +172,7 @@ export default function Home() {
       <section id="faq" className="max-w-4xl mx-auto px-6 py-16 scroll-mt-40">
         <h2 className="text-black font-extrabold text-3xl text-center">Free Honest Evaluation: Repair or Replace?</h2>
         <div className="mt-8 space-y-4">
-          {[["Do I really need a full roof replacement?", "Don't Replace Yet! Free Photo-Documented Report - Shingle ID, damage evidence, and Repair vs Replace options. We document damage, we don't just sell roofs."], ["What's a Photo-Documented Shingle Report?", "We photograph every slope, identify your shingle, document granule loss, bruising, cracks, seal failure. You get photos + honest assessment."], ["My insurance denied my claim. Can you help?", "We're roofing contractors, not public adjusters - we don't negotiate claims. What we do provide is a Free Photo-Documented Report: Shingle ID + photos of what we see + Repair vs Replace options. It's yours to keep and share with your carrier if you choose. Many neighbors use it for a second look."], ["Are you local or chasing storms?", "We're your neighbors - Waterloo • Columbia • Belleville • STL. 500+ local roofs. Not a storm chaser. Fully Insured $2M Liability + Workers Comp. GAF Certified • Owens Corning Preferred. Local. Reliable. Protecting What Matters."], ["How fast do you respond?", "During business hours, we call as soon as we receive your request to reach out with the right information to help you take the next step. Fill out what's needed and we look forward to talking soon and sharing your free photo-documented options. That's why Google pulls us when you search quick response roofing companies or fast response roofer near me in Waterloo, Columbia, Belleville & STL. Same-day evaluations when available."], ["What warranty?", "10-Year Workmanship Warranty + GAF Certified / Owens Corning Preferred. BBB A+ Rated, 5.0★ Google Reviews."]].map(([question, answer]) => (
+          {[["Do I really need a full roof replacement?", "Don't Replace Yet! Free Photo-Documented Report - Shingle ID, damage evidence, and Repair vs Replace options. We document damage, we don't just sell roofs."], ["What's a Photo-Documented Shingle Report?", "We photograph every slope, identify your shingle, document granule loss, bruising, cracks, seal failure. You get photos + honest assessment."], ["My insurance denied my claim. Can you help?", "We're roofing contractors, not public adjusters - we don't negotiate claims. What we do provide is a Free Photo-Documented Report: Shingle ID + photos of what we see + Repair vs Replace options. It's yours to keep and share with your carrier if you choose. Many neighbors use it for a second look."], ["Are you local or chasing storms?", "We're your neighbors - Waterloo • Columbia • Belleville • STL. Not a storm chaser. Fully Insured $2M Liability + Workers Comp. Local. Reliable. Protecting What Matters."], ["How fast do you respond?", "During business hours, we call as soon as we receive your request to reach out with the right information to help you take the next step. Fill out what's needed and we look forward to talking soon and sharing your free photo-documented options. That's why Google pulls us when you search quick response roofing companies or fast response roofer near me in Waterloo, Columbia, Belleville & STL. Same-day evaluations when available."], ["What warranty?", "10-Year Workmanship Warranty on our work, plus the manufacturer warranty on the materials we install. 5.0★ Google Reviews."]].map(([question, answer]) => (
             <details key={question} className="bg-white border border-zinc-200 rounded-xl p-5">
               <summary className="text-black font-bold cursor-pointer focus-visible:outline-brand">{question}</summary>
               <p className="text-zinc-600 text-sm leading-relaxed mt-3">{answer}</p>

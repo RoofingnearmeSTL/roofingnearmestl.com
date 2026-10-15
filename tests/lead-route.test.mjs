@@ -118,9 +118,12 @@ test('requires name and phone before inserting', async () => {
 
 for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate Tile']]) {
   test(`${label} form payload persists age/emergency and emails every roofing detail`, async () => {
+    // The homepage builds the estimator extras; the shared LeadForm merges them into the payload.
     const page = fs.readFileSync('src/app/page.tsx', 'utf8')
-    const payloadSource = page.slice(page.indexOf('    const payload = {'), page.indexOf('\n    try {', page.indexOf('    const payload = {')))
-    const compiled = ts.transpileModule(`${payloadSource}\nexports.payload = payload`, {
+    const leadForm = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
+    const extrasSource = page.slice(page.indexOf('  const tile = '), page.indexOf('\n  };', page.indexOf('  const estimateExtras = {')) + 5)
+    const payloadSource = leadForm.slice(leadForm.indexOf('    const payload = {'), leadForm.indexOf('\n    try {', leadForm.indexOf('    const payload = {')))
+    const compiled = ts.transpileModule(`${extrasSource}\nconst extras = estimateExtras\n${payloadSource}\nexports.payload = payload`, {
       compilerOptions: { module: ts.ModuleKind.CommonJS },
     }).outputText
     const form = new Map(Object.entries({ name: 'Tile Customer', phone: '3145550100', email: 'customer@example.invalid',
@@ -135,9 +138,11 @@ for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate Tile']]
     assert.equal(payload.emergency, true)
     assert.equal(payload.roof_size, '~1,800 sqft')
     assert.equal(payload.roof_pitch, 'Medium Pitch')
+    assert.equal(payload.est_price_low, null)
     assert.match(page, new RegExp(`<option value="${material}">${label}</option>`))
-    assert.match(page, /name="roof_age"/)
-    assert.match(page, /name="emergency" type="checkbox"/)
+    assert.match(page, /<LeadForm extras=\{estimateExtras\}/)
+    assert.match(leadForm, /name="roof_age"/)
+    assert.match(leadForm, /name="emergency" type="checkbox"/)
     const { calls, post } = handler()
     assert.equal((await post(payload)).status, 200)
     const row = calls.inserts[0][0]

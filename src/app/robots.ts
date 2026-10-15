@@ -2,6 +2,6 @@ import { MetadataRoute } from 'next';
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: { userAgent: '*', allow: '/' },
-    sitemap: 'https://roofingnearmestl.com/sitemap.xml',
+    sitemap: 'https://www.roofingnearmestl.com/sitemap.xml',
   };
 }
