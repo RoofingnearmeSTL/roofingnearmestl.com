@@ -198,3 +198,29 @@ test('a failed text alert does not fail a saved lead', async () => {
   assert.equal(calls.inserts.length, 1)
   assert.ok(calls.logs.some(([message]) => message === 'LEAD SMS FAILED'))
 })
+
+test('spam trap answers ok but saves and sends nothing', async () => {
+  const { calls, post } = handler({ env: twilio })
+  const response = await post({ ...lead, company: 'Bot LLC' })
+  assert.equal(response.status, 200)
+  assert.equal(calls.inserts.length, 0)
+  assert.equal(calls.emails.length, 0)
+  assert.equal(calls.sms.length, 0)
+})
+
+test('rejects phone numbers without 10 digits', async () => {
+  const { calls, post } = handler()
+  assert.equal((await post({ ...lead, phone: 'test' })).status, 400)
+  assert.equal((await post({ ...lead, phone: '555-0100' })).status, 400)
+  assert.equal(calls.inserts.length, 0)
+})
+
+test('clips long text, drops non-text values and ignores an invalid reply-to email', async () => {
+  const { calls, post } = handler()
+  await post({ ...lead, message: 'x'.repeat(5000), address: { $ne: 1 }, email: 'not-an-email' })
+  const row = calls.inserts[0][0]
+  assert.equal(row.message.length, 2000)
+  assert.equal(row.address, null)
+  assert.equal(row.email, null)
+  assert.equal('replyTo' in calls.emails[0], false)
+})

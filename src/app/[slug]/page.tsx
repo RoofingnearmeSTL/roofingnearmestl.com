@@ -5,6 +5,9 @@ import BrandHeader from "@/components/brand-header";
 import BrandFooter from "@/components/brand-footer";
 import EmergencyBar from "@/components/emergency-bar";
 import LeadForm from "@/components/lead-form";
+import HeroBackground from "@/components/hero-background";
+import ProcessSteps from "@/components/process-steps";
+import Certifications from "@/components/certifications";
 import { SITE_URL, businessSchema, faqSchema, getSitePage, jsonLd, sitePages, type SitePage } from "@/lib/site-pages";
 
 export const dynamicParams = false;
@@ -63,18 +66,19 @@ export default async function SitePageView({ params }: PageProps<"/[slug]">) {
           <span>✓ Fully Insured - $2M Liability + Workers Comp</span>
           <span>✓ 10-Yr Workmanship Warranty</span>
           <span>✓ 5.0★ Google Reviews</span>
+          <span>✓ BEI Certified: Hail &amp; Wind Damage</span>
           <span>✓ Local to Waterloo / Columbia / Belleville / STL</span>
         </div>
       </div>
 
-      <section className="relative isolate bg-white">
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[url('/logo.png')] bg-no-repeat bg-center bg-contain opacity-[0.06] pointer-events-none" />
+      <section className="relative isolate bg-black">
+        <HeroBackground />
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
           <div>
-            <nav aria-label="Breadcrumb" className="text-sm text-zinc-500 mb-4"><Link href="/" className="hover:text-black underline">Home</Link> / <span className="text-black">{page.navLabel}</span></nav>
+            <nav aria-label="Breadcrumb" className="text-sm text-zinc-300 mb-4"><Link href="/" className="hover:text-white underline">Home</Link> / <span className="text-white">{page.navLabel}</span></nav>
             <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-bold mb-4">✓ {page.eyebrow} - Free Photo-Documented Report</div>
-            <h1 className="text-black tracking-tight leading-[1.1] font-extrabold text-4xl sm:text-5xl">{page.h1}</h1>
-            <p className="text-zinc-600 text-lg leading-relaxed mt-5">{page.intro}</p>
+            <h1 className="text-white tracking-tight leading-[1.1] font-extrabold text-4xl sm:text-5xl">{page.h1}</h1>
+            <p className="text-zinc-200 text-lg leading-relaxed mt-5">{page.intro}</p>
 
             <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4 text-center">
               {[["5.0★", "Google Rating"], ["10-Yr", "Workmanship Warranty"], ["Same Day", "Free Honest Evaluation"]].map(([value, label]) => (
@@ -83,8 +87,8 @@ export default async function SitePageView({ params }: PageProps<"/[slug]">) {
             </div>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <a href="tel:+16186125192" className="text-center bg-black hover:bg-zinc-800 text-white px-6 py-3 rounded-full font-bold">Illinois: 618-612-5192</a>
-              <a href="tel:+13142027663" className="text-center bg-black hover:bg-zinc-800 text-white px-6 py-3 rounded-full font-bold">Missouri: 314-202-7663</a>
+              <a href="tel:+16186125192" className="text-center bg-white hover:bg-zinc-200 text-black px-6 py-3 rounded-full font-bold">Illinois: 618-612-5192</a>
+              <a href="tel:+13142027663" className="text-center bg-white hover:bg-zinc-200 text-black px-6 py-3 rounded-full font-bold">Missouri: 314-202-7663</a>
             </div>
           </div>
 
@@ -111,6 +115,9 @@ export default async function SitePageView({ params }: PageProps<"/[slug]">) {
           ))}
         </div>
       </section>
+
+      <ProcessSteps />
+      <Certifications />
 
       <section id="faq" className="max-w-4xl mx-auto px-6 py-16 scroll-mt-40">
         <h2 className="text-black font-extrabold text-3xl text-center">{page.navLabel} FAQ</h2>

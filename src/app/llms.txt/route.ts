@@ -19,6 +19,7 @@ export function GET() {
 - Fully insured: $2M liability plus workers' compensation
 - 10-Year Workmanship Warranty
 - 5.0-star Google rating
+- Inspections by Mike Williamson, Building Experts Institute (BEI) certified in hail damage identification, wind damage identification, installation, and building code for asphalt shingle roofs (valid through March 2029)
 - Financing available for retail projects
 - Roofing contractor, not a public adjuster: provides photo documentation homeowners can share with their insurance carrier, but does not negotiate claims
 

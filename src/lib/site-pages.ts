@@ -395,3 +395,18 @@ export function faqSchema(faqs: [question: string, answer: string][]) {
 export function jsonLd(data: object) {
   return { __html: JSON.stringify(data).replace(/</g, "\u003c") };
 }
+
+export const processSteps: [title: string, body: string][] = [
+  ["Call or Request Online", "Tell us what's going on. During business hours, we call as soon as your request comes in. Active leak? We offer 24/7 emergency tarping."],
+  ["Photo-Documented Inspection", "We inspect and photograph every slope, identify your shingle, and mark any hail or wind damage we find."],
+  ["Honest Options, In Writing", "You get the photos plus honest Repair vs Replace options and a written estimate. No pressure, and the report is yours to keep."],
+  ["Repair or Replace, Then Clean-Up", "Our crew does the work and cleans up the job site, backed by our 10-Year Workmanship Warranty."],
+];
+
+// Building Experts Institute certificates of completion held by Mike Williamson (issued Mar 2026, valid to Mar 2029).
+export const certifications = [
+  { title: "Hail Damage Identification", subject: "Asphalt Shingle Roofs", number: "1772825948-28-1442", issued: "Mar 06, 2026", expires: "Mar 06, 2029", file: "/certifications/bei-hail-damage-identification.pdf" },
+  { title: "Wind Damage Identification", subject: "Asphalt Shingle Roofs", number: "1772943831-29-1442", issued: "Mar 07, 2026", expires: "Mar 07, 2029", file: "/certifications/bei-wind-damage-identification.pdf" },
+  { title: "Installation", subject: "Asphalt Shingle Roofs", number: "1773862133-30-1442", issued: "Mar 18, 2026", expires: "Mar 18, 2029", file: "/certifications/bei-asphalt-shingle-installation.pdf" },
+  { title: "Building Code", subject: "Asphalt Shingle Roofs", number: "1773114388-31-1442", issued: "Mar 09, 2026", expires: "Mar 09, 2029", file: "/certifications/bei-asphalt-shingle-building-code.pdf" },
+];
