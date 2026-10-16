@@ -1,9 +1,19 @@
 import { MetadataRoute } from 'next';
+import { SITE_URL, sitePages } from '@/lib/site-pages';
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [{
-    url: 'https://roofingnearmestl.com',
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 1,
-  }];
+  return [
+    {
+      url: SITE_URL,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 1,
+    },
+    ...sitePages.map((page) => ({
+      url: `${SITE_URL}/${page.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: page.kind === 'service' ? 0.9 : 0.8,
+    })),
+  ];
 }

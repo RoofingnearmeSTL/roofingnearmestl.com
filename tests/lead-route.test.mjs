@@ -8,8 +8,8 @@ const source = ts.transpileModule(fs.readFileSync('src/app/api/lead/route.ts', '
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
 
-function handler({ insertError = null, emailError = null, env = {} } = {}) {
-  const calls = { inserts: [], emails: [], logs: [] }
+function handler({ insertError = null, emailError = null, env = {}, smsStatus = 201 } = {}) {
+  const calls = { inserts: [], emails: [], logs: [], sms: [] }
   const environment = {
     NEXT_PUBLIC_SUPABASE_URL: 'https://example.invalid',
     SUPABASE_SERVICE_ROLE_KEY: 'test-server-key',
@@ -19,7 +19,8 @@ function handler({ insertError = null, emailError = null, env = {} } = {}) {
   }
   const exports = {}
   vm.runInNewContext(source, {
-    exports, process: { env: environment },
+    exports, process: { env: environment }, btoa, URLSearchParams,
+    fetch: async (url, options) => { calls.sms.push({ url, ...options }); return { ok: smsStatus < 400, status: smsStatus } },
     console: Object.fromEntries(['log', 'error'].map(level => [level, (...args) => calls.logs.push(args)])),
     require(name) {
       if (name === 'next/server') return { NextResponse: { json: (data, options) => ({ data, status: options?.status ?? 200 }) } }
@@ -118,9 +119,12 @@ test('requires name and phone before inserting', async () => {
 
 for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate Tile']]) {
   test(`${label} form payload persists age/emergency and emails every roofing detail`, async () => {
+    // The homepage builds the estimator extras; the shared LeadForm merges them into the payload.
     const page = fs.readFileSync('src/app/page.tsx', 'utf8')
-    const payloadSource = page.slice(page.indexOf('    const payload = {'), page.indexOf('\n    try {', page.indexOf('    const payload = {')))
-    const compiled = ts.transpileModule(`${payloadSource}\nexports.payload = payload`, {
+    const leadForm = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
+    const extrasSource = page.slice(page.indexOf('  const tile = '), page.indexOf('\n  };', page.indexOf('  const estimateExtras = {')) + 5)
+    const payloadSource = leadForm.slice(leadForm.indexOf('    const payload = {'), leadForm.indexOf('\n    try {', leadForm.indexOf('    const payload = {')))
+    const compiled = ts.transpileModule(`${extrasSource}\nconst extras = estimateExtras\n${payloadSource}\nexports.payload = payload`, {
       compilerOptions: { module: ts.ModuleKind.CommonJS },
     }).outputText
     const form = new Map(Object.entries({ name: 'Tile Customer', phone: '3145550100', email: 'customer@example.invalid',
@@ -135,9 +139,11 @@ for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate Tile']]
     assert.equal(payload.emergency, true)
     assert.equal(payload.roof_size, '~1,800 sqft')
     assert.equal(payload.roof_pitch, 'Medium Pitch')
+    assert.equal(payload.est_price_low, null)
     assert.match(page, new RegExp(`<option value="${material}">${label}</option>`))
-    assert.match(page, /name="roof_age"/)
-    assert.match(page, /name="emergency" type="checkbox"/)
+    assert.match(page, /<LeadForm extras=\{estimateExtras\}/)
+    assert.match(leadForm, /name="roof_age"/)
+    assert.match(leadForm, /name="emergency" type="checkbox"/)
     const { calls, post } = handler()
     assert.equal((await post(payload)).status, 200)
     const row = calls.inserts[0][0]
@@ -162,4 +168,33 @@ test('unchecked emergency is No and numeric roofing details remain visible', asy
   assert.match(calls.emails[0].text, /Emergency Tarp Needed: No/)
   assert.match(calls.emails[0].text, /Age of Roof: 0/)
   assert.match(calls.emails[0].text, /Roof Size: 1800/)
+})
+
+const twilio = { TWILIO_ACCOUNT_SID: 'AC123', TWILIO_AUTH_TOKEN: 'test-token', TWILIO_FROM_NUMBER: '+16185550100', LEAD_ALERT_PHONE: '+16185550199' }
+
+test('no text alert is attempted until Twilio is configured', async () => {
+  const { calls, post } = handler()
+  assert.equal((await post(lead)).status, 200)
+  assert.equal(calls.sms.length, 0)
+})
+
+test('configured Twilio sends one text alert with the lead summary', async () => {
+  const { calls, post } = handler({ env: twilio })
+  assert.equal((await post(lead)).status, 200)
+  assert.equal(calls.sms.length, 1)
+  const sms = calls.sms[0]
+  assert.equal(sms.url, 'https://api.twilio.com/2010-04-01/Accounts/AC123/Messages.json')
+  assert.equal(sms.headers.Authorization, `Basic ${btoa('AC123:test-token')}`)
+  const body = new URLSearchParams(sms.body)
+  assert.equal(body.get('From'), '+16185550100')
+  assert.equal(body.get('To'), '+16185550199')
+  assert.equal(body.get('Body'), 'EMERGENCY - New roofing lead: <Customer> | 3145550100 | St Louis | repair | leak')
+  assert.equal(calls.emails.length, 1)
+})
+
+test('a failed text alert does not fail a saved lead', async () => {
+  const { calls, post } = handler({ env: twilio, smsStatus: 400 })
+  assert.equal((await post(lead)).status, 200)
+  assert.equal(calls.inserts.length, 1)
+  assert.ok(calls.logs.some(([message]) => message === 'LEAD SMS FAILED'))
 })
