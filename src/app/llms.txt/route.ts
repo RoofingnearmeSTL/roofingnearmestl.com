@@ -1,4 +1,4 @@
-import { SITE_URL, sitePages } from "@/lib/site-pages";
+import { FACEBOOK_URL, GOOGLE_BUSINESS_URL, SITE_URL, sitePages } from "@/lib/site-pages";
 
 export const dynamic = "force-static";
 
@@ -30,6 +30,11 @@ ${links("service")}
 ## Service areas
 
 ${links("city")}
+
+## Profiles
+
+- [Facebook](${FACEBOOK_URL})${GOOGLE_BUSINESS_URL ? `
+- [Google Business Profile](${GOOGLE_BUSINESS_URL})` : ""}
 
 ## Get a free estimate
 

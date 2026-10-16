@@ -375,14 +375,22 @@ export const homeFaqs: [question: string, answer: string][] = [
   ["Do I have to hire you after the free report?", "No. The Free Photo-Documented Report is yours to keep, whether you hire us, get other quotes, or share it with your insurance carrier."],
 ];
 
+export const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61592983316574";
+// Public Google Business Profile (Maps "Share" link) and review link, set in Vercel when available.
+export const GOOGLE_BUSINESS_URL = process.env.NEXT_PUBLIC_GOOGLE_BUSINESS_URL || "";
+export const GOOGLE_REVIEWS_URL = process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL || "";
+
 export const businessSchema = {
   "@type": "RoofingContractor",
   "@id": `${SITE_URL}/#business`,
   name: "Roofing Near Me STL",
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
+  image: `${SITE_URL}/og-image.jpg`,
+  slogan: "Local. Reliable. Protecting What Matters.",
   telephone: ["+1-618-612-5192", "+1-314-202-7663"],
   areaServed: ["Waterloo, IL", "Columbia, IL", "Belleville, IL", "St. Louis, MO"].map((name) => ({ "@type": "City", name })),
+  sameAs: [FACEBOOK_URL, GOOGLE_BUSINESS_URL].filter(Boolean),
 };
 
 export function faqSchema(faqs: [question: string, answer: string][]) {

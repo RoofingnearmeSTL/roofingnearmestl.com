@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
     title: page.title,
     description: page.description,
     alternates: { canonical: url },
-    openGraph: { title: page.title, description: page.description, url, siteName: "Roofing Near Me STL", type: "website" },
+    openGraph: { title: page.title, description: page.description, url, siteName: "Roofing Near Me STL", type: "website", images: [{ url: "/og-image.jpg", width: 1200, height: 630 }] },
   };
 }
 
