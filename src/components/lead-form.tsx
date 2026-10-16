@@ -62,6 +62,7 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       roof_age: fd.get("roof_age"),
       emergency: fd.get("emergency") === "on",
       message: fd.get("details"),
+      company: fd.get("company"),
       utm_source: utm.source,
       utm_medium: utm.medium,
       utm_campaign: utm.campaign,
@@ -100,37 +101,41 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
 
   return (
     <form className="space-y-3" onSubmit={handleLeadSubmit}>
-      <input name="name" required placeholder="Your Name" className={inputClass} />
-      <input name="phone" required placeholder="Phone Number" className={inputClass} />
-      <input name="email" type="email" placeholder="Email (optional)" className={inputClass} />
-      <input name="address" placeholder="Address (optional)" className={inputClass} />
-      <input name="city" defaultValue={defaultCity} placeholder="City (optional)" className={inputClass} />
-      <select name="service" defaultValue={defaultService} className={inputClass}>
+      <input name="name" required maxLength={100} autoComplete="name" placeholder="Your Name *" aria-label="Your name" className={inputClass} />
+      <input name="phone" required type="tel" inputMode="tel" maxLength={30} pattern="(?:\D*\d){10,}\D*" title="Please enter a 10-digit phone number" autoComplete="tel" placeholder="Phone Number *" aria-label="Phone number" className={inputClass} />
+      <input name="city" defaultValue={defaultCity} maxLength={80} autoComplete="address-level2" placeholder="City" aria-label="City" className={inputClass} />
+      <select name="service" defaultValue={defaultService} aria-label="Service needed" className={inputClass}>
         {SERVICES.map((service) => <option key={service}>{service}</option>)}
       </select>
-      <textarea name="details" placeholder="What's going on with your roof?" rows={3} className={inputClass}></textarea>
-      <label className="block text-sm font-semibold text-black">
-        Issue
-        <input name="issue_type" placeholder="Leak, storm damage, aging roof, or other issue" className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black" />
+      <label className="flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm font-semibold text-black">
+        <input name="emergency" type="checkbox" className="h-5 w-5 accent-brand" />
+        Active leak? Need an emergency tarp now
       </label>
-      <label className="block text-sm font-semibold text-black">
-        Age of Roof
-        <select name="roof_age" defaultValue="Unknown" className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black">
-          <option value="<5 years">&lt;5 years</option>
-          <option value="5-10 years">5-10 years</option>
-          <option value="10-15 years">10-15 years</option>
-          <option value="15-20 years">15-20 years</option>
-          <option value="20+ years">20+ years</option>
-          <option value="Unknown">Unknown</option>
-        </select>
-      </label>
-      <fieldset className="text-sm text-black">
-        <legend className="font-semibold">Emergency Tarp Needed</legend>
-        <label className="mt-2 flex items-center gap-2">
-          <input name="emergency" type="checkbox" className="h-5 w-5 accent-brand" />
-          Active leak / Need emergency tarp now
-        </label>
-      </fieldset>
+      {/* Spam trap: hidden from people, bots fill it in. */}
+      <input name="company" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-px w-px opacity-0" />
+      <details className="group rounded-xl border border-zinc-200 bg-white/70 px-4 py-3 text-sm text-black">
+        <summary className="cursor-pointer font-semibold text-zinc-700">+ Add more details (optional)</summary>
+        <div className="mt-3 space-y-3">
+          <input name="email" type="email" maxLength={254} autoComplete="email" placeholder="Email" aria-label="Email" className={inputClass} />
+          <input name="address" maxLength={200} autoComplete="street-address" placeholder="Street address" aria-label="Street address" className={inputClass} />
+          <label className="block font-semibold">
+            Issue
+            <input name="issue_type" maxLength={200} placeholder="Leak, storm damage, aging roof, or other issue" className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black" />
+          </label>
+          <label className="block font-semibold">
+            Age of Roof
+            <select name="roof_age" defaultValue="Unknown" className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black">
+              <option value="<5 years">&lt;5 years</option>
+              <option value="5-10 years">5-10 years</option>
+              <option value="10-15 years">10-15 years</option>
+              <option value="15-20 years">15-20 years</option>
+              <option value="20+ years">20+ years</option>
+              <option value="Unknown">Unknown</option>
+            </select>
+          </label>
+          <textarea name="details" maxLength={2000} placeholder="What's going on with your roof?" aria-label="What's going on with your roof?" rows={3} className={inputClass}></textarea>
+        </div>
+      </details>
       <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
         {sending ? "Sending..." : "GET MY FREE PHOTO REPORT →"}
       </button>
