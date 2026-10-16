@@ -114,7 +114,7 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       {/* Spam trap: hidden from people, bots fill it in. */}
       <input name="company" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-px w-px opacity-0" />
       <details className="group rounded-xl border border-zinc-200 bg-white/70 px-4 py-3 text-sm text-black">
-        <summary className="cursor-pointer font-semibold text-zinc-700">+ Add more details (optional)</summary>
+        <summary className="cursor-pointer list-none font-semibold text-zinc-700 [&::-webkit-details-marker]:hidden"><span className="group-open:hidden">+</span><span className="hidden group-open:inline">−</span> Add more details (optional)</summary>
         <div className="mt-3 space-y-3">
           <input name="email" type="email" maxLength={254} autoComplete="email" placeholder="Email" aria-label="Email" className={inputClass} />
           <input name="address" maxLength={200} autoComplete="street-address" placeholder="Street address" aria-label="Street address" className={inputClass} />
