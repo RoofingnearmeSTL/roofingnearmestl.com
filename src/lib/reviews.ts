@@ -29,6 +29,13 @@ export type Review = {
 };
 
 export const reviews: Review[] = [
+  {
+    author: "Sherry Daly",
+    rating: 5,
+    date: "2026-10-19",
+    text: "I can't say enough good things about Mike and the work he did for me. I have been with the same insurance company for 20 years, and when my roof needed to be replaced, they initially offered me only a small amount toward the repairs. Mike went above and beyond to help me work through the insurance process. He worked extremely hard, provided the documentation needed, and continued to follow up with the insurance company for months. There were several times when I was ready to give up, but Mike never did. He stayed persistent and kept fighting on my behalf. Because of Mike's hard work and dedication, the insurance company ultimately approved a substantial amount more than they initially offered, which made a huge difference in being able to pay for my new roof. Mike was professional, hardworking, persistent, and truly looked out for my best interest throughout the entire process. I'm incredibly grateful for everything he did and would absolutely recommend him to anyone who needs a roofer. He didn't just do a great job on the roof — he went the extra mile to make sure I received what I was entitled to from my insurance company.",
+    source: "google",
+  },
 ];
 
 // Schema.org data matching the reviews shown on the page. Google does not show star
