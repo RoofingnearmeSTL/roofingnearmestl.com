@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 export default function MobileCallBar() {
   const pathname = usePathname();
-  if (pathname === "/thank-you" || pathname.startsWith("/thank-you/")) return null;
+  if (pathname === "/thank-you" || pathname.startsWith("/thank-you/") || pathname === "/review/print") return null;
 
   return (
     <>

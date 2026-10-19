@@ -376,9 +376,13 @@ export const homeFaqs: [question: string, answer: string][] = [
 ];
 
 export const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61592983316574";
-// Public Google Business Profile (Maps "Share" link) and review link, set in Vercel when available.
-export const GOOGLE_BUSINESS_URL = process.env.NEXT_PUBLIC_GOOGLE_BUSINESS_URL || "";
-export const GOOGLE_REVIEWS_URL = process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL || "";
+export const FACEBOOK_REVIEWS_URL = `${FACEBOOK_URL}&sk=reviews`;
+// Verified Google Business Profile (Maps listing by its Google ID) and its "Ask for reviews" link.
+// Vercel env vars can override these without a code change.
+export const GOOGLE_BUSINESS_URL = process.env.NEXT_PUBLIC_GOOGLE_BUSINESS_URL || "https://maps.google.com/?cid=14595866484134946559";
+export const GOOGLE_REVIEWS_URL = process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL || "https://g.page/r/Cf-m5C88747KEAI/review";
+// Short link to print, text or email: /review shows both review buttons. QR codes point here.
+export const REVIEW_PAGE_URL = `${SITE_URL}/review`;
 
 export const businessSchema = {
   "@type": "RoofingContractor",
@@ -391,6 +395,7 @@ export const businessSchema = {
   slogan: "Local. Reliable. Protecting What Matters.",
   telephone: ["+1-618-612-5192", "+1-314-202-7663"],
   areaServed: ["Waterloo, IL", "Columbia, IL", "Belleville, IL", "St. Louis, MO"].map((name) => ({ "@type": "City", name })),
+  hasMap: GOOGLE_BUSINESS_URL,
   sameAs: [FACEBOOK_URL, GOOGLE_BUSINESS_URL].filter(Boolean),
 };
 
@@ -402,7 +407,8 @@ export function faqSchema(faqs: [question: string, answer: string][]) {
 }
 
 export function jsonLd(data: object) {
-  return { __html: JSON.stringify(data).replace(/</g, "\u003c") };
+  // Escape "<" so text inside the data (e.g. a review) can never close the script tag.
+  return { __html: JSON.stringify(data).replace(/</g, String.fromCharCode(92) + "u003c") };
 }
 
 export const processSteps: [title: string, body: string][] = [

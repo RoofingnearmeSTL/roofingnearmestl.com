@@ -8,7 +8,9 @@ import HeroBackground from "@/components/hero-background";
 import ProcessSteps from "@/components/process-steps";
 import Certifications from "@/components/certifications";
 import Link from "next/link";
-import { businessSchema, faqSchema, homeFaqs, jsonLd, sitePages } from "@/lib/site-pages";
+import { GOOGLE_REVIEWS_URL, businessSchema, faqSchema, homeFaqs, jsonLd, sitePages } from "@/lib/site-pages";
+import { reviewSchema } from "@/lib/reviews";
+import ReviewsSection from "@/components/reviews-section";
 import { useState, useEffect } from "react";
 
 export default function Home() {
@@ -16,8 +18,6 @@ export default function Home() {
   const [est, setEst] = useState({ size: "1800", pitch: "medium", material: "asphalt", email: "" });
   const [showPrice, setShowPrice] = useState(false);
 
-  // Set NEXT_PUBLIC_GOOGLE_REVIEWS_URL in Vercel to the review link from Google Business Profile.
-  const googleReviewsUrl = process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL;
 
   useEffect(() => {
     const params = new URLSearchParams(landing ? new URL(landing).search : "");
@@ -63,7 +63,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
-      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", "@graph": [businessSchema, faqSchema(homeFaqs)] })} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", "@graph": [{ ...businessSchema, ...reviewSchema() }, faqSchema(homeFaqs)] })} />
       <EmergencyBar />
       <BrandHeader />
 
@@ -101,7 +101,7 @@ export default function Home() {
         <div className="lg:col-start-1 lg:row-start-2">
 
           <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
-            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">5.0★</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">{googleReviewsUrl ? <a href={googleReviewsUrl} target="_blank" rel="noopener noreferrer" className="underline">Google Rating</a> : "Google Rating"}</div></div>
+            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">5.0★</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide"><a href={GOOGLE_REVIEWS_URL} target="_blank" rel="noopener noreferrer" className="underline">Google Rating</a></div></div>
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">10-Yr</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Workmanship Warranty</div></div>
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">Same Day</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Free Honest Evaluation</div></div>
           </div>
@@ -176,6 +176,7 @@ export default function Home() {
         </div>
       </section>
 
+      <ReviewsSection />
       <ProcessSteps />
       <Certifications />
 
