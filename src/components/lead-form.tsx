@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
+import { LEAD_SERVICES } from "@/lib/site-pages";
 
 function subscribeToLocation(onChange: () => void) {
   window.addEventListener("popstate", onChange);
@@ -64,7 +65,7 @@ export function useLandingUtm() {
   };
 }
 
-const SERVICES = ["Roof Repair", "Roof Replacement", "Leak / Emergency", "Storm Damage / Insurance", "Gutters / Siding"];
+const SERVICES = LEAD_SERVICES;
 const inputClass = "w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none";
 
 // Extra fields merged into the lead payload, e.g. the homepage cost estimator selections.
