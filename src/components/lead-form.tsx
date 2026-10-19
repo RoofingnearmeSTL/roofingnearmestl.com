@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 
@@ -173,6 +174,7 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
         {sending ? "Sending..." : "GET MY FREE PHOTO REPORT →"}
       </button>
+      <p className="text-center text-xs text-zinc-500">We only use your info to contact you about your roof. <Link href="/privacy" className="underline">Privacy Policy</Link></p>
       {footer}
     </form>
   );
