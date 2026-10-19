@@ -174,6 +174,7 @@ export default function Home() {
             <nav aria-label="Areas We Serve" className="bg-white border-2 border-zinc-200 rounded-2xl p-6 shadow-sm">
               <h3 className="text-black font-bold text-lg"><Link href="/areas-we-serve" className="hover:text-brand">Areas We Serve</Link></h3>
               <ServiceAreaDirectory compact />
+              <Link href="/areas-we-serve" className="mt-3 inline-block text-sm font-bold text-brand underline">All service areas →</Link>
             </nav>
           </div>
         </div>
