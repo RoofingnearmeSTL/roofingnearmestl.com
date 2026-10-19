@@ -62,7 +62,19 @@ export async function POST(req: Request) {
       roof_material: field(body.roof_material ?? body.est_material, 40),
       emergency: body.emergency === true,
       message: field(body.message ?? body.details, 2000),
+      // Where the lead came from (campaign tags and ad click IDs from the landing URL).
+      utm_source: field(body.utm_source, 120),
+      utm_medium: field(body.utm_medium, 120),
+      utm_campaign: field(body.utm_campaign, 200),
+      utm_term: field(body.utm_term, 200),
+      utm_content: field(body.utm_content, 200),
+      gclid: field(body.gclid, 300),
+      fbclid: field(body.fbclid, 300),
+      landing_page: field(body.landing_page, 500),
+      page_url: field(body.page, 500),
     }
+    const sourceLabel = [leadValue(lead.utm_source), leadValue(lead.utm_medium), leadValue(lead.utm_campaign)].filter(Boolean).join(' / ')
+      || (lead.gclid ? 'Google Ads click' : lead.fbclid ? 'Facebook / Instagram click' : 'Direct or unknown')
     const { error } = await supabase.from('leads').insert([lead])
     if (error) {
       console.error('SUPABASE INSERT FAILED', { code: error.code })
@@ -86,15 +98,18 @@ export async function POST(req: Request) {
           ['Pitch', leadValue(lead.roof_pitch)],
           ['Material', leadValue(lead.roof_material)],
           ['Message', leadValue(lead.message)],
+          ['Source', sourceLabel],
+          ['Landing Page', leadValue(lead.landing_page)],
+          ['Form Page', leadValue(lead.page_url)],
         ]
         const resend = new Resend(process.env.RESEND_API_KEY)
         const { data: emailData, error: emailError } = await resend.emails.send({
-          from: 'Roofing Near Me STL <leads@roofingnearmestl.com>',
+          from: 'RoofingnearmeSTL <leads@roofingnearmestl.com>',
           to: process.env.LEAD_TO_EMAIL,
           ...(lead.email ? { replyTo: lead.email } : {}),
           subject: `New Roofing Lead: ${leadValue(lead.city)} - ${leadValue(lead.service_type)} - ${leadValue(lead.issue_type)}`.replace(/[\r\n]/g, ' '),
           html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-            <img src="https://www.roofingnearmestl.com/logo.png" alt="Roofing Near Me STL" width="180" />
+            <img src="https://www.roofingnearmestl.com/logo.png" alt="RoofingnearmeSTL" width="180" />
             <h2>New Roofing Lead</h2>
             <table style="width:100%;border-collapse:collapse">${fields.map(([label, value]) =>
               `<tr><th style="text-align:left;padding:8px 0">${escapeHtml(label)}:</th><td>${escapeHtml(value).replace(/\r?\n/g, '<br>')}</td></tr>`

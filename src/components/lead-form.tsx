@@ -14,18 +14,52 @@ function subscribeToLocation(onChange: () => void) {
 const getLocationSnapshot = () => window.location.href;
 const getServerLocationSnapshot = () => "";
 
+// The campaign tags a visitor arrived with are remembered (30 days) so a lead submitted
+// on a later page, or a later visit, is still credited to the ad/post that brought them in.
+const SOURCE_KEY = "roofing-lead-source";
+const SOURCE_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid"] as const;
+type LeadSource = Partial<Record<(typeof SOURCE_PARAMS)[number] | "landing_page", string>> & { saved_at?: number };
+
+export function rememberLandingSource() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (!SOURCE_PARAMS.some((key) => params.get(key))) return;
+    const source: LeadSource = { landing_page: window.location.href.slice(0, 500), saved_at: Date.now() };
+    for (const key of SOURCE_PARAMS) {
+      const value = params.get(key);
+      if (value) source[key] = value.slice(0, 300);
+    }
+    localStorage.setItem(SOURCE_KEY, JSON.stringify(source));
+  } catch {
+    // Storage can be blocked; the current URL is still used at submit time.
+  }
+}
+
+function rememberedSource(): LeadSource {
+  try {
+    const source: LeadSource = JSON.parse(localStorage.getItem(SOURCE_KEY) ?? "{}");
+    if (!source.saved_at || Date.now() - source.saved_at > 30 * 24 * 60 * 60 * 1000) return {};
+    return source;
+  } catch {
+    return {};
+  }
+}
+
 export function useLandingUtm() {
   const landing = useSyncExternalStore(subscribeToLocation, getLocationSnapshot, getServerLocationSnapshot);
   const p = new URLSearchParams(landing ? new URL(landing).search : "");
+  const current = SOURCE_PARAMS.some((key) => p.get(key)) || p.get("source");
+  // No tags on this URL: fall back to the ones remembered from the visitor's landing page.
+  const saved: LeadSource = !current && landing ? rememberedSource() : {};
   return {
-    source: p.get("utm_source") || p.get("source") || "",
-    medium: p.get("utm_medium") || "",
-    campaign: p.get("utm_campaign") || "",
-    content: p.get("utm_content") || "",
-    term: p.get("utm_term") || "",
-    gclid: p.get("gclid") || "",
-    fbclid: p.get("fbclid") || "",
-    landing,
+    source: p.get("utm_source") || p.get("source") || saved.utm_source || "",
+    medium: p.get("utm_medium") || saved.utm_medium || "",
+    campaign: p.get("utm_campaign") || saved.utm_campaign || "",
+    content: p.get("utm_content") || saved.utm_content || "",
+    term: p.get("utm_term") || saved.utm_term || "",
+    gclid: p.get("gclid") || saved.gclid || "",
+    fbclid: p.get("fbclid") || saved.fbclid || "",
+    landing: saved.landing_page || landing,
   };
 }
 

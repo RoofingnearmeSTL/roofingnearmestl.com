@@ -3,6 +3,7 @@
 import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { rememberLandingSource } from "./lead-form";
 
 // Marketing tags, each off until its ID is set in Vercel:
 // - NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO (AW-123/abc): Google Ads
@@ -49,6 +50,7 @@ function useMetaPageViews() {
 export default function GoogleAds() {
   useCallTracking();
   useMetaPageViews();
+  useEffect(() => { rememberLandingSource(); }, []);
   return <>
     {googleTagIds.length > 0 && <>
       <Script src={`https://www.googletagmanager.com/gtag/js?id=${googleTagIds[0]}`} strategy="afterInteractive" />
