@@ -1,6 +1,7 @@
 import EstimateLink from "./estimate-link";
 import Image from "next/image";
 import Link from "next/link";
+import { DesktopNav, MobileNav } from "./nav-menus";
 
 export default function BrandHeader() {
   return (
@@ -17,12 +18,10 @@ export default function BrandHeader() {
             <p className="text-xs text-zinc-500 mt-2">Waterloo • Columbia • Belleville • STL</p>
           </div>
         </div>
-        <div className="flex items-center gap-4 xl:gap-6 shrink-0">
-          <nav aria-label="Main navigation" className="hidden md:flex items-center gap-3 xl:gap-6 text-sm font-medium text-zinc-600">
-            <Link href="/#services" className="hover:text-black">Services</Link>
-            <Link href="/#faq" className="hover:text-black">FAQ</Link>
-          </nav>
+        <div className="flex items-center gap-2 sm:gap-4 xl:gap-6 shrink-0">
+          <DesktopNav />
           <EstimateLink className="bg-brand hover:bg-brand-dark text-white rounded-full px-4 sm:px-7 py-3 font-bold text-xs sm:text-sm shadow-md shadow-brand/20 whitespace-nowrap">Get Free Quote</EstimateLink>
+          <MobileNav />
         </div>
       </div>
     </header>
