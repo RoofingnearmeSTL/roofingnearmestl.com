@@ -18,16 +18,18 @@ const shareDescription = "Don't replace yet! Free photo-documented roof report i
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.roofingnearmestl.com"),
-  title: "Roofing Near Me STL | Free Roofing Estimates",
-  description: "Local roofing estimates, repairs and replacement in St. Louis, Illinois and Missouri.",
+  title: "Roofer in Waterloo, Columbia & Belleville IL | RoofingnearmeSTL",
+  description: "Don't replace yet. Free photo-documented roof inspection from a BEI-certified inspector in Waterloo, Columbia, Belleville & St. Louis. Call 618-612-5192.",
+  // Homepage canonical; landing pages and the thank-you page set their own.
+  alternates: { canonical: "/" },
   // Preview card used when the site is shared on Facebook, Google, texts, etc.
   openGraph: {
     type: "website",
-    siteName: "Roofing Near Me STL",
-    title: "Roofing Near Me STL | Free Photo-Documented Roof Report",
+    siteName: "RoofingnearmeSTL",
+    title: "RoofingnearmeSTL | Free Photo-Documented Roof Inspection",
     description: shareDescription,
     url: "/",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "Roofing Near Me STL: Free photo-documented roof report" }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "RoofingnearmeSTL: Free photo-documented roof inspection" }],
   },
   twitter: { card: "summary_large_image", images: ["/og-image.jpg"] },
   // Site ownership codes from Google Search Console and Meta Business Suite (set in Vercel).

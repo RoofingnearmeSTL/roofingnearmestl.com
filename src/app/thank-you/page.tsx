@@ -6,7 +6,8 @@ import EmergencyBar from "@/components/emergency-bar";
 import Conversion from "./conversion";
 
 export const metadata: Metadata = {
-  title: "Thank You | Roofing Near Me STL",
+  title: "Thank You | RoofingnearmeSTL",
+  alternates: { canonical: "/thank-you" },
   description: "Your roofing estimate request has been received.",
   robots: { index: false, follow: false },
 };
@@ -25,7 +26,7 @@ export default function ThankYou() {
           <div className="inline-flex bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">✓ Request Received</div>
           <h1 className="mt-5 text-4xl sm:text-5xl font-black tracking-tight">You&apos;re All Set!</h1>
           <p className="mt-5 text-2xl font-bold">We&apos;ll call within 30 mins</p>
-          <p className="mt-3 text-zinc-600">Thanks for choosing Roofing Near Me STL. Your estimate request is saved, and our local crew will be in touch to discuss your roof.</p>
+          <p className="mt-3 text-zinc-600">Thanks for choosing RoofingnearmeSTL. Your estimate request is saved, and our local crew will be in touch to discuss your roof.</p>
           <div className="mt-7 text-yellow-500 text-3xl tracking-widest" aria-label="5 stars">★★★★★</div>
           <p className="mt-1 text-sm font-bold text-zinc-600">5.0 Google Reviews</p>
           <div className="mt-8 grid sm:grid-cols-3 gap-3 text-sm font-bold">

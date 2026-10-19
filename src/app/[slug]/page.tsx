@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
     title: page.title,
     description: page.description,
     alternates: { canonical: url },
-    openGraph: { title: page.title, description: page.description, url, siteName: "Roofing Near Me STL", type: "website", images: [{ url: "/og-image.jpg", width: 1200, height: 630 }] },
+    openGraph: { title: page.title, description: page.description, url, siteName: "RoofingnearmeSTL", type: "website", images: [{ url: "/og-image.jpg", width: 1200, height: 630 }] },
   };
 }
 
@@ -74,28 +74,30 @@ export default async function SitePageView({ params }: PageProps<"/[slug]">) {
       <section className="relative isolate bg-black">
         <HeroBackground />
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
-          <div>
+          <div className="lg:col-start-1 lg:row-start-1">
             <nav aria-label="Breadcrumb" className="text-sm text-zinc-300 mb-4"><Link href="/" className="hover:text-white underline">Home</Link> / <span className="text-white">{page.navLabel}</span></nav>
             <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-bold mb-4">✓ {page.eyebrow} - Free Photo-Documented Report</div>
             <h1 className="text-white tracking-tight leading-[1.1] font-extrabold text-4xl sm:text-5xl">{page.h1}</h1>
             <p className="text-zinc-200 text-lg leading-relaxed mt-5">{page.intro}</p>
-
-            <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4 text-center">
-              {[["5.0★", "Google Rating"], ["10-Yr", "Workmanship Warranty"], ["Same Day", "Free Honest Evaluation"]].map(([value, label]) => (
-                <div key={label} className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">{value}</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">{label}</div></div>
-              ))}
-            </div>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+            <p className="mt-6 text-sm font-bold text-white">Active leak or storm damage? Call for 24/7 emergency tarping:</p>
+            <div className="mt-2 flex flex-col sm:flex-row gap-3">
               <a href="tel:+16186125192" className="text-center bg-white hover:bg-zinc-200 text-black px-6 py-3 rounded-full font-bold">Illinois: 618-612-5192</a>
               <a href="tel:+13142027663" className="text-center bg-white hover:bg-zinc-200 text-black px-6 py-3 rounded-full font-bold">Missouri: 314-202-7663</a>
             </div>
           </div>
 
-          <div id="estimate" className="bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
+          <div id="estimate" className="lg:col-start-2 lg:row-start-1 lg:row-span-2 bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
             <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Honest Evaluation in 30 Seconds</h2>
             <p className="text-zinc-600 text-sm mt-2 mb-6">During business hours, we call as soon as we receive your request with your free photo-documented options.</p>
             <LeadForm defaultService={page.defaultService} defaultCity={page.city} footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
+          </div>
+
+          <div className="lg:col-start-1 lg:row-start-2">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
+              {[["5.0★", "Google Rating"], ["10-Yr", "Workmanship Warranty"], ["Same Day", "Free Honest Evaluation"]].map(([value, label]) => (
+                <div key={label} className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">{value}</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">{label}</div></div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

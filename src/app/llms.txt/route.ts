@@ -9,7 +9,7 @@ export function GET() {
     .map((page) => `- [${page.navLabel}](${SITE_URL}/${page.slug}): ${page.description}`)
     .join("\n");
 
-  const body = `# Roofing Near Me STL
+  const body = `# RoofingnearmeSTL (Roofing Near Me STL)
 
 > Local roofing contractor serving Waterloo, Columbia and Belleville, Illinois, and the St. Louis, Missouri metro. Roof repair, roof replacement, storm and hail damage inspections, emergency tarping, gutters and siding. Every visit starts with a free photo-documented roof report with honest repair-vs-replace options.
 

@@ -45,6 +45,8 @@ function handler({ insertError = null, emailError = null, env = {}, smsStatus = 
   return { calls, post: body => exports.POST({ json: async () => body }) }
 }
 
+const noSource = { utm_source: null, utm_medium: null, utm_campaign: null, utm_term: null, utm_content: null, gclid: null, fbclid: null, landing_page: null, page_url: null }
+
 const lead = {
   name: '<Customer>', phone: '3145550100', email: 'customer@example.invalid',
   address: '123 Example St', city: 'St Louis', service_type: 'repair', issue_type: 'leak',
@@ -56,7 +58,7 @@ test('inserts all requested columns with server credentials, then emails configu
   const { calls, post } = handler()
   const response = await post(lead)
   assert.equal(response.status, 200)
-  assert.deepEqual(JSON.parse(JSON.stringify(calls.inserts)), [[lead]])
+  assert.deepEqual(JSON.parse(JSON.stringify(calls.inserts)), [[{ ...lead, ...noSource }]])
   assert.equal(calls.table, 'leads')
   assert.equal(calls.client.key, 'test-server-key')
   assert.equal(calls.client.options.auth.persistSession, false)
@@ -147,8 +149,9 @@ for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate Tile']]
     const { calls, post } = handler()
     assert.equal((await post(payload)).status, 200)
     const row = calls.inserts[0][0]
-    assert.deepEqual(Object.keys(row), ['name', 'phone', 'email', 'address', 'city', 'service_type', 'issue_type', 'roof_age', 'roof_size', 'roof_pitch', 'roof_material', 'emergency', 'message'])
-    for (const key of Object.keys(row)) assert.equal(row[key], payload[key])
+    const leadColumns = ['name', 'phone', 'email', 'address', 'city', 'service_type', 'issue_type', 'roof_age', 'roof_size', 'roof_pitch', 'roof_material', 'emergency', 'message']
+    assert.deepEqual(Object.keys(row), [...leadColumns, ...Object.keys(noSource)])
+    for (const key of leadColumns) assert.equal(row[key], payload[key])
     const email = calls.emails[0]
     assert.equal(email.subject, 'New Roofing Lead: St Louis - Roof Repair - Active leak')
     for (const line of ['Name: Tile Customer', 'Phone: 3145550100', 'Email: customer@example.invalid',
@@ -223,4 +226,26 @@ test('clips long text, drops non-text values and ignores an invalid reply-to ema
   assert.equal(row.address, null)
   assert.equal(row.email, null)
   assert.equal('replyTo' in calls.emails[0], false)
+})
+
+test('saves lead source fields and shows the source in the email', async () => {
+  const { calls, post } = handler()
+  await post({ ...lead, utm_source: 'facebook', utm_medium: 'social', utm_campaign: 'page', fbclid: 'fb123',
+    landing_page: 'https://www.roofingnearmestl.com/?utm_source=facebook', page: 'https://www.roofingnearmestl.com/roof-repair' })
+  const row = calls.inserts[0][0]
+  assert.equal(row.utm_source, 'facebook')
+  assert.equal(row.utm_campaign, 'page')
+  assert.equal(row.fbclid, 'fb123')
+  assert.equal(row.landing_page, 'https://www.roofingnearmestl.com/?utm_source=facebook')
+  assert.equal(row.page_url, 'https://www.roofingnearmestl.com/roof-repair')
+  assert.ok(calls.emails[0].text.includes('Source: facebook / social / page'))
+  assert.ok(calls.emails[0].text.includes('Form Page: https://www.roofingnearmestl.com/roof-repair'))
+})
+
+test('an ad click without UTM tags is still labeled in the email', async () => {
+  const { calls, post } = handler()
+  await post({ ...lead, gclid: 'abc' })
+  assert.ok(calls.emails[0].text.includes('Source: Google Ads click'))
+  await post({ ...lead })
+  assert.ok(calls.emails[1].text.includes('Source: Direct or unknown'))
 })
