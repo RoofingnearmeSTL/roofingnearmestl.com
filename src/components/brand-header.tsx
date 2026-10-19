@@ -8,8 +8,8 @@ export default function BrandHeader() {
     <header className="sticky top-0 z-50 bg-white border-y-2 border-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-32 md:min-h-36 flex items-center justify-between gap-3 py-2">
         <div className="flex items-center gap-4 min-w-0">
-          <Link href="/" aria-label="Roofing Near Me STL home" className="shrink-0">
-            <Image src="/logo.png" alt="Roofing Near Me STL" width={380} height={295} priority className="h-[106px] md:h-[128px] w-auto" />
+          <Link href="/" aria-label="RoofingnearmeSTL home" className="shrink-0">
+            <Image src="/logo.png" alt="RoofingnearmeSTL" width={380} height={295} priority className="h-[106px] md:h-[128px] w-auto" />
           </Link>
           <div aria-hidden="true" className="hidden lg:block h-16 w-px bg-zinc-200 shrink-0" />
           <div className="hidden lg:block">

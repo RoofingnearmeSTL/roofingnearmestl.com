@@ -12,12 +12,34 @@ function leadValue(value: unknown): string {
   return typeof value === 'string' ? value.trim() : typeof value === 'number' ? String(value) : ''
 }
 
+// Accept only plain text (clipped to a sane length) or finite numbers; anything else is stored as null.
+function field(value: unknown, max = 200): string | number | null {
+  if (typeof value === 'string') return value.trim().slice(0, max) || null
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  return null
+}
+
+const EMAIL = /^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]+$/
+const MAX_BODY_BYTES = 20_000
+
 export async function POST(req: Request) {
   try {
+    if (Number(req.headers?.get('content-length') ?? 0) > MAX_BODY_BYTES) {
+      return NextResponse.json({ error: 'Request too large' }, { status: 413 })
+    }
     const body = await req.json()
-    if (!body || typeof body.name !== 'string' || !body.name.trim() ||
+    if (!body || typeof body !== 'object' || typeof body.name !== 'string' || !body.name.trim() ||
         typeof body.phone !== 'string' || !body.phone.trim()) {
       return NextResponse.json({ error: 'name and phone required' }, { status: 400 })
+    }
+    // Spam trap: the hidden "company" field is invisible to people, so a value means a bot.
+    // Answer like a success so the bot moves on, but save and send nothing.
+    if (typeof body.company === 'string' && body.company.trim()) {
+      console.log('LEAD SPAM TRAP')
+      return NextResponse.json({ ok: true })
+    }
+    if (body.phone.replace(/\D/g, '').length < 10) {
+      return NextResponse.json({ error: 'valid phone required' }, { status: 400 })
     }
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in Production')
@@ -25,21 +47,34 @@ export async function POST(req: Request) {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     })
+    const email = field(body.email, 254)
     const lead = {
-      name: body.name,
-      phone: body.phone,
-      email: body.email || null,
-      address: body.address || null,
-      city: body.city || null,
-      service_type: body.service_type ?? body.service ?? null,
-      issue_type: body.issue_type ?? null,
-      roof_age: body.roof_age ?? null,
-      roof_size: body.roof_size ?? body.est_size ?? null,
-      roof_pitch: body.roof_pitch ?? body.est_pitch ?? null,
-      roof_material: body.roof_material ?? body.est_material ?? null,
+      name: field(body.name, 100),
+      phone: field(body.phone, 30),
+      email: typeof email === 'string' && EMAIL.test(email) ? email : null,
+      address: field(body.address),
+      city: field(body.city, 80),
+      service_type: field(body.service_type ?? body.service, 80),
+      issue_type: field(body.issue_type),
+      roof_age: field(body.roof_age, 40),
+      roof_size: field(body.roof_size ?? body.est_size, 40),
+      roof_pitch: field(body.roof_pitch ?? body.est_pitch, 40),
+      roof_material: field(body.roof_material ?? body.est_material, 40),
       emergency: body.emergency === true,
-      message: body.message ?? body.details ?? null,
+      message: field(body.message ?? body.details, 2000),
+      // Where the lead came from (campaign tags and ad click IDs from the landing URL).
+      utm_source: field(body.utm_source, 120),
+      utm_medium: field(body.utm_medium, 120),
+      utm_campaign: field(body.utm_campaign, 200),
+      utm_term: field(body.utm_term, 200),
+      utm_content: field(body.utm_content, 200),
+      gclid: field(body.gclid, 300),
+      fbclid: field(body.fbclid, 300),
+      landing_page: field(body.landing_page, 500),
+      page_url: field(body.page, 500),
     }
+    const sourceLabel = [leadValue(lead.utm_source), leadValue(lead.utm_medium), leadValue(lead.utm_campaign)].filter(Boolean).join(' / ')
+      || (lead.gclid ? 'Google Ads click' : lead.fbclid ? 'Facebook / Instagram click' : 'Direct or unknown')
     const { error } = await supabase.from('leads').insert([lead])
     if (error) {
       console.error('SUPABASE INSERT FAILED', { code: error.code })
@@ -63,17 +98,18 @@ export async function POST(req: Request) {
           ['Pitch', leadValue(lead.roof_pitch)],
           ['Material', leadValue(lead.roof_material)],
           ['Message', leadValue(lead.message)],
+          ['Source', sourceLabel],
+          ['Landing Page', leadValue(lead.landing_page)],
+          ['Form Page', leadValue(lead.page_url)],
         ]
         const resend = new Resend(process.env.RESEND_API_KEY)
         const { data: emailData, error: emailError } = await resend.emails.send({
-          from: 'Roofing Near Me STL <leads@roofingnearmestl.com>',
+          from: 'RoofingnearmeSTL <leads@roofingnearmestl.com>',
           to: process.env.LEAD_TO_EMAIL,
-          ...(typeof body.email === 'string' && body.email.trim()
-            ? { replyTo: body.email.trim() }
-            : {}),
+          ...(lead.email ? { replyTo: lead.email } : {}),
           subject: `New Roofing Lead: ${leadValue(lead.city)} - ${leadValue(lead.service_type)} - ${leadValue(lead.issue_type)}`.replace(/[\r\n]/g, ' '),
           html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-            <img src="https://www.roofingnearmestl.com/logo.png" alt="Roofing Near Me STL" width="180" />
+            <img src="https://www.roofingnearmestl.com/logo.png" alt="RoofingnearmeSTL" width="180" />
             <h2>New Roofing Lead</h2>
             <table style="width:100%;border-collapse:collapse">${fields.map(([label, value]) =>
               `<tr><th style="text-align:left;padding:8px 0">${escapeHtml(label)}:</th><td>${escapeHtml(value).replace(/\r?\n/g, '<br>')}</td></tr>`

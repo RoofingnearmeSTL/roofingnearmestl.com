@@ -107,3 +107,19 @@ The isolated tests do not establish live persistence or inbox delivery.
   `LEAD_ALERT_PHONE` (the cell phone to text). Nothing is sent until all four are
   set. US numbers need an approved A2P 10DLC registration before carriers deliver
   reliably. A failed text is logged and never fails a saved lead.
+
+## Marketing and social settings (Vercel → Settings → Environment Variables)
+
+All optional; each feature turns on once its value is set (Production + Preview), then redeploy.
+
+| Variable | Where to get it | Turns on |
+|---|---|---|
+| `NEXT_PUBLIC_GOOGLE_BUSINESS_URL` | Google Maps → your business → Share → Copy link | Footer "Google" button, `sameAs` in schema, llms.txt |
+| `NEXT_PUBLIC_GOOGLE_REVIEWS_URL` | Business Profile → Ask for reviews → Copy link | Google Rating badge link, footer "Leave a Google review" |
+| `NEXT_PUBLIC_GA4_ID` | Google Analytics → Admin → Data streams (`G-…`) | GA4 page views, `generate_lead`, `click_to_call` |
+| `NEXT_PUBLIC_META_PIXEL_ID` | Meta Events Manager → Data sources → Pixel ID (digits) | Pixel PageView, `Lead` on thank-you, `Contact` on phone taps |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Search Console → HTML tag method → `content` value | Search Console ownership |
+| `NEXT_PUBLIC_FACEBOOK_DOMAIN_VERIFICATION` | Meta Business Suite → Brand safety → Domains → meta-tag `content` | Meta domain verification |
+
+The Facebook page link is in `src/lib/site-pages.ts` (`FACEBOOK_URL`). The share
+image for link previews is `public/og-image.jpg`.

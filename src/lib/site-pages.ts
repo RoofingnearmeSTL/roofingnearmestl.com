@@ -25,9 +25,9 @@ export const sitePages: SitePage[] = [
     slug: "roof-replacement",
     kind: "service",
     navLabel: "Roof Replacement",
-    title: "Roof Replacement in St. Louis & Metro East | Roofing Near Me STL",
+    title: "Roof Replacement Metro East & St. Louis | RoofingnearmeSTL",
     description:
-      "Roof replacement in Waterloo, Columbia, Belleville & St. Louis. Free photo-documented report first, so you only replace when photos prove you need it. 10-Yr Workmanship Warranty.",
+      "Roof replacement in Waterloo, Columbia, Belleville & St. Louis. Free photo-documented inspection first, real price range, 10-yr workmanship warranty.",
     eyebrow: "Roof Replacement",
     h1: "Roof Replacement in St. Louis & the Metro East",
     intro:
@@ -85,9 +85,9 @@ export const sitePages: SitePage[] = [
     slug: "roof-repair",
     kind: "service",
     navLabel: "Roof Repair",
-    title: "Roof Repair & Leak Repair in St. Louis & Metro East | Roofing Near Me STL",
+    title: "Roof Leak Repair Metro East & St. Louis | RoofingnearmeSTL",
     description:
-      "Roof leak repair in Waterloo, Columbia, Belleville & St. Louis. Leak stopped fast, emergency tarping available, and no pushy replacement pitch unless photos prove you need it.",
+      "Roof leaking? 24/7 emergency tarping and honest roof repair in Waterloo, Columbia, Belleville & St. Louis. Photos before & after. Call 618-612-5192.",
     eyebrow: "Roof Repair",
     h1: "Roof Repair & Leak Repair in St. Louis & the Metro East",
     intro:
@@ -145,9 +145,9 @@ export const sitePages: SitePage[] = [
     slug: "storm-damage-insurance",
     kind: "service",
     navLabel: "Storm Damage & Insurance",
-    title: "Hail & Storm Damage Roof Inspection in St. Louis | Roofing Near Me STL",
+    title: "Hail Damage Roof Inspection Metro East | RoofingnearmeSTL",
     description:
-      "Hail or wind damage in Waterloo, Columbia, Belleville or St. Louis? Get a Free Photo-Documented Report with shingle ID and damage photos you can share with your insurance carrier.",
+      "Free hail & wind damage roof inspection by a BEI-certified inspector. Photo report you can share with your insurer. Waterloo, Columbia, Belleville, STL.",
     eyebrow: "Storm Damage & Insurance",
     h1: "Hail & Storm Damage Roof Inspections in St. Louis & the Metro East",
     intro:
@@ -205,9 +205,9 @@ export const sitePages: SitePage[] = [
     kind: "city",
     navLabel: "Waterloo, IL",
     city: "Waterloo",
-    title: "Roofing Company in Waterloo, IL | Roof Repair & Replacement | Roofing Near Me STL",
+    title: "Roofer in Waterloo, IL | Free Roof Inspection | RoofingnearmeSTL",
     description:
-      "Local roofer in Waterloo, IL. Roof repair, roof replacement and storm damage inspections with a Free Photo-Documented Report. Call 618-612-5192.",
+      "Local roofer in Waterloo, IL. Free photo-documented roof inspection by a BEI-certified inspector, repair, replacement & 24/7 tarping. 618-612-5192.",
     eyebrow: "Waterloo, Illinois",
     h1: "Roofing Company in Waterloo, IL",
     intro:
@@ -255,9 +255,9 @@ export const sitePages: SitePage[] = [
     kind: "city",
     navLabel: "Columbia, IL",
     city: "Columbia",
-    title: "Roofing Company in Columbia, IL | Roof Repair & Replacement | Roofing Near Me STL",
+    title: "Roofer in Columbia, IL | Free Roof Inspection | RoofingnearmeSTL",
     description:
-      "Local roofer in Columbia, IL. Roof repair, roof replacement and storm damage inspections with a Free Photo-Documented Report. Call 618-612-5192.",
+      "Columbia, IL roof inspections by a BEI-certified inspector. Honest repair-or-replace photo report, 24/7 tarping, 10-yr workmanship warranty. 618-612-5192.",
     eyebrow: "Columbia, Illinois",
     h1: "Roofing Company in Columbia, IL",
     intro:
@@ -305,9 +305,9 @@ export const sitePages: SitePage[] = [
     kind: "city",
     navLabel: "Belleville, IL",
     city: "Belleville",
-    title: "Roofing Company in Belleville, IL | Roof Repair & Replacement | Roofing Near Me STL",
+    title: "Roofer in Belleville, IL | Free Roof Inspection | RoofingnearmeSTL",
     description:
-      "Local roofer in Belleville, IL. Roof repair, roof replacement and storm damage inspections with a Free Photo-Documented Report. Call 618-612-5192.",
+      "Belleville, IL roofer: free roof inspection by a BEI-certified inspector, honest photo report, 24/7 emergency tarping, 10-yr warranty. Call 618-612-5192.",
     eyebrow: "Belleville, Illinois",
     h1: "Roofing Company in Belleville, IL",
     intro:
@@ -375,14 +375,23 @@ export const homeFaqs: [question: string, answer: string][] = [
   ["Do I have to hire you after the free report?", "No. The Free Photo-Documented Report is yours to keep, whether you hire us, get other quotes, or share it with your insurance carrier."],
 ];
 
+export const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61592983316574";
+// Public Google Business Profile (Maps "Share" link) and review link, set in Vercel when available.
+export const GOOGLE_BUSINESS_URL = process.env.NEXT_PUBLIC_GOOGLE_BUSINESS_URL || "";
+export const GOOGLE_REVIEWS_URL = process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL || "";
+
 export const businessSchema = {
   "@type": "RoofingContractor",
   "@id": `${SITE_URL}/#business`,
-  name: "Roofing Near Me STL",
+  name: "RoofingnearmeSTL",
+  alternateName: "Roofing Near Me STL",
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
+  image: `${SITE_URL}/og-image.jpg`,
+  slogan: "Local. Reliable. Protecting What Matters.",
   telephone: ["+1-618-612-5192", "+1-314-202-7663"],
   areaServed: ["Waterloo, IL", "Columbia, IL", "Belleville, IL", "St. Louis, MO"].map((name) => ({ "@type": "City", name })),
+  sameAs: [FACEBOOK_URL, GOOGLE_BUSINESS_URL].filter(Boolean),
 };
 
 export function faqSchema(faqs: [question: string, answer: string][]) {
@@ -395,3 +404,18 @@ export function faqSchema(faqs: [question: string, answer: string][]) {
 export function jsonLd(data: object) {
   return { __html: JSON.stringify(data).replace(/</g, "\u003c") };
 }
+
+export const processSteps: [title: string, body: string][] = [
+  ["Call or Request Online", "Tell us what's going on. During business hours, we call as soon as your request comes in. Active leak? We offer 24/7 emergency tarping."],
+  ["Photo-Documented Inspection", "We inspect and photograph every slope, identify your shingle, and mark any hail or wind damage we find."],
+  ["Honest Options, In Writing", "You get the photos plus honest Repair vs Replace options and a written estimate. No pressure, and the report is yours to keep."],
+  ["Repair or Replace, Then Clean-Up", "Our crew does the work and cleans up the job site, backed by our 10-Year Workmanship Warranty."],
+];
+
+// Building Experts Institute certificates of completion held by Mike Williamson (issued Mar 2026, valid to Mar 2029).
+export const certifications = [
+  { title: "Hail Damage Identification", subject: "Asphalt Shingle Roofs", number: "1772825948-28-1442", issued: "Mar 06, 2026", expires: "Mar 06, 2029", file: "/certifications/bei-hail-damage-identification.pdf" },
+  { title: "Wind Damage Identification", subject: "Asphalt Shingle Roofs", number: "1772943831-29-1442", issued: "Mar 07, 2026", expires: "Mar 07, 2029", file: "/certifications/bei-wind-damage-identification.pdf" },
+  { title: "Installation", subject: "Asphalt Shingle Roofs", number: "1773862133-30-1442", issued: "Mar 18, 2026", expires: "Mar 18, 2029", file: "/certifications/bei-asphalt-shingle-installation.pdf" },
+  { title: "Building Code", subject: "Asphalt Shingle Roofs", number: "1773114388-31-1442", issued: "Mar 09, 2026", expires: "Mar 09, 2029", file: "/certifications/bei-asphalt-shingle-building-code.pdf" },
+];

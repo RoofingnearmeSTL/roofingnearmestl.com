@@ -4,6 +4,9 @@ import BrandHeader from "@/components/brand-header";
 import BrandFooter from "@/components/brand-footer";
 import EmergencyBar from "@/components/emergency-bar";
 import LeadForm, { useLandingUtm } from "@/components/lead-form";
+import HeroBackground from "@/components/hero-background";
+import ProcessSteps from "@/components/process-steps";
+import Certifications from "@/components/certifications";
 import Link from "next/link";
 import { businessSchema, faqSchema, homeFaqs, jsonLd, sitePages } from "@/lib/site-pages";
 import { useState, useEffect } from "react";
@@ -69,23 +72,35 @@ export default function Home() {
           <span>✓ Fully Insured - $2M Liability + Workers Comp</span>
           <span>✓ 10-Yr Workmanship Warranty</span>
           <span>✓ 5.0★ Google Reviews</span>
+          <span>✓ BEI Certified: Hail &amp; Wind Damage</span>
           <span>✓ Local to Waterloo / Columbia / Belleville / STL</span>
         </div>
       </div>
 
-      <section className="relative isolate bg-white">
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[url('/logo.png')] bg-no-repeat bg-center bg-contain opacity-[0.06] pointer-events-none" />
+      <section className="relative isolate bg-black">
+        <HeroBackground />
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
-        <div>
+        <div className="lg:col-start-1 lg:row-start-1">
           <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-bold mb-4">✓ DON&apos;T REPLACE YET! - Free Photo-Documented Report</div>
-          <h1 className="text-black tracking-tight leading-[1.1]">
+          <h1 className="text-white tracking-tight leading-[1.1]">
             <span className="font-extrabold text-4xl sm:text-5xl">Don&apos;t Replace Yet!</span><br/>
             <span className="font-bold text-2xl sm:text-3xl">Get a Free Photo-Documented</span><br/>
             <span className="font-bold text-2xl sm:text-3xl">Roof Report. We Answer in </span><span className="text-brand font-extrabold text-2xl sm:text-3xl">5 Minutes.</span>
           </h1>
-          <p className="text-zinc-600 text-lg leading-relaxed mt-5">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options. That's why neighbors find us when searching 'quick response roofer near me' or 'roofing companies that respond fast' in Waterloo, Columbia, Belleville & STL."}</p>
+          <p className="text-zinc-200 text-lg leading-relaxed mt-5">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options. That's why neighbors find us when searching 'quick response roofer near me' or 'roofing companies that respond fast' in Waterloo, Columbia, Belleville & STL."}</p>
+        </div>
 
-          <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4 text-center">
+        <div id="estimate" className="lg:col-start-2 lg:row-start-1 lg:row-span-2 bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
+          <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Honest Evaluation in 30 Seconds</h2>
+          <p className="text-zinc-600 text-sm mt-2">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options."}</p>
+          <p className="text-zinc-600 text-sm mt-2 mb-6"><span className="text-[#28AADC] font-bold">★★★★★ 5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
+          
+          <LeadForm extras={estimateExtras} footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
+        </div>
+
+        <div className="lg:col-start-1 lg:row-start-2">
+
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">5.0★</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">{googleReviewsUrl ? <a href={googleReviewsUrl} target="_blank" rel="noopener noreferrer" className="underline">Google Rating</a> : "Google Rating"}</div></div>
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">10-Yr</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Workmanship Warranty</div></div>
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">Same Day</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Free Honest Evaluation</div></div>
@@ -131,14 +146,6 @@ export default function Home() {
             <div className="text-zinc-500 mt-2 text-xs"><span className="font-bold text-yellow-500">★★★★★ 5.0</span> Google</div>
           </div>
         </div>
-
-        <div id="estimate" className="bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
-          <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Honest Evaluation in 30 Seconds</h2>
-          <p className="text-zinc-600 text-sm mt-2">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options."}</p>
-          <p className="text-zinc-600 text-sm mt-2 mb-6"><span className="text-[#28AADC] font-bold">★★★★★ 5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
-          
-          <LeadForm extras={estimateExtras} footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
-        </div>
         </div>
       </section>
 
@@ -168,6 +175,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <ProcessSteps />
+      <Certifications />
 
       <section id="faq" className="max-w-4xl mx-auto px-6 py-16 scroll-mt-40">
         <h2 className="text-black font-extrabold text-3xl text-center">Free Honest Evaluation: Repair or Replace?</h2>

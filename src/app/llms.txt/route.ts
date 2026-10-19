@@ -1,4 +1,4 @@
-import { SITE_URL, sitePages } from "@/lib/site-pages";
+import { FACEBOOK_URL, GOOGLE_BUSINESS_URL, SITE_URL, sitePages } from "@/lib/site-pages";
 
 export const dynamic = "force-static";
 
@@ -9,7 +9,7 @@ export function GET() {
     .map((page) => `- [${page.navLabel}](${SITE_URL}/${page.slug}): ${page.description}`)
     .join("\n");
 
-  const body = `# Roofing Near Me STL
+  const body = `# RoofingnearmeSTL (Roofing Near Me STL)
 
 > Local roofing contractor serving Waterloo, Columbia and Belleville, Illinois, and the St. Louis, Missouri metro. Roof repair, roof replacement, storm and hail damage inspections, emergency tarping, gutters and siding. Every visit starts with a free photo-documented roof report with honest repair-vs-replace options.
 
@@ -19,6 +19,7 @@ export function GET() {
 - Fully insured: $2M liability plus workers' compensation
 - 10-Year Workmanship Warranty
 - 5.0-star Google rating
+- Inspections by Mike Williamson, Building Experts Institute (BEI) certified in hail damage identification, wind damage identification, installation, and building code for asphalt shingle roofs (valid through March 2029)
 - Financing available for retail projects
 - Roofing contractor, not a public adjuster: provides photo documentation homeowners can share with their insurance carrier, but does not negotiate claims
 
@@ -29,6 +30,11 @@ ${links("service")}
 ## Service areas
 
 ${links("city")}
+
+## Profiles
+
+- [Facebook](${FACEBOOK_URL})${GOOGLE_BUSINESS_URL ? `
+- [Google Business Profile](${GOOGLE_BUSINESS_URL})` : ""}
 
 ## Get a free estimate
 
