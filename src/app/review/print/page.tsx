@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 // The QR code opens roofingnearmestl.com/review?utm_source=qr&utm_medium=print&utm_campaign=review_card
 export const metadata: Metadata = {
   title: "Review Cards (Print) | RoofingnearmeSTL",
+  alternates: { canonical: "/review/print" },
   robots: { index: false, follow: false },
 };
 
