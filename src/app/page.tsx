@@ -11,6 +11,7 @@ import Link from "next/link";
 import { GOOGLE_REVIEWS_URL, businessSchema, faqSchema, homeFaqs, jsonLd, sitePages } from "@/lib/site-pages";
 import { reviewSchema } from "@/lib/reviews";
 import ReviewsSection from "@/components/reviews-section";
+import ServiceAreaDirectory from "@/components/service-area-directory";
 import { useState, useEffect } from "react";
 
 export default function Home() {
@@ -162,16 +163,18 @@ export default function Home() {
             ))}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-            {([["Roofing Services", "service"], ["Areas We Serve", "city"]] as const).map(([heading, kind]) => (
-              <nav key={kind} aria-label={heading} className="bg-white border-2 border-zinc-200 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-black font-bold text-lg">{heading}</h3>
-                <ul className="mt-3 flex flex-wrap gap-2">
-                  {sitePages.filter((page) => page.kind === kind).map((page) => (
-                    <li key={page.slug}><Link href={`/${page.slug}`} className="inline-block bg-brand-light border border-brand/20 text-black hover:border-brand rounded-full px-4 py-2 text-sm font-bold">{page.navLabel} →</Link></li>
-                  ))}
-                </ul>
-              </nav>
-            ))}
+            <nav aria-label="Roofing Services" className="bg-white border-2 border-zinc-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-black font-bold text-lg"><Link href="/services" className="hover:text-brand">Roofing &amp; Exterior Services</Link></h3>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {sitePages.filter((page) => page.kind === "service").map((page) => (
+                  <li key={page.slug}><Link href={`/${page.slug}`} className="inline-block bg-brand-light border border-brand/20 text-black hover:border-brand rounded-full px-4 py-2 text-sm font-bold">{page.navLabel} →</Link></li>
+                ))}
+              </ul>
+            </nav>
+            <nav aria-label="Areas We Serve" className="bg-white border-2 border-zinc-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-black font-bold text-lg"><Link href="/areas-we-serve" className="hover:text-brand">Areas We Serve</Link></h3>
+              <ServiceAreaDirectory compact />
+            </nav>
           </div>
         </div>
       </section>

@@ -2,6 +2,8 @@
 // Only use claims the owner has confirmed: 5.0★ Google, 10-Yr Workmanship Warranty, 24/7 emergency
 // repair and tarping, financing, metal installs, same-day evaluations when the schedule allows.
 // NOT true (do not add): GAF Certified, Owens Corning Preferred, BBB A+, 500+ roofs.
+// The wider St. Louis city pages are generated from src/lib/service-areas.ts.
+import { areaNames, buildAreaPages, regions, type RegionId } from "./service-areas";
 
 export type SitePage = {
   slug: string;
@@ -14,13 +16,21 @@ export type SitePage = {
   intro: string;
   defaultService: string;
   city?: string;
+  state?: "IL" | "MO";
+  county?: string;
+  region?: RegionId;
+  /** Slugs of nearby city pages, linked from the page. */
+  nearby?: string[];
   sections: { heading: string; body: string; bullets?: string[] }[];
   faqs: [question: string, answer: string][];
 };
 
 export const SITE_URL = "https://www.roofingnearmestl.com";
 
-export const sitePages: SitePage[] = [
+// Choices in the lead form's "Service needed" menu. Every page's defaultService must be one of these.
+export const LEAD_SERVICES = ["Roof Repair", "Roof Replacement", "Leak / Emergency", "Storm Damage / Insurance", "Siding", "Gutters / Downspouts", "Soffit & Fascia"];
+
+const corePages: SitePage[] = [
   {
     slug: "roof-replacement",
     kind: "service",
@@ -201,10 +211,192 @@ export const sitePages: SitePage[] = [
     ],
   },
   {
+    slug: "siding",
+    kind: "service",
+    navLabel: "Siding",
+    title: "Siding Repair & Replacement in St. Louis | RoofingnearmeSTL",
+    description:
+      "Siding repair and replacement in St. Louis & the Metro East: hail, wind and water damage, photo-documented estimate, financing available. 618-612-5192.",
+    eyebrow: "Siding",
+    h1: "Siding Repair & Replacement in St. Louis & the Metro East",
+    intro:
+      "Siding takes a beating from hail, wind and years of weather. We photograph the damage, show you whether a repair or a full replacement makes sense, and handle it with the same local crew that takes care of your roof.",
+    defaultService: "Siding",
+    sections: [
+      {
+        heading: "Siding problems we fix",
+        body: "We repair what can be repaired and replace what can't:",
+        bullets: [
+          "Hail-cracked, dented or chipped panels",
+          "Loose, warped or missing panels after high winds",
+          "Gaps and damaged trim that let water behind the siding",
+          "Siding damage found during a roof or storm inspection",
+          "Full siding replacement when repairs no longer make sense",
+        ],
+      },
+      {
+        heading: "Photos first, then options",
+        body:
+          "We document siding the same way we document roofs: close-up photos of every problem area and honest Repair vs Replace options. If a storm damaged your siding, the photos are yours to keep and share with your insurance carrier.",
+      },
+      {
+        heading: "Roof and siding, one crew",
+        body:
+          "Roof and siding damage often come from the same storm. One local crew handling both keeps the details where the roof meets the walls, like flashing and trim, coordinated, with one point of contact for the whole project.",
+      },
+      {
+        heading: "Financing available",
+        body: "Financing is available on retail siding projects. Ask about it during your free evaluation.",
+      },
+    ],
+    faqs: [
+      [
+        "Can you repair just a few damaged siding panels?",
+        "Often, yes. Whether a repair blends in depends on your siding's age, color and what's still available. We'll show you photos and tell you honestly whether a repair or a replacement makes more sense.",
+      ],
+      [
+        "Does hail damage siding?",
+        "Yes. Hail can crack, chip and dent siding, especially on the sides of the house facing the storm. Our photo report documents what we find.",
+      ],
+      [
+        "Do you offer financing for siding?",
+        "Yes. Financing is available for retail roof, siding and gutter projects.",
+      ],
+      [
+        "Is siding work covered by a warranty?",
+        "Our work is backed by a 10-Year Workmanship Warranty. Ask us how it applies to your siding project.",
+      ],
+    ],
+  },
+  {
+    slug: "gutters-downspouts",
+    kind: "service",
+    navLabel: "Gutters & Downspouts",
+    title: "Gutter Installation & Repair in St. Louis | RoofingnearmeSTL",
+    description:
+      "Gutter and downspout installation and repair in St. Louis & the Metro East: sagging, leaking, overflowing or hail-dented gutters fixed right. 618-612-5192.",
+    eyebrow: "Gutters & Downspouts",
+    h1: "Gutter & Downspout Installation and Repair in St. Louis & the Metro East",
+    intro:
+      "Gutters protect your roof edge, siding and foundation. When they sag, overflow or leak, water ends up where it shouldn't. We find the cause, repair or replace the system, and show you photos of the work.",
+    defaultService: "Gutters / Downspouts",
+    sections: [
+      {
+        heading: "Gutter problems we fix",
+        body: "The most common problems we see:",
+        bullets: [
+          "Sagging gutters pulling away from the house",
+          "Leaking seams and corners",
+          "Overflowing gutters and undersized downspouts",
+          "Downspouts that dump water next to your foundation",
+          "Hail-dented gutters and downspouts",
+          "Rotted fascia behind the gutters",
+        ],
+      },
+      {
+        heading: "Why gutters matter to your roof",
+        body:
+          "Overflowing gutters can push water behind the fascia, rot the edge of the roof deck and stain your siding. When we inspect your roof, we check the gutters, downspouts and fascia too, because these problems are connected.",
+      },
+      {
+        heading: "New gutters with a new roof",
+        body:
+          "Replacing your roof is often the right time to replace worn gutters, so the new drip edge and gutters work together. If your existing gutters still have life left, we'll tell you.",
+      },
+      {
+        heading: "Dented gutters can mean hail damage",
+        body:
+          "Dented gutters and downspouts are one of the easiest signs of hail to spot from the ground. If you see dents, have the roof looked at too. Our Free Photo-Documented Report covers both.",
+      },
+    ],
+    faqs: [
+      [
+        "How do I know if my gutters need replacing?",
+        "Look for sagging, leaking seams, rust, gutters separating from the house, or water spilling over the sides in heavy rain. We'll inspect them and tell you whether repairs or new gutters make more sense.",
+      ],
+      [
+        "Can you move my downspouts away from my foundation?",
+        "Yes. We can re-route downspouts and add extensions so water drains away from your home.",
+      ],
+      [
+        "Do dented gutters mean my roof has hail damage?",
+        "Not always, but they're a common sign. Have the roof inspected; our photo report shows exactly what we find.",
+      ],
+      [
+        "Do you install gutters with a new roof?",
+        "Yes. We can replace gutters as part of a roof project or on their own.",
+      ],
+    ],
+  },
+  {
+    slug: "soffit-fascia",
+    kind: "service",
+    navLabel: "Soffit & Fascia",
+    title: "Soffit & Fascia Repair in St. Louis | RoofingnearmeSTL",
+    description:
+      "Soffit & fascia repair and replacement in St. Louis & the Metro East: rot, sagging, pests and storm damage fixed at the source. Call 618-612-5192.",
+    eyebrow: "Soffit & Fascia",
+    h1: "Soffit & Fascia Repair and Replacement in St. Louis & the Metro East",
+    intro:
+      "Soffit and fascia close off your roof's edge, hold your gutters and help your attic breathe. When they rot, sag or open up, you can get leaks, pests and moisture problems. We find the damage, show you the photos and fix it right.",
+    defaultService: "Soffit & Fascia",
+    sections: [
+      {
+        heading: "Signs of soffit and fascia damage",
+        body: "Look for these along your roof edge:",
+        bullets: [
+          "Peeling paint, soft spots or rot on fascia boards",
+          "Gutters pulling away from the fascia",
+          "Sagging, cracked or missing soffit panels",
+          "Water stains along the roof edge",
+          "Birds, bees or squirrels getting into the eaves",
+          "Storm damage along the eaves",
+        ],
+      },
+      {
+        heading: "Why it matters",
+        body:
+          "Fascia carries the weight of your gutters and seals the roof edge. Soffit lets air into your attic so heat and moisture can escape. When either one fails, the problems spread to the roof deck, rafters and attic.",
+      },
+      {
+        heading: "Fix the cause, not just the board",
+        body:
+          "Rotted fascia is usually a symptom of overflowing gutters, missing drip edge or a leak at the eaves. We find the source, so your new soffit and fascia last.",
+      },
+      {
+        heading: "Part of a roof or gutter project",
+        body:
+          "Soffit and fascia work often goes hand in hand with a new roof or new gutters. One local crew can handle all of it in the same project.",
+      },
+    ],
+    faqs: [
+      [
+        "What's the difference between soffit and fascia?",
+        "Fascia is the board along the edge of your roof where the gutters attach. Soffit is the panel under the overhang that closes in the eaves and often has vents for your attic.",
+      ],
+      [
+        "Can you replace just the damaged sections?",
+        "Often, yes. We'll show you photos of the damage and recommend repairing sections or replacing the full run, whichever makes more sense.",
+      ],
+      [
+        "Why does my fascia keep rotting?",
+        "Usually water: overflowing or clogged gutters, missing drip edge, or a leak at the roof edge. We find and fix the cause so it doesn't come back.",
+      ],
+      [
+        "Do you offer financing?",
+        "Yes. Financing is available on retail projects. Ask during your free evaluation.",
+      ],
+    ],
+  },
+  {
     slug: "roofing-waterloo-il",
     kind: "city",
     navLabel: "Waterloo, IL",
     city: "Waterloo",
+    state: "IL",
+    county: "Monroe County",
+    region: "il-monroe-st-clair",
+    nearby: ["roofing-columbia-il", "roofing-dupo-il"],
     title: "Roofer in Waterloo, IL | Free Roof Inspection | RoofingnearmeSTL",
     description:
       "Local roofer in Waterloo, IL. Free photo-documented roof inspection by a BEI-certified inspector, repair, replacement & 24/7 tarping. 618-612-5192.",
@@ -255,6 +447,10 @@ export const sitePages: SitePage[] = [
     kind: "city",
     navLabel: "Columbia, IL",
     city: "Columbia",
+    state: "IL",
+    county: "Monroe County",
+    region: "il-monroe-st-clair",
+    nearby: ["roofing-waterloo-il", "roofing-dupo-il", "roofing-belleville-il"],
     title: "Roofer in Columbia, IL | Free Roof Inspection | RoofingnearmeSTL",
     description:
       "Columbia, IL roof inspections by a BEI-certified inspector. Honest repair-or-replace photo report, 24/7 tarping, 10-yr workmanship warranty. 618-612-5192.",
@@ -305,6 +501,10 @@ export const sitePages: SitePage[] = [
     kind: "city",
     navLabel: "Belleville, IL",
     city: "Belleville",
+    state: "IL",
+    county: "St. Clair County",
+    region: "il-monroe-st-clair",
+    nearby: ["roofing-ofallon-il", "roofing-columbia-il", "roofing-cahokia-heights-il"],
     title: "Roofer in Belleville, IL | Free Roof Inspection | RoofingnearmeSTL",
     description:
       "Belleville, IL roofer: free roof inspection by a BEI-certified inspector, honest photo report, 24/7 emergency tarping, 10-yr warranty. Call 618-612-5192.",
@@ -352,6 +552,28 @@ export const sitePages: SitePage[] = [
   },
 ];
 
+const coreNames: Record<string, string> = Object.fromEntries(corePages.map((page) => [page.slug, page.navLabel]));
+function nameOf(slug: string) {
+  const name = coreNames[slug] ?? areaNames[slug];
+  if (!name) throw new Error(`Unknown nearby page: ${slug}`);
+  return name;
+}
+
+export const sitePages: SitePage[] = [...corePages, ...buildAreaPages(nameOf)];
+
+// Fail the build on a broken page list instead of shipping a duplicate URL or a dead "nearby" link.
+for (const [index, page] of sitePages.entries()) {
+  if (sitePages.findIndex((other) => other.slug === page.slug) !== index) throw new Error(`Duplicate page slug: ${page.slug}`);
+  if (page.kind === "city" && (!page.state || !page.county || !page.region || !page.city)) throw new Error(`City page missing location fields: ${page.slug}`);
+  page.nearby?.forEach(nameOf);
+  if (!LEAD_SERVICES.includes(page.defaultService)) throw new Error(`Unknown defaultService on ${page.slug}: ${page.defaultService}`);
+}
+
+export const servicePages = sitePages.filter((page) => page.kind === "service");
+export const cityPages = sitePages.filter((page) => page.kind === "city");
+/** City pages grouped for menus, the homepage and /areas-we-serve. */
+export const areaGroups = regions.map((region) => ({ ...region, pages: cityPages.filter((page) => page.region === region.id) }));
+
 export function getSitePage(slug: string) {
   return sitePages.find((page) => page.slug === slug);
 }
@@ -365,7 +587,7 @@ export const homeFaqs: [question: string, answer: string][] = [
   ["How fast do you respond?", "During business hours, we call as soon as we receive your request to reach out with the right information to help you take the next step. Fill out what's needed and we look forward to talking soon and sharing your free photo-documented options. Same-day evaluations when available."],
   ["What warranty?", "10-Year Workmanship Warranty on our work, plus the manufacturer warranty on the materials we install. 5.0★ Google Reviews."],
   ["Do you offer emergency tarping?", "Yes. We offer 24/7 emergency roof repair and tarping across the St. Louis metro. Call Illinois: 618-612-5192 or Missouri: 314-202-7663."],
-  ["What areas do you serve?", "Waterloo, Columbia and Belleville in Illinois, plus St. Louis and the surrounding Missouri metro."],
+  ["What areas do you serve?", "In Illinois: Waterloo, Columbia, Belleville, O'Fallon, Dupo, Cahokia Heights, Edwardsville, Collinsville, Granite City, Alton and Wood River. In Missouri: St. Louis and communities across St. Louis County, St. Charles County, Jefferson County and Franklin County, including St. Charles, St. Peters, O'Fallon, Wentzville, Chesterfield, Kirkwood, Florissant, Arnold, Festus and Washington. See every city on our Areas We Serve page."],
   ["How much does a new roof cost?", "It depends on roof size, pitch and material. Use our Instant Roof Cost Estimator above for a quick St. Louis price range, then request a free evaluation for an exact quote. Clay and slate tile need an in-person evaluation."],
   ["Do you offer financing?", "Yes. Financing is available for retail roof, siding and gutter projects. Ask during your free evaluation."],
   ["What roofing materials do you install?", "Architectural shingles, 3-tab asphalt and metal roofing. Clay and slate tile projects are priced after an in-person evaluation."],
@@ -394,7 +616,7 @@ export const businessSchema = {
   image: `${SITE_URL}/og-image.jpg`,
   slogan: "Local. Reliable. Protecting What Matters.",
   telephone: ["+1-618-612-5192", "+1-314-202-7663"],
-  areaServed: ["Waterloo, IL", "Columbia, IL", "Belleville, IL", "St. Louis, MO"].map((name) => ({ "@type": "City", name })),
+  areaServed: [...cityPages.map((page) => page.navLabel), "St. Louis, MO"].map((name) => ({ "@type": "City", name })),
   hasMap: GOOGLE_BUSINESS_URL,
   sameAs: [FACEBOOK_URL, GOOGLE_BUSINESS_URL].filter(Boolean),
 };

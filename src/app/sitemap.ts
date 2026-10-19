@@ -9,6 +9,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 1,
     },
+    ...['/services', '/areas-we-serve'].map((path) => ({
+      url: `${SITE_URL}${path}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
+    })),
     ...sitePages.map((page) => ({
       url: `${SITE_URL}/${page.slug}`,
       lastModified: new Date(),

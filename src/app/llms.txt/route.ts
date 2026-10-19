@@ -1,4 +1,4 @@
-import { FACEBOOK_URL, GOOGLE_BUSINESS_URL, SITE_URL, sitePages } from "@/lib/site-pages";
+import { FACEBOOK_URL, GOOGLE_BUSINESS_URL, SITE_URL, areaGroups, sitePages } from "@/lib/site-pages";
 
 export const dynamic = "force-static";
 
@@ -8,10 +8,13 @@ export function GET() {
     .filter((page) => page.kind === kind)
     .map((page) => `- [${page.navLabel}](${SITE_URL}/${page.slug}): ${page.description}`)
     .join("\n");
+  const areaList = areaGroups
+    .map((group) => `### ${group.name}\n\n${group.pages.map((page) => `- [${page.navLabel}](${SITE_URL}/${page.slug})`).join("\n")}`)
+    .join("\n\n");
 
   const body = `# RoofingnearmeSTL (Roofing Near Me STL)
 
-> Local roofing contractor serving Waterloo, Columbia and Belleville, Illinois, and the St. Louis, Missouri metro. Roof repair, roof replacement, storm and hail damage inspections, emergency tarping, gutters and siding. Every visit starts with a free photo-documented roof report with honest repair-vs-replace options.
+> Local roofing contractor serving the Illinois Metro East (Monroe, St. Clair and Madison counties) and the St. Louis, Missouri metro (St. Louis, St. Charles, Jefferson and Franklin counties). Roof repair, roof replacement, storm and hail damage inspections, emergency tarping, siding, gutters and downspouts, soffit and fascia. Every visit starts with a free photo-documented roof report with honest repair-vs-replace options.
 
 - Phone (Illinois): 618-612-5192
 - Phone (Missouri): 314-202-7663
@@ -25,11 +28,15 @@ export function GET() {
 
 ## Services
 
+All services: ${SITE_URL}/services
+
 ${links("service")}
 
 ## Service areas
 
-${links("city")}
+All areas: ${SITE_URL}/areas-we-serve
+
+${areaList}
 
 ## Profiles
 
