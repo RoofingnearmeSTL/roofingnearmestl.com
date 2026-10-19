@@ -288,7 +288,7 @@ function areaPage(area: Area, index: number, nameOf: (slug: string) => string): 
         body: "One local crew for your roof and the exterior around it:",
         bullets: [
           "Roof leak repair and 24/7 emergency tarping",
-          "Roof replacement: architectural shingle, asphalt and metal",
+          "Roof replacement with Owens Corning, CertainTeed, TAMKO or IKO shingles, or metal",
           "Hail and wind damage inspections with photo reports",
           "Siding repair and replacement",
           "Gutters and downspouts",

@@ -18,6 +18,7 @@ export function GET() {
 
 - Phone (Illinois): 618-612-5192
 - Phone (Missouri): 314-202-7663
+- Installs shingles from Owens Corning, CertainTeed, TAMKO and IKO, plus metal roofing
 - 24/7 emergency roof repair and tarping
 - Fully insured: $2M liability plus workers' compensation
 - 10-Year Workmanship Warranty

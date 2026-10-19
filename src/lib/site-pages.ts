@@ -1,6 +1,7 @@
 // Content for the service and city landing pages rendered by src/app/[slug]/page.tsx.
 // Only use claims the owner has confirmed: 5.0★ Google, 10-Yr Workmanship Warranty, 24/7 emergency
 // repair and tarping, financing, metal installs, same-day evaluations when the schedule allows.
+// Shingle brands we install (owner-confirmed): Owens Corning, CertainTeed, TAMKO and IKO. Say "we install", never certified/preferred.
 // NOT true (do not add): GAF Certified, Owens Corning Preferred, BBB A+, 500+ roofs.
 // The wider St. Louis city pages are generated from src/lib/service-areas.ts.
 import { areaNames, buildAreaPages, regions, type RegionId } from "./service-areas";
@@ -54,12 +55,18 @@ const corePages: SitePage[] = [
         body: "One local crew handles the job from tear-off to clean-up:",
         bullets: [
           "Full tear-off down to the deck and a deck inspection",
-          "Architectural shingle, 3-tab asphalt and metal roofing options",
+          "Architectural and 3-tab shingles from Owens Corning, CertainTeed, TAMKO and IKO",
+          "Metal roofing options",
           "Flashing, vents and drip edge checked and replaced where needed",
           "Gutters, siding, soffit and fascia available in the same project",
           "Job-site clean-up and a final walk-through with you",
           "10-Year Workmanship Warranty",
         ],
+      },
+      {
+        heading: "Shingle brands we install",
+        body:
+          "We install shingles from Owens Corning, CertainTeed, TAMKO and IKO. We'll walk you through the product lines, colors and price points that fit your home and budget, and the manufacturer's warranty applies to the shingles we install.",
       },
       {
         heading: "Signs it may be time for a new roof",
@@ -79,7 +86,11 @@ const corePages: SitePage[] = [
       ],
       [
         "What roofing materials do you install?",
-        "Architectural shingles, 3-tab asphalt and metal roofing. Clay and slate tile projects need an in-person evaluation before we can price them.",
+        "Architectural and 3-tab asphalt shingles from Owens Corning, CertainTeed, TAMKO and IKO, plus metal roofing. Clay and slate tile projects need an in-person evaluation before we can price them.",
+      ],
+      [
+        "Which shingle brands do you install?",
+        "Owens Corning, CertainTeed, TAMKO and IKO. We'll help you compare product lines, colors and price points during your free evaluation.",
       ],
       [
         "What warranty comes with a new roof?",
@@ -411,7 +422,7 @@ const corePages: SitePage[] = [
         body: "One local crew for your whole exterior:",
         bullets: [
           "Roof leak repair and 24/7 emergency tarping",
-          "Full roof replacement: architectural shingle, asphalt and metal",
+          "Roof replacement with Owens Corning, CertainTeed, TAMKO or IKO shingles, or metal",
           "Hail and wind damage inspections with photo documentation",
           "Gutters, siding, soffit and fascia",
         ],
@@ -465,7 +476,7 @@ const corePages: SitePage[] = [
         body: "Everything your roof and exterior need, from one local crew:",
         bullets: [
           "Leak repair and 24/7 emergency tarping",
-          "Roof replacement: architectural shingle, asphalt and metal",
+          "Roof replacement with Owens Corning, CertainTeed, TAMKO or IKO shingles, or metal",
           "Hail and wind damage inspections",
           "Gutters, siding, soffit and fascia",
         ],
@@ -519,7 +530,7 @@ const corePages: SitePage[] = [
         body: "One local crew for roofs and exteriors:",
         bullets: [
           "Roof leak repair and 24/7 emergency tarping",
-          "Full roof replacement: architectural shingle, asphalt and metal",
+          "Roof replacement with Owens Corning, CertainTeed, TAMKO or IKO shingles, or metal",
           "Storm and hail damage inspections with photo reports",
           "Gutters, siding, soffit and fascia",
         ],
@@ -590,7 +601,7 @@ export const homeFaqs: [question: string, answer: string][] = [
   ["What areas do you serve?", "In Illinois: Waterloo, Columbia, Belleville, O'Fallon, Dupo, Cahokia Heights, Edwardsville, Collinsville, Granite City, Alton and Wood River. In Missouri: St. Louis and communities across St. Louis County, St. Charles County, Jefferson County and Franklin County, including St. Charles, St. Peters, O'Fallon, Wentzville, Chesterfield, Kirkwood, Florissant, Arnold, Festus and Washington. See every city on our Areas We Serve page."],
   ["How much does a new roof cost?", "It depends on roof size, pitch and material. Use our Instant Roof Cost Estimator above for a quick St. Louis price range, then request a free evaluation for an exact quote. Clay and slate tile need an in-person evaluation."],
   ["Do you offer financing?", "Yes. Financing is available for retail roof, siding and gutter projects. Ask during your free evaluation."],
-  ["What roofing materials do you install?", "Architectural shingles, 3-tab asphalt and metal roofing. Clay and slate tile projects are priced after an in-person evaluation."],
+  ["What roofing materials do you install?", "Architectural and 3-tab asphalt shingles from Owens Corning, CertainTeed, TAMKO and IKO, plus metal roofing. Clay and slate tile projects are priced after an in-person evaluation."],
   ["Are you insured?", "Yes. We're fully insured with $2M general liability and workers' compensation coverage."],
   ["Do you do gutters and siding too?", "Yes. Roof, siding, gutters, soffit and fascia. One local crew."],
   ["What happens during the free evaluation?", "We inspect and photograph every slope, identify your shingle, and document any damage. Then we walk you through honest Repair vs Replace options with the photos in front of you."],
@@ -617,6 +628,7 @@ export const businessSchema = {
   slogan: "Local. Reliable. Protecting What Matters.",
   telephone: ["+1-618-612-5192", "+1-314-202-7663"],
   areaServed: [...cityPages.map((page) => page.navLabel), "St. Louis, MO"].map((name) => ({ "@type": "City", name })),
+  knowsAbout: ["Roof repair", "Roof replacement", "Hail and wind damage inspection", "Owens Corning shingles", "CertainTeed shingles", "TAMKO shingles", "IKO shingles", "Metal roofing", "Siding", "Gutters and downspouts", "Soffit and fascia"],
   hasMap: GOOGLE_BUSINESS_URL,
   sameAs: [FACEBOOK_URL, GOOGLE_BUSINESS_URL].filter(Boolean),
 };
