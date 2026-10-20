@@ -4,14 +4,14 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { rememberLandingSource } from "./lead-form";
+import { ADS_CALL_SEND_TO, ADS_TAG_ID } from "@/lib/tracking";
 
-// Marketing tags, each off until its ID is set in Vercel:
-// - NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO (AW-123/abc): Google Ads
-// - NEXT_PUBLIC_GA4_ID (G-XXXXXXX): Google Analytics 4
-// - NEXT_PUBLIC_META_PIXEL_ID (digits): Meta (Facebook/Instagram) Pixel
-const adsTagId = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO?.split("/")[0];
+// Marketing tags:
+// - Google Ads: always on; conversion IDs live in src/lib/tracking.ts (Vercel env vars can override them)
+// - NEXT_PUBLIC_GA4_ID (G-XXXXXXX): Google Analytics 4, off until set in Vercel
+// - NEXT_PUBLIC_META_PIXEL_ID (digits): Meta (Facebook/Instagram) Pixel, off until set in Vercel
 const googleTagIds = [
-  adsTagId && /^AW-\d+$/.test(adsTagId) ? adsTagId : "",
+  ADS_TAG_ID,
   /^G-[A-Z0-9]+$/.test(process.env.NEXT_PUBLIC_GA4_ID ?? "") ? process.env.NEXT_PUBLIC_GA4_ID! : "",
 ].filter(Boolean);
 const metaPixelId = /^\d{6,20}$/.test(process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "") ? process.env.NEXT_PUBLIC_META_PIXEL_ID! : "";
@@ -30,6 +30,8 @@ function useCallTracking() {
       const phone = link.getAttribute("href")!.slice(4);
       const w = window as TrackingWindow;
       w.gtag?.("event", "click_to_call", { phone_number: phone, page_path: location.pathname });
+      // Google Ads "Website phone tap" conversion (counted once per ad click).
+      w.gtag?.("event", "conversion", { send_to: ADS_CALL_SEND_TO });
       w.fbq?.("track", "Contact", { content_name: phone });
     }
     document.addEventListener("click", onClick);
