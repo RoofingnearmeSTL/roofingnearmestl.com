@@ -18,7 +18,7 @@ const shareDescription = "Don't replace yet! Free photo-documented roof report i
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.roofingnearmestl.com"),
-  title: "Roofer in Waterloo, Columbia & Belleville IL | RoofingnearmeSTL",
+  title: "RoofingnearmeSTL | Roofer in Waterloo, Columbia & Belleville IL",
   description: "Don't replace yet. Free photo-documented roof inspection from a BEI-certified inspector in Waterloo, Columbia, Belleville & St. Louis. Call 618-612-5192.",
   // Homepage canonical; landing pages and the thank-you page set their own.
   alternates: { canonical: "/" },
