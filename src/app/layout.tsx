@@ -34,7 +34,8 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: ["/og-image.jpg"] },
   // Site ownership codes from Google Search Console and Meta Business Suite (set in Vercel).
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    // Search Console HTML-tag code for https://www.roofingnearmestl.com/ (backup to the DNS verification).
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "1fUP8-mjlI9s5TYq48heYhCWFOEoEs8jjEqUN9o78RM",
     other: process.env.NEXT_PUBLIC_FACEBOOK_DOMAIN_VERIFICATION
       ? { "facebook-domain-verification": process.env.NEXT_PUBLIC_FACEBOOK_DOMAIN_VERIFICATION }
       : undefined,
