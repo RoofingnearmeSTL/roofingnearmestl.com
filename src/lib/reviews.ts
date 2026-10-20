@@ -19,6 +19,11 @@ import { SITE_URL } from "./site-pages";
 // or rewarded. The homepage section and its schema update automatically.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Homepage display: false = the site's own cards from the list below (always complete, readable by
+// search engines, no view limit); true = the Elfsight Google Reviews widget (auto-syncs, but its copy of
+// Google can lag a day or more, and the free plan stops showing after 200 views a month).
+export const SHOW_ELFSIGHT_WIDGET = false;
+
 export type Review = {
   author: string;
   rating: 1 | 2 | 3 | 4 | 5;
@@ -29,6 +34,20 @@ export type Review = {
 };
 
 export const reviews: Review[] = [
+  {
+    author: "Mason Tinker",
+    rating: 5,
+    date: "2026-10-20",
+    text: "Mike showed up and offered an inspection. I was skeptical but agreed. He was up and down in less than 20 minutes and gave me an honest photo report that showed my roof was still in good standing. If and when I need to replace I will be calling him based on honesty alone!",
+    source: "google",
+  },
+  {
+    author: "Kile K",
+    rating: 5,
+    date: "2026-10-20",
+    text: "If you’re looking for a roofer who truly goes above and beyond, Mike is your guy! His professionalism, attention to detail, and dedication to quality workmanship are second to none. From start to finish, Mike makes the entire process smooth, stress-free, and easy to understand. What really sets Mike apart is his honesty, reliability, and genuine pride in his work. He doesn’t just aim to get the job done—he aims to get it done RIGHT. It’s rare to find someone who combines exceptional craftsmanship with outstanding customer service. Mike sets the gold standard for what a roofing professional should be. If you want quality work, peace of mind, and someone you can trust, look no further. I can’t recommend Mike highly enough.",
+    source: "google",
+  },
   {
     author: "Sherry Daly",
     rating: 5,
