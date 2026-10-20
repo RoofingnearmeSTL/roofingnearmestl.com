@@ -633,8 +633,21 @@ export const businessSchema = {
   telephone: ["+1-618-612-5192", "+1-314-202-7663"],
   areaServed: [...cityPages.map((page) => page.navLabel), "St. Louis, MO"].map((name) => ({ "@type": "City", name })),
   knowsAbout: ["Roof repair", "Roof replacement", "Hail and wind damage inspection", "Owens Corning shingles", "CertainTeed shingles", "TAMKO shingles", "IKO shingles", "Metal roofing", "Siding", "Gutters and downspouts", "Soffit and fascia"],
+  founder: { "@type": "Person", name: "Mike Williamson" },
   hasMap: GOOGLE_BUSINESS_URL,
   sameAs: [FACEBOOK_URL, GOOGLE_BUSINESS_URL].filter(Boolean),
+};
+
+// Google reads WebSite name/alternateName on the homepage to decide the site name it shows in results,
+// and it helps Google treat "RoofingnearmeSTL" as this business instead of the phrase "roofing near me stl".
+export const websiteSchema = {
+  "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
+  url: `${SITE_URL}/`,
+  name: "RoofingnearmeSTL",
+  alternateName: ["Roofing Near Me STL", "Roofingnearmestl"],
+  inLanguage: "en-US",
+  publisher: { "@id": `${SITE_URL}/#business` },
 };
 
 export function faqSchema(faqs: [question: string, answer: string][]) {

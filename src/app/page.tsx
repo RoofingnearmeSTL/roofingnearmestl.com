@@ -8,7 +8,7 @@ import HeroBackground from "@/components/hero-background";
 import ProcessSteps from "@/components/process-steps";
 import Certifications from "@/components/certifications";
 import Link from "next/link";
-import { GOOGLE_REVIEWS_URL, businessSchema, faqSchema, homeFaqs, jsonLd, sitePages } from "@/lib/site-pages";
+import { GOOGLE_REVIEWS_URL, businessSchema, faqSchema, homeFaqs, jsonLd, sitePages, websiteSchema } from "@/lib/site-pages";
 import { reviewSchema } from "@/lib/reviews";
 import ReviewsSection from "@/components/reviews-section";
 import ServiceAreaDirectory from "@/components/service-area-directory";
@@ -64,7 +64,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
-      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", "@graph": [{ ...businessSchema, ...reviewSchema() }, faqSchema(homeFaqs)] })} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", "@graph": [websiteSchema, { ...businessSchema, ...reviewSchema() }, faqSchema(homeFaqs)] })} />
       <EmergencyBar />
       <BrandHeader />
 
@@ -82,13 +82,13 @@ export default function Home() {
         <HeroBackground />
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
         <div className="lg:col-start-1 lg:row-start-1">
-          <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-bold mb-4">✓ DON&apos;T REPLACE YET! - Free Photo-Documented Report</div>
+          <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-bold mb-4">✓ RoofingnearmeSTL - Local Roofer in Waterloo, IL</div>
           <h1 className="text-white tracking-tight leading-[1.1]">
             <span className="font-extrabold text-4xl sm:text-5xl">Don&apos;t Replace Yet!</span><br/>
             <span className="font-bold text-2xl sm:text-3xl">Get a Free Photo-Documented</span><br/>
             <span className="font-bold text-2xl sm:text-3xl">Roof Report. We Answer in </span><span className="text-brand font-extrabold text-2xl sm:text-3xl">5 Minutes.</span>
           </h1>
-          <p className="text-zinc-200 text-lg leading-relaxed mt-5">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options. That's why neighbors find us when searching 'quick response roofer near me' or 'roofing companies that respond fast' in Waterloo, Columbia, Belleville & STL."}</p>
+          <p className="text-zinc-200 text-lg leading-relaxed mt-5">{"RoofingnearmeSTL is a local roofing company based in Waterloo, IL, serving the Metro East and St. Louis. During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options. That's why neighbors find us when searching 'quick response roofer near me' or 'roofing companies that respond fast' in Waterloo, Columbia, Belleville & STL."}</p>
         </div>
 
         <div id="estimate" className="lg:col-start-2 lg:row-start-1 lg:row-span-2 bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
