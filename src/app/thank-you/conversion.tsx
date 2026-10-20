@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { ADS_LEAD_SEND_TO } from "@/lib/tracking";
 
 type AnalyticsWindow = Window & {
   gtag?: (command: "event", name: string, parameters: Record<string, string>) => void;
@@ -11,9 +12,8 @@ type AnalyticsWindow = Window & {
 // Each tag reports on its own, so one blocked tag never stops the others.
 export default function Conversion() {
   useEffect(() => {
-    const destination = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO;
     const pendingTags = new Set([
-      !!destination && /^AW-\d+\/.+$/.test(destination) && "ads",
+      "ads",
       !!process.env.NEXT_PUBLIC_GA4_ID && "ga4",
       !!process.env.NEXT_PUBLIC_META_PIXEL_ID && "meta",
     ].filter((tag): tag is string => !!tag));
@@ -30,7 +30,7 @@ export default function Conversion() {
     let tries = 0;
     const track = () => {
       const w = window as AnalyticsWindow;
-      if (w.gtag && pendingTags.delete("ads")) w.gtag("event", "conversion", { send_to: destination!, transaction_id: leadId });
+      if (w.gtag && pendingTags.delete("ads")) w.gtag("event", "conversion", { send_to: ADS_LEAD_SEND_TO, transaction_id: leadId });
       if (w.gtag && pendingTags.delete("ga4")) w.gtag("event", "generate_lead", { lead_id: leadId });
       if (w.fbq && pendingTags.delete("meta")) w.fbq("track", "Lead", { content_name: "Roof estimate request" }, { eventID: leadId });
       // Stop when every tag has reported, or after ~10 seconds (for example, an ad blocker).
