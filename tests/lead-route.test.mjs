@@ -19,7 +19,7 @@ function handler({ insertError = null, emailError = null, env = {}, smsStatus = 
   }
   const exports = {}
   vm.runInNewContext(source, {
-    exports, process: { env: environment }, btoa, URLSearchParams,
+    exports, process: { env: environment }, btoa, URLSearchParams, AbortSignal, Date,
     fetch: async (url, options) => { calls.sms.push({ url, ...options }); return { ok: smsStatus < 400, status: smsStatus } },
     console: Object.fromEntries(['log', 'error'].map(level => [level, (...args) => calls.logs.push(args)])),
     require(name) {
@@ -214,6 +214,48 @@ test('a failed text alert does not fail a saved lead', async () => {
   assert.equal((await post(lead)).status, 200)
   assert.equal(calls.inserts.length, 1)
   assert.ok(calls.logs.some(([message]) => message === 'LEAD SMS FAILED'))
+})
+
+const hook = { LEAD_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/123/abc/' }
+
+test('no CRM webhook is sent until LEAD_WEBHOOK_URL is set', async () => {
+  const { calls, post } = handler()
+  assert.equal((await post(lead)).status, 200)
+  assert.equal(calls.sms.length, 0)
+})
+
+test('configured CRM webhook receives the saved lead as JSON', async () => {
+  const { calls, post } = handler({ env: hook })
+  const response = await post({ ...lead, name: 'Pat Q Customer', est_location: 'Waterloo, IL', est_price: null, utm_source: 'google', utm_medium: 'cpc' })
+  assert.equal(response.status, 200)
+  assert.equal(calls.sms.length, 1)
+  const call = calls.sms[0]
+  assert.equal(call.url, hook.LEAD_WEBHOOK_URL)
+  assert.equal(call.method, 'POST')
+  assert.equal(call.headers['Content-Type'], 'application/json')
+  assert.ok(call.signal)
+  const sent = JSON.parse(call.body)
+  assert.equal(sent.name, 'Pat Q Customer')
+  assert.equal(sent.first_name, 'Pat')
+  assert.equal(sent.last_name, 'Q Customer')
+  assert.equal(sent.phone, '3145550100')
+  assert.equal(sent.email, 'customer@example.invalid')
+  assert.equal(sent.state, 'IL')
+  assert.equal(sent.estimate_price, null)
+  assert.equal(sent.lead_source, 'google / cpc')
+  assert.equal(sent.emergency, true)
+  assert.match(sent.submitted_at, /^\d{4}-\d{2}-\d{2}T/)
+})
+
+test('a failed or non-https CRM webhook does not fail a saved lead', async () => {
+  const failed = handler({ env: hook, smsStatus: 500 })
+  assert.equal((await failed.post(lead)).status, 200)
+  assert.equal(failed.calls.inserts.length, 1)
+  assert.ok(failed.calls.logs.some(([message]) => message === 'LEAD WEBHOOK FAILED'))
+  const insecure = handler({ env: { LEAD_WEBHOOK_URL: 'http://example.invalid/hook' } })
+  assert.equal((await insecure.post(lead)).status, 200)
+  assert.equal(insecure.calls.sms.length, 0)
+  assert.ok(insecure.calls.logs.some(([message]) => message === 'LEAD WEBHOOK URL MUST START WITH https://'))
 })
 
 test('spam trap answers ok but saves and sends nothing', async () => {

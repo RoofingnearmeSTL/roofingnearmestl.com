@@ -146,6 +146,38 @@ export async function POST(req: Request) {
     } catch (smsError) {
       console.error('LEAD SMS CRASH', { name: smsError instanceof Error ? smsError.name : 'UnknownError' })
     }
+    // Optional: send the saved lead to the CRM (RoofLink, through a Zapier "Catch Hook" URL).
+    // Skipped until LEAD_WEBHOOK_URL is set. Must not fail or slow down a saved lead for long.
+    try {
+      const hook = process.env.LEAD_WEBHOOK_URL
+      if (hook && !hook.startsWith('https://')) {
+        console.error('LEAD WEBHOOK URL MUST START WITH https://')
+      } else if (hook) {
+        const [firstName, ...rest] = leadValue(lead.name).split(/\s+/)
+        const location = leadValue(field(body.est_location, 80)) || leadValue(lead.city)
+        const res = await fetch(hook, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...lead,
+            first_name: firstName,
+            last_name: rest.join(' '),
+            state: /\bIL\b|illinois/i.test(location) ? 'IL' : /\bMO\b|missouri/i.test(location) ? 'MO' : '',
+            estimator_location: field(body.est_location, 80),
+            estimate_price: field(body.est_price),
+            estimate_low: field(body.est_price_low),
+            estimate_high: field(body.est_price_high),
+            lead_source: sourceLabel,
+            website: 'roofingnearmestl.com',
+            submitted_at: new Date().toISOString(),
+          }),
+          signal: AbortSignal.timeout(5000),
+        })
+        if (!res.ok) console.error('LEAD WEBHOOK FAILED', { status: res.status })
+      }
+    } catch (hookError) {
+      console.error('LEAD WEBHOOK CRASH', { name: hookError instanceof Error ? hookError.name : 'UnknownError' })
+    }
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error('LEAD API FAILED', { name: error instanceof Error ? error.name : 'UnknownError' })

@@ -3,7 +3,7 @@ import BrandHeader from "@/components/brand-header";
 import BrandFooter from "@/components/brand-footer";
 
 // Keep this page in step with what the site actually collects: the lead form (src/components/lead-form.tsx),
-// lead source tracking, the API route (Supabase, Resend, Twilio) and the tags in src/components/google-ads.tsx.
+// lead source tracking, the API route (Supabase, Resend, Twilio, the LEAD_WEBHOOK_URL CRM hook) and the tags in src/components/google-ads.tsx.
 export const metadata: Metadata = {
   title: "Privacy Policy | RoofingnearmeSTL",
   description: "How RoofingnearmeSTL collects, uses and protects the information you share on roofingnearmestl.com.",
@@ -44,7 +44,7 @@ const sections: { heading: string; body: React.ReactNode }[] = [
     heading: "Who we share it with",
     body: (
       <>
-        <p>We do not sell your personal information. We share it only with service providers that help us run the website and respond to you: Vercel (website hosting), Supabase (secure storage of requests), Resend (emails your request to our team), Twilio (text alerts to our team), Elfsight (shows our Google reviews on the homepage; their script loads when that section is displayed), and Google and Meta (analytics and advertising, as described above).</p>
+        <p>We do not sell your personal information. We share it only with service providers that help us run the website and respond to you: Vercel (website hosting), Supabase (secure storage of requests), Resend (emails your request to our team), Twilio (text alerts to our team), Zapier and RoofLink (pass your request into the customer management system we use to schedule and follow up on jobs), Elfsight (shows our Google reviews on the homepage; their script loads when that section is displayed), and Google and Meta (analytics and advertising, as described above).</p>
         <p>We may also share information if the law requires it.</p>
       </>
     ),
