@@ -1,4 +1,8 @@
 import { FACEBOOK_URL, GOOGLE_BUSINESS_URL, SITE_URL, areaGroups, sitePages } from "@/lib/site-pages";
+import { gridPages } from "@/lib/service-grid";
+import { questions } from "@/lib/questions";
+import { IL_COMING_SOON, SHINGLES, priceRange, usd } from "@/lib/pricing";
+import { INSURANCE_SENTENCE } from "@/lib/business";
 
 export const dynamic = "force-static";
 
@@ -14,13 +18,14 @@ export function GET() {
 
   const body = `# RoofingnearmeSTL (Roofing Near Me STL)
 
-> Local roofing contractor serving the Illinois Metro East (Monroe, St. Clair and Madison counties) and the St. Louis, Missouri metro (St. Louis, St. Charles, Jefferson and Franklin counties). Roof repair, roof replacement, storm and hail damage inspections, emergency tarping, siding, gutters and downspouts, soffit and fascia. Every visit starts with a free photo-documented roof report with honest repair-vs-replace options.
+> Local crew based in Waterloo, Illinois. ROOFING (repair, replacement, hail and storm damage inspections, 24/7 emergency tarping) is offered in MISSOURI ONLY: St. Louis, St. Louis County, St. Charles County, Jefferson County and Franklin County. SIDING, GUTTERS AND DOWNSPOUTS, SOFFIT AND FASCIA are offered in Missouri and the Illinois Metro East (Monroe, St. Clair and Madison counties). ${IL_COMING_SOON}. Every roofing visit starts with a free photo-documented roof report with honest repair-vs-replace options.
 
 - Phone (Illinois): 618-612-5192
 - Phone (Missouri): 314-202-7663
 - Installs shingles from Owens Corning, CertainTeed, TAMKO and IKO, plus metal roofing
-- 24/7 emergency roof repair and tarping
-- Fully insured: $2M liability plus workers' compensation
+- 24/7 emergency roof repair and tarping (Missouri)
+- Roof replacement pricing (Missouri, 2026): 30-year architectural shingles ${usd(SHINGLES.architectural.low)}-${usd(SHINGLES.architectural.high)} per square (${usd(priceRange(12, "architectural").low)}-${usd(priceRange(24, "architectural").high)} for most homes, 12-24 squares); 3-tab ${usd(SHINGLES["3tab"].low)}-${usd(SHINGLES["3tab"].high)} per square; low pitch = low end, medium = middle, steep = high end; clay, metal and slate are custom quotes
+- ${INSURANCE_SENTENCE} (Sutton Specialty Insurance Company)
 - 10-Year Workmanship Warranty
 - 5.0-star Google rating
 - Inspections by Mike Williamson, Building Experts Institute (BEI) certified in hail damage identification, wind damage identification, installation, and building code for asphalt shingle roofs (valid through March 2029)
@@ -43,6 +48,16 @@ ${areaList}
 
 - [Facebook](${FACEBOOK_URL})${GOOGLE_BUSINESS_URL ? `
 - [Google Business Profile](${GOOGLE_BUSINESS_URL})` : ""}
+
+## City + service pages
+
+${gridPages.map((page) => `- [${page.service.shortTitle(page.city.place)}](${SITE_URL}${page.path})`).join("\n")}
+
+## Guides and answers
+
+- [2026 Roof Replacement Cost in St. Louis, MO](${SITE_URL}/blog/roof-replacement-cost-st-louis-mo)
+${questions.map((q) => `- [${q.question}](${SITE_URL}/questions/${q.slug}): ${q.answer}`).join("\n")}
+- [Insurance, certifications & licensing](${SITE_URL}/accreditation)
 
 ## Get a free estimate
 

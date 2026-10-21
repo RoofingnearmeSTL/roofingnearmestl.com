@@ -19,7 +19,7 @@ function handler({ insertError = null, emailError = null, env = {}, smsStatus = 
   }
   const exports = {}
   vm.runInNewContext(source, {
-    exports, process: { env: environment }, btoa, URLSearchParams,
+    exports, process: { env: environment }, btoa, URLSearchParams, AbortSignal, Date,
     fetch: async (url, options) => { calls.sms.push({ url, ...options }); return { ok: smsStatus < 400, status: smsStatus } },
     console: Object.fromEntries(['log', 'error'].map(level => [level, (...args) => calls.logs.push(args)])),
     require(name) {
@@ -119,30 +119,33 @@ test('requires name and phone before inserting', async () => {
   assert.equal(calls.inserts.length, 0)
 })
 
-for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate Tile']]) {
-  test(`${label} form payload persists age/emergency and emails every roofing detail`, async () => {
-    // The homepage builds the estimator extras; the shared LeadForm merges them into the payload.
+for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate'], ['metal', 'Metal']]) {
+  test(`${label} estimator selection persists age/emergency and emails every roofing detail`, async () => {
+    // The estimator builds these extras; the shared LeadForm merges them into the payload.
+    const { estimatorExtras } = await import('../src/lib/pricing.ts')
     const page = fs.readFileSync('src/app/page.tsx', 'utf8')
+    const estimator = fs.readFileSync('src/components/roof-estimator.tsx', 'utf8')
     const leadForm = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
-    const extrasSource = page.slice(page.indexOf('  const tile = '), page.indexOf('\n  };', page.indexOf('  const estimateExtras = {')) + 5)
     const payloadSource = leadForm.slice(leadForm.indexOf('    const payload = {'), leadForm.indexOf('\n    try {', leadForm.indexOf('    const payload = {')))
-    const compiled = ts.transpileModule(`${extrasSource}\nconst extras = estimateExtras\n${payloadSource}\nexports.payload = payload`, {
+    const compiled = ts.transpileModule(`${payloadSource}\nexports.payload = payload`, {
       compilerOptions: { module: ts.ModuleKind.CommonJS },
     }).outputText
     const form = new Map(Object.entries({ name: 'Tile Customer', phone: '3145550100', email: 'customer@example.invalid',
       address: '123 Example St', city: 'St Louis', service: 'Roof Repair', issue_type: 'Active leak',
       roof_age: '15-20 years', emergency: 'on', details: '<Leak>\nPlease tarp' }))
     const exports = {}
-    vm.runInNewContext(compiled, { exports, fd: form, est: { size: '1800', pitch: 'medium', material, email: '' },
-      utm: {}, price: 9800 })
+    const extras = estimatorExtras({ squares: 18, shingle: material, pitch: 'medium', place: 'St. Louis, MO', state: 'MO' })
+    vm.runInNewContext(compiled, { exports, fd: form, extras, utm: {} })
     const payload = exports.payload
     assert.equal(payload.roof_material, label)
     assert.equal(payload.roof_age, '15-20 years')
     assert.equal(payload.emergency, true)
-    assert.equal(payload.roof_size, '~1,800 sqft')
-    assert.equal(payload.roof_pitch, 'Medium Pitch')
+    assert.equal(payload.roof_size, '18 SQ (~1,800 sq ft)')
+    assert.equal(payload.roof_pitch, 'Medium Pitch (5/12 - 7/12)')
+    assert.equal(payload.est_price, null) // custom quote: no price
     assert.equal(payload.est_price_low, null)
-    assert.match(page, new RegExp(`<option value="${material}">${label}</option>`))
+    assert.match(estimator, /estimatorExtras\(\{ squares, shingle, pitch, place, state \}\)/)
+    assert.match(page, /<RoofEstimator onChange=\{setEstimateExtras\} \/>/)
     assert.match(page, /<LeadForm extras=\{estimateExtras\}/)
     assert.match(leadForm, /name="roof_age"/)
     assert.match(leadForm, /name="emergency" type="checkbox"/)
@@ -157,13 +160,24 @@ for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate Tile']]
     for (const line of ['Name: Tile Customer', 'Phone: 3145550100', 'Email: customer@example.invalid',
       'Address: 123 Example St, St Louis', 'Service: Roof Repair', 'Issue: Active leak',
       'Age of Roof: 15-20 years', 'Emergency Tarp Needed: YES - Emergency',
-      'Roof Size: ~1,800 sqft', 'Pitch: Medium Pitch', `Material: ${label}`, 'Message: <Leak>\nPlease tarp']) {
+      'Roof Size: 18 SQ (~1,800 sq ft)', 'Pitch: Medium Pitch (5/12 - 7/12)', `Material: ${label}`, 'Message: <Leak>\nPlease tarp']) {
       assert.ok(email.text.includes(line), line)
     }
     assert.match(email.html, /&lt;Leak&gt;<br>Please tarp/)
-    for (const value of ['15-20 years', 'YES - Emergency', '~1,800 sqft', 'Medium Pitch', label]) assert.ok(email.html.includes(value))
+    for (const value of ['15-20 years', 'YES - Emergency', '18 SQ (~1,800 sq ft)', 'Medium Pitch (5/12 - 7/12)', label]) assert.ok(email.html.includes(value))
   })
 }
+
+test('priced estimator selection carries the estimate into the lead', async () => {
+  const { estimatorExtras } = await import('../src/lib/pricing.ts')
+  const extras = estimatorExtras({ squares: 18, shingle: 'architectural', pitch: 'steep', place: 'St. Charles, MO', state: 'MO' })
+  assert.equal(extras.est_price, 13500)
+  assert.equal(extras.est_price_low, 8100)
+  assert.equal(extras.est_price_high, 13500)
+  assert.equal(extras.roof_material, '30-Year Architectural')
+  const il = estimatorExtras({ squares: 18, shingle: 'architectural', pitch: 'steep', place: 'Waterloo, IL', state: 'IL' })
+  assert.equal(il.est_price, null) // Illinois: no roofing price
+})
 
 test('unchecked emergency is No and numeric roofing details remain visible', async () => {
   const { calls, post } = handler()
@@ -200,6 +214,48 @@ test('a failed text alert does not fail a saved lead', async () => {
   assert.equal((await post(lead)).status, 200)
   assert.equal(calls.inserts.length, 1)
   assert.ok(calls.logs.some(([message]) => message === 'LEAD SMS FAILED'))
+})
+
+const hook = { LEAD_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/123/abc/' }
+
+test('no CRM webhook is sent until LEAD_WEBHOOK_URL is set', async () => {
+  const { calls, post } = handler()
+  assert.equal((await post(lead)).status, 200)
+  assert.equal(calls.sms.length, 0)
+})
+
+test('configured CRM webhook receives the saved lead as JSON', async () => {
+  const { calls, post } = handler({ env: hook })
+  const response = await post({ ...lead, name: 'Pat Q Customer', est_location: 'Waterloo, IL', est_price: null, utm_source: 'google', utm_medium: 'cpc' })
+  assert.equal(response.status, 200)
+  assert.equal(calls.sms.length, 1)
+  const call = calls.sms[0]
+  assert.equal(call.url, hook.LEAD_WEBHOOK_URL)
+  assert.equal(call.method, 'POST')
+  assert.equal(call.headers['Content-Type'], 'application/json')
+  assert.ok(call.signal)
+  const sent = JSON.parse(call.body)
+  assert.equal(sent.name, 'Pat Q Customer')
+  assert.equal(sent.first_name, 'Pat')
+  assert.equal(sent.last_name, 'Q Customer')
+  assert.equal(sent.phone, '3145550100')
+  assert.equal(sent.email, 'customer@example.invalid')
+  assert.equal(sent.state, 'IL')
+  assert.equal(sent.estimate_price, null)
+  assert.equal(sent.lead_source, 'google / cpc')
+  assert.equal(sent.emergency, true)
+  assert.match(sent.submitted_at, /^\d{4}-\d{2}-\d{2}T/)
+})
+
+test('a failed or non-https CRM webhook does not fail a saved lead', async () => {
+  const failed = handler({ env: hook, smsStatus: 500 })
+  assert.equal((await failed.post(lead)).status, 200)
+  assert.equal(failed.calls.inserts.length, 1)
+  assert.ok(failed.calls.logs.some(([message]) => message === 'LEAD WEBHOOK FAILED'))
+  const insecure = handler({ env: { LEAD_WEBHOOK_URL: 'http://example.invalid/hook' } })
+  assert.equal((await insecure.post(lead)).status, 200)
+  assert.equal(insecure.calls.sms.length, 0)
+  assert.ok(insecure.calls.logs.some(([message]) => message === 'LEAD WEBHOOK URL MUST START WITH https://'))
 })
 
 test('spam trap answers ok but saves and sends nothing', async () => {

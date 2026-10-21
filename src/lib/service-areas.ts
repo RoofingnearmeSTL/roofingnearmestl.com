@@ -1,20 +1,24 @@
-// City landing pages for the wider St. Louis service area, rendered by src/app/[slug]/page.tsx.
+// City landing pages for the St. Louis service area, rendered by src/app/[slug]/page.tsx.
 // Each city gets its own local paragraph and nearby-area links so no two pages are copies of each other.
 // Same claim rules as site-pages.ts: only owner-confirmed claims, and local facts limited to plain geography.
+// BUSINESS RULE: Missouri cities get roofing + exterior pages; Illinois cities get exterior-only pages
+// (siding, gutters, soffit & fascia) until the Illinois roofing license. See src/lib/business.ts.
 import type { SitePage } from "./site-pages";
+import { INSURANCE_SENTENCE, PHONES } from "./business";
+import { IL_COMING_SOON, SHINGLES, priceRange, usd } from "./pricing";
 
 export type RegionId = "il-monroe-st-clair" | "il-madison" | "mo-st-charles" | "mo-west-county" | "mo-central-county" | "mo-north-county" | "mo-jefferson" | "mo-franklin";
 
 // Groupings for menus and the /areas-we-serve page, Illinois first (home base), then Missouri.
-// Each region also has a short note about the homes and roofs there, shown on its city pages.
+// Each region also has a short note about the homes there, shown on its city pages.
 export const regions: { id: RegionId; name: string; note: string }[] = [
   {
     id: "il-monroe-st-clair", name: "Monroe & St. Clair County, IL",
-    note: "Monroe and St. Clair County are home base for us. Homes here range from historic brick near the old town centers to newer subdivisions, and spring storms rolling in from the west are the most common reason for a roof check.",
+    note: "Monroe and St. Clair County are home base for us. Homes here range from historic brick near the old town centers to newer subdivisions, and the same spring storms that move through the area crack siding, dent gutters and loosen fascia. In Illinois we handle siding, gutters, soffit and fascia.",
   },
   {
     id: "il-madison", name: "Madison County, IL",
-    note: "Across Madison County, from the river bluffs at Alton to Edwardsville and Collinsville, we work on everything from century-old homes to new construction. Hail and high winds hit both sides of the river, so dented gutters and lifted shingles are worth a closer look after any big storm.",
+    note: "Across Madison County, from the river bluffs at Alton to Edwardsville and Collinsville, homes range from century-old to brand new. Hail and high winds hit both sides of the river, so cracked siding, dented gutters and loose trim are worth a closer look after any big storm.",
   },
   {
     id: "mo-st-charles", name: "St. Charles County, MO",
@@ -57,49 +61,71 @@ type Area = {
 };
 
 const areas: Area[] = [
-  // Monroe & St. Clair County, IL (Waterloo, Columbia and Belleville have hand-written pages in site-pages.ts)
+  // ILLINOIS: exterior only (siding, gutters, soffit & fascia). No roofing until the IL roofing license.
+  // Monroe & St. Clair County, IL
   {
-    slug: "roofing-ofallon-il", city: "O'Fallon", state: "IL", county: "St. Clair County", region: "il-monroe-st-clair",
-    local: "O'Fallon is home to many military families from nearby Scott Air Force Base and plenty of newer subdivisions along I-64. Whether you're settling in, selling or getting ready for a move, our photo report gives you a clear record of your roof's condition.",
-    nearby: ["roofing-belleville-il", "roofing-collinsville-il"],
+    slug: "siding-gutters-waterloo-il", city: "Waterloo", state: "IL", county: "Monroe County", region: "il-monroe-st-clair",
+    local: "Waterloo, the Monroe County seat, is our home base. From older homes near the courthouse and downtown to newer subdivisions on the edges of town, we repair and replace siding, gutters, downspouts, soffit and fascia, and we photograph what we find before we quote.",
+    nearby: ["siding-gutters-columbia-il", "siding-gutters-dupo-il"],
   },
   {
-    slug: "roofing-dupo-il", city: "Dupo", state: "IL", county: "St. Clair County", region: "il-monroe-st-clair",
-    local: "Dupo sits on Illinois Route 3 between Cahokia Heights and Columbia, right in the middle of our Metro East service area. We handle leak repairs, storm damage inspections and full replacements here, with photos before and after.",
-    nearby: ["roofing-columbia-il", "roofing-cahokia-heights-il", "roofing-waterloo-il"],
+    slug: "siding-gutters-columbia-il", city: "Columbia", state: "IL", county: "Monroe County", region: "il-monroe-st-clair",
+    local: "Columbia sits along Illinois Route 3 near the Jefferson Barracks Bridge, with established neighborhoods and newer subdivisions. Wind, hail and years of weather wear on siding, gutters and trim here, and we repair what can be repaired and replace what can't.",
+    nearby: ["siding-gutters-waterloo-il", "siding-gutters-dupo-il", "siding-gutters-belleville-il"],
   },
   {
-    slug: "roofing-cahokia-heights-il", city: "Cahokia Heights", state: "IL", county: "St. Clair County", region: "il-monroe-st-clair",
-    intro: "Cahokia Heights, formed in 2021 when Cahokia, Centreville and Alorton combined, is part of our Metro East service area. Every visit starts with a Free Photo-Documented Report, so you see your roof before you decide anything.",
-    local: "Many homes in Cahokia Heights are older, and keeping water off and away from them matters. Along with the shingles, we check flashing, gutters and downspouts so rain is carried off the roof and away from your home.",
-    nearby: ["roofing-dupo-il", "roofing-belleville-il", "roofing-columbia-il"],
+    slug: "siding-gutters-belleville-il", city: "Belleville", state: "IL", county: "St. Clair County", region: "il-monroe-st-clair",
+    local: "Belleville, the St. Clair County seat, has many older homes near downtown and Main Street along with newer neighborhoods farther out. On older homes the gutters, fascia and trim often wear out together, so we look at the whole roof edge and siding, not just one spot.",
+    nearby: ["siding-gutters-ofallon-il", "siding-gutters-fairview-heights-il", "siding-gutters-columbia-il"],
+  },
+  {
+    slug: "siding-gutters-ofallon-il", city: "O'Fallon", state: "IL", county: "St. Clair County", region: "il-monroe-st-clair",
+    local: "O'Fallon is home to many military families from nearby Scott Air Force Base and plenty of newer subdivisions along I-64. Whether you're settling in, selling or getting ready for a move, we can fix tired siding, gutters and fascia and document the work with photos.",
+    nearby: ["siding-gutters-fairview-heights-il", "siding-gutters-belleville-il", "siding-gutters-collinsville-il"],
+  },
+  {
+    slug: "siding-gutters-fairview-heights-il", city: "Fairview Heights", state: "IL", county: "St. Clair County", region: "il-monroe-st-clair",
+    local: "Fairview Heights, home to St. Clair Square, has established neighborhoods off Illinois Route 159 and I-64. On homes that have been through a few decades of Metro East weather, we repair or replace siding, gutters, downspouts, soffit and fascia.",
+    nearby: ["siding-gutters-ofallon-il", "siding-gutters-belleville-il", "siding-gutters-collinsville-il"],
+  },
+  {
+    slug: "siding-gutters-dupo-il", city: "Dupo", state: "IL", county: "St. Clair County", region: "il-monroe-st-clair",
+    local: "Dupo sits on Illinois Route 3 between Cahokia Heights and Columbia, right in the middle of our Metro East service area. We handle siding repairs, new gutters and downspouts, and soffit and fascia replacements here, with photos before and after.",
+    nearby: ["siding-gutters-columbia-il", "siding-gutters-cahokia-heights-il", "siding-gutters-waterloo-il"],
+  },
+  {
+    slug: "siding-gutters-cahokia-heights-il", city: "Cahokia Heights", state: "IL", county: "St. Clair County", region: "il-monroe-st-clair",
+    intro: "Cahokia Heights, formed in 2021 when Cahokia, Centreville and Alorton combined, is part of our Metro East service area. Every estimate starts with photos of your home's exterior, so you see the problem before you decide anything.",
+    local: "Many homes in Cahokia Heights are older, and keeping water off and away from them matters. We check gutters, downspouts, fascia and siding so rain is carried away from your home instead of into the walls or foundation.",
+    nearby: ["siding-gutters-dupo-il", "siding-gutters-belleville-il", "siding-gutters-columbia-il"],
   },
   // Madison County, IL
   {
-    slug: "roofing-edwardsville-il", city: "Edwardsville", state: "IL", county: "Madison County", region: "il-madison",
-    local: "Edwardsville, the Madison County seat and home of SIUE, has historic homes near downtown and newer subdivisions on the edges of town. We inspect them all the same way: every slope photographed, and honest repair-or-replace options.",
-    nearby: ["roofing-collinsville-il", "roofing-wood-river-il", "roofing-granite-city-il"],
+    slug: "siding-gutters-edwardsville-il", city: "Edwardsville", state: "IL", county: "Madison County", region: "il-madison",
+    local: "Edwardsville, the Madison County seat and home of SIUE, has historic homes near downtown and newer subdivisions on the edges of town. We repair and replace siding, gutters, soffit and fascia on both, and show you photos before we quote.",
+    nearby: ["siding-gutters-collinsville-il", "siding-gutters-wood-river-il", "siding-gutters-granite-city-il"],
   },
   {
-    slug: "roofing-collinsville-il", city: "Collinsville", state: "IL", county: "Madison County", region: "il-madison",
-    local: "Collinsville, home of the World's Largest Catsup Bottle, has established neighborhoods on the bluffs and newer homes near I-55/70. We inspect, repair and replace roofs across town, with photos every step of the way.",
-    nearby: ["roofing-edwardsville-il", "roofing-ofallon-il", "roofing-granite-city-il"],
+    slug: "siding-gutters-collinsville-il", city: "Collinsville", state: "IL", county: "Madison County", region: "il-madison",
+    local: "Collinsville, home of the World's Largest Catsup Bottle, has established neighborhoods on the bluffs and newer homes near I-55/70. We replace worn siding, gutters and fascia across town, with photos every step of the way.",
+    nearby: ["siding-gutters-edwardsville-il", "siding-gutters-fairview-heights-il", "siding-gutters-granite-city-il"],
   },
   {
-    slug: "roofing-granite-city-il", city: "Granite City", state: "IL", county: "Madison County", region: "il-madison",
-    local: "Granite City's established neighborhoods have many older homes where the roof, gutters and fascia have all aged together. We look at the whole exterior and photograph what needs attention now and what can wait.",
-    nearby: ["roofing-collinsville-il", "roofing-edwardsville-il", "roofing-wood-river-il"],
+    slug: "siding-gutters-granite-city-il", city: "Granite City", state: "IL", county: "Madison County", region: "il-madison",
+    local: "Granite City's established neighborhoods have many older homes where the gutters, fascia and siding have all aged together. We look at the whole exterior and photograph what needs attention now and what can wait.",
+    nearby: ["siding-gutters-collinsville-il", "siding-gutters-edwardsville-il", "siding-gutters-wood-river-il"],
   },
   {
-    slug: "roofing-alton-il", city: "Alton", state: "IL", county: "Madison County", region: "il-madison",
-    local: "Alton's historic homes on the Mississippi River bluffs often have steep roofs, chimneys and detailed trim. We inspect flashing, chimneys, soffit and fascia as closely as the shingles, so nothing gets missed.",
-    nearby: ["roofing-wood-river-il", "roofing-edwardsville-il"],
+    slug: "siding-gutters-alton-il", city: "Alton", state: "IL", county: "Madison County", region: "il-madison",
+    local: "Alton's historic homes on the Mississippi River bluffs often have detailed trim, deep eaves and long gutter runs. We inspect soffit, fascia, gutters and siding closely, so nothing gets missed.",
+    nearby: ["siding-gutters-wood-river-il", "siding-gutters-edwardsville-il"],
   },
   {
-    slug: "roofing-wood-river-il", city: "Wood River", state: "IL", county: "Madison County", region: "il-madison",
-    local: "Wood River sits between Alton, East Alton and Roxana, with established neighborhoods of older homes. We help homeowners here choose between a repair and a replacement with photos, not guesswork.",
-    nearby: ["roofing-alton-il", "roofing-edwardsville-il", "roofing-granite-city-il"],
+    slug: "siding-gutters-wood-river-il", city: "Wood River", state: "IL", county: "Madison County", region: "il-madison",
+    local: "Wood River sits between Alton, East Alton and Roxana, with established neighborhoods of older homes. We help homeowners here choose between repairing and replacing siding, gutters and fascia with photos, not guesswork.",
+    nearby: ["siding-gutters-alton-il", "siding-gutters-edwardsville-il", "siding-gutters-granite-city-il"],
   },
+  // MISSOURI: roofing + siding + gutters + soffit/fascia
   // St. Charles County, MO
   {
     slug: "roofing-st-charles-mo", city: "St. Charles", state: "MO", county: "St. Charles County", region: "mo-st-charles",
@@ -238,8 +264,8 @@ const areas: Area[] = [
   },
 ];
 
-const PHONE = { IL: "618-612-5192", MO: "314-202-7663" } as const;
-const STATE_NAME = { IL: "Illinois", MO: "Missouri" } as const;
+const titleFit = (long: string, short: string) => (long.length <= 66 ? long : short);
+const regionLabel = (region: { name: string }) => region.name.replace(/, (IL|MO)$/, "");
 
 // A few intro wordings, rotated, so pages don't open with identical sentences.
 const intros = [
@@ -252,37 +278,40 @@ const intros = [
   (city: string) => `Whether it's one missing shingle or a roof at the end of its life, ${city} homeowners get the same thing from us: a free, photo-documented inspection and a straight answer about what your roof needs.`,
 ];
 
-function areaPage(area: Area, index: number, nameOf: (slug: string) => string): SitePage {
-  const { city, state, county } = area;
-  const place = `${city}, ${state}`;
-  const phone = PHONE[state];
+// Illinois pages: exterior work only.
+const exteriorIntros = [
+  (city: string) => `${city} homeowners call us for cracked or loose siding, sagging gutters and rotted fascia. We photograph the problem, explain whether a repair or a replacement makes sense, and give you a written estimate with no pressure.`,
+  (city: string) => `Siding, gutters, downspouts, soffit and fascia in ${city}, done by one local crew. You see photos of what we found before we quote anything, and you decide with the facts in front of you.`,
+  (city: string) => `When storms or years of weather wear on your home's exterior in ${city}, we fix it right: new or repaired siding, gutters that drain away from your foundation, and solid soffit and fascia along the roof edge.`,
+  (city: string) => `Need siding or gutter work in ${city}? We're a local crew from Waterloo with a straight answer, clear photos and a written price. No sales pitch, and no work you don't need.`,
+];
+
+function roofingPage(area: Area, index: number, nameOf: (slug: string) => string): SitePage {
+  const { city, county } = area;
+  const place = `${city}, MO`;
+  const phone = PHONES.MO.display;
   const nearby = area.nearby.map(nameOf).join(", ");
-  const longTitle = `Roofer in ${place} | Free Roof Inspection | RoofingnearmeSTL`;
   const region = regions.find((candidate) => candidate.id === area.region)!;
+  const [s12, s24] = [priceRange(12, "architectural"), priceRange(24, "architectural")];
   return {
     slug: area.slug,
     kind: "city",
+    scope: "mo-all",
     navLabel: place,
     city,
-    state,
+    state: "MO",
     county,
     region: area.region,
     nearby: area.nearby,
-    title: longTitle.length <= 66 ? longTitle : `Roofer in ${place} | RoofingnearmeSTL`,
+    title: titleFit(`Roofer in ${place} | Free Roof Inspection | RoofingnearmeSTL`, `Roofer in ${place} | RoofingnearmeSTL`),
     description: `Roofer in ${place}: free photo-documented roof inspection, repair, replacement, 24/7 tarping, siding & gutters. Call ${phone}.`,
-    eyebrow: `${city}, ${STATE_NAME[state]}`,
+    eyebrow: `${city}, Missouri`,
     h1: `Roofing Company in ${place}`,
     intro: area.intro ?? intros[index % intros.length](city),
     defaultService: "Roof Repair",
     sections: [
-      {
-        heading: `Roofing in ${city}: what we look for`,
-        body: area.local,
-      },
-      {
-        heading: `Roofs across ${region.name.replace(/, (IL|MO)$/, "")}`,
-        body: region.note,
-      },
+      { heading: `Roofing in ${city}: what we look for`, body: area.local },
+      { heading: `Roofs across ${regionLabel(region)}`, body: region.note },
       {
         heading: `Roofing and exterior services in ${city}`,
         body: "One local crew for your roof and the exterior around it:",
@@ -295,29 +324,80 @@ function areaPage(area: Area, index: number, nameOf: (slug: string) => string): 
           "Soffit and fascia",
         ],
       },
-      {
-        heading: "Local, insured and accountable",
-        body: `A local crew serving ${county} and the greater St. Louis area. Fully insured with $2M liability and workers' comp, 5.0★ on Google, and every job is backed by a 10-Year Workmanship Warranty.`,
-      },
-      {
-        heading: `Fast response in ${city}`,
-        body: `During business hours, we call as soon as your request comes in, and same-day evaluations are available when our schedule allows. Active leak? Call our ${STATE_NAME[state]} line: ${phone}.`,
-      },
+      { heading: "Local, insured and accountable", body: `A local crew serving ${county} and the greater St. Louis area. ${INSURANCE_SENTENCE}, 5.0★ on Google, and every job is backed by a 10-Year Workmanship Warranty.` },
+      { heading: `Fast response in ${city}`, body: `During business hours, we call as soon as your request comes in, and same-day evaluations are available when our schedule allows. Active leak? Call our Missouri line: ${phone}.` },
     ],
     faqs: [
-      [`Do you serve ${place}?`, `Yes. We work throughout ${city} and nearby ${nearby}, plus the rest of the St. Louis metro and the Metro East.`],
-      [`How much does a new roof cost in ${city}?`, "It depends on size, pitch and material. Use the Instant Roof Cost Estimator on our homepage for a quick range, then request a free evaluation for an exact quote."],
+      [`Do you serve ${place}?`, `Yes. We work throughout ${city} and nearby ${nearby}, plus the rest of the St. Louis area in Missouri.`],
+      [`How much does a new roof cost in ${city}?`, `A 30-year architectural shingle roof runs ${usd(SHINGLES.architectural.low)}-${usd(SHINGLES.architectural.high)} per square (100 sq ft), so most homes with 12-24 squares pay ${usd(s12.low)}-${usd(s24.high)}. Low pitch is the low end and steep pitch the high end. Try the estimator, then get a free inspection to lock your price.`],
       [`Can you check my roof after a storm in ${city}?`, "Yes. Our Free Photo-Documented Report includes shingle ID and damage photos you can keep and share with your insurance carrier."],
       [`Do you also do siding, gutters, soffit and fascia in ${city}?`, "Yes. Roof, siding, gutters, downspouts, soffit and fascia. One local crew, one point of contact."],
-      [`Which number should I call in ${city}?`, `For an active leak or storm damage in ${city}, call our ${STATE_NAME[state]} line at ${phone}; emergency tarping is available 24/7. For everything else, request a free evaluation online and we'll call as soon as it comes in during business hours.`],
+      [`Which number should I call in ${city}?`, `For an active leak or storm damage in ${city}, call our Missouri line at ${phone}; emergency tarping is available 24/7. For everything else, request a free evaluation online and we'll call as soon as it comes in during business hours.`],
     ],
   };
 }
 
-/** Builds the city pages; `nameOf` turns a nearby slug into its "City, ST" label (covers the hand-written pages too). */
+function exteriorPage(area: Area, index: number, nameOf: (slug: string) => string): SitePage {
+  const { city, county } = area;
+  const place = `${city}, IL`;
+  const phone = PHONES.IL.display;
+  const nearby = area.nearby.map(nameOf).join(", ");
+  const region = regions.find((candidate) => candidate.id === area.region)!;
+  return {
+    slug: area.slug,
+    kind: "city",
+    scope: "il-exterior",
+    navLabel: place,
+    city,
+    state: "IL",
+    county,
+    region: area.region,
+    nearby: area.nearby,
+    title: titleFit(`Siding & Gutters in ${place} | RoofingnearmeSTL`, `Siding & Gutters, ${place}`),
+    description: `Siding, gutters, downspouts, soffit & fascia in ${place}: free estimate, photos first, 10-yr workmanship warranty. Call ${phone}.`,
+    eyebrow: `${city}, Illinois`,
+    h1: `Siding, Gutters, Soffit & Fascia in ${place}`,
+    intro: area.intro ?? exteriorIntros[index % exteriorIntros.length](city),
+    defaultService: "Siding",
+    sections: [
+      { heading: `Exteriors in ${city}: what we look for`, body: area.local },
+      { heading: `Homes across ${regionLabel(region)}`, body: region.note },
+      {
+        heading: `Exterior services in ${city}`,
+        body: "One local crew for the outside of your home:",
+        bullets: [
+          "Siding repair and replacement",
+          "Gutters and downspouts: new, repaired or re-routed",
+          "Soffit and fascia repair and replacement",
+          "Storm damage to siding, gutters and trim, documented with photos",
+        ],
+      },
+      { heading: "Roofing in Illinois", body: `${IL_COMING_SOON}. Today in ${city} we repair and replace siding, gutters, downspouts, soffit and fascia. Roofing is available for homes in Missouri.` },
+      { heading: "Local, insured and accountable", body: `A local crew serving ${county} from our home base in Waterloo. ${INSURANCE_SENTENCE}, 5.0★ on Google, and our work is backed by a 10-Year Workmanship Warranty.` },
+      { heading: `Fast response in ${city}`, body: `During business hours, we call as soon as your request comes in, and same-day estimates are available when our schedule allows. Call our Illinois line: ${phone}.` },
+    ],
+    faqs: [
+      [`Do you do roofing in ${place}?`, `Not yet. ${IL_COMING_SOON}. Today we repair and replace siding, gutters, downspouts, soffit and fascia in ${city}.`],
+      [`Do you serve ${place}?`, `Yes, for siding, gutters, soffit and fascia. We work throughout ${city} and nearby ${nearby}.`],
+      [`Can you fix storm-damaged siding or gutters in ${city}?`, "Yes. We photograph cracked or dented siding, damaged gutters and loose trim, then repair or replace what's needed. The photos are yours to keep and share with your insurance carrier."],
+      [`Do you install new gutters and downspouts in ${city}?`, "Yes. We replace worn or undersized gutters, fix leaking seams and sagging runs, and re-route downspouts so water drains away from your foundation."],
+      [`Which number should I call in ${city}?`, `Call our Illinois line at ${phone}, or request a free estimate online and we'll call as soon as it comes in during business hours.`],
+    ],
+  };
+}
+
+/** Builds the city pages; `nameOf` turns a nearby slug into its "City, ST" label. */
 export function buildAreaPages(nameOf: (slug: string) => string): SitePage[] {
   // Rotate the intro within each region, so neighboring towns never open with the same paragraph.
-  return areas.map((area) => areaPage(area, areas.filter((other) => other.region === area.region).indexOf(area), nameOf));
+  return areas.map((area) => {
+    const index = areas.filter((other) => other.region === area.region).indexOf(area);
+    return area.state === "IL" ? exteriorPage(area, index, nameOf) : roofingPage(area, index, nameOf);
+  });
 }
 
 export const areaNames: Record<string, string> = Object.fromEntries(areas.map((area) => [area.slug, `${area.city}, ${area.state}`]));
+
+/** Old Illinois URLs (/roofing-<city>-il) now redirect to the exterior pages. */
+export const ilRedirects = areas
+  .filter((area) => area.state === "IL" && area.slug !== "siding-gutters-fairview-heights-il")
+  .map((area) => ({ from: `/${area.slug.replace(/^siding-gutters-/, "roofing-")}`, to: `/${area.slug}` }));

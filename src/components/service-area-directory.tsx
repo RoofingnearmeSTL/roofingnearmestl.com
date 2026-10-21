@@ -30,6 +30,7 @@ export default function ServiceAreaDirectory({ compact = false }: { compact?: bo
       {areaGroups.map((group) => (
         <section key={group.id} id={group.id} className="scroll-mt-40 rounded-2xl border-2 border-zinc-200 bg-white p-6 shadow-sm">
           <h3 className="text-lg font-bold text-black">{group.name}</h3>
+          <p className="text-xs font-semibold text-zinc-500">{group.id.startsWith("il-") ? "Siding, gutters, soffit & fascia" : "Roofing + siding, gutters, soffit & fascia"}</p>
           <ul className="mt-2 flex flex-wrap gap-2">
             {group.pages.map((page) => (
               <li key={page.slug}><Link href={`/${page.slug}`} className={cityLink}>{page.navLabel}</Link></li>
