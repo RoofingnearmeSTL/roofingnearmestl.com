@@ -71,10 +71,14 @@ const inputClass = "w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.
 // Extra fields merged into the lead payload, e.g. the homepage cost estimator selections.
 export type LeadExtras = Record<string, string | number | null | undefined>;
 
-export default function LeadForm({ extras, defaultService = "Roof Repair", defaultCity = "", footer }: {
+export default function LeadForm({ extras, defaultService = "Roof Repair", defaultCity = "", services = SERVICES, exteriorOnly = false, footer }: {
   extras?: LeadExtras;
   defaultService?: string;
   defaultCity?: string;
+  /** Service choices; Illinois pages pass the exterior-only list. */
+  services?: string[];
+  /** Illinois pages: siding/gutter wording, no roof leak, tarp or roof-age fields. */
+  exteriorOnly?: boolean;
   footer?: React.ReactNode;
 }) {
   const router = useRouter();
@@ -141,12 +145,14 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       <input name="phone" required type="tel" inputMode="tel" maxLength={30} pattern="(?:\D*\d){10,}\D*" title="Please enter a 10-digit phone number" autoComplete="tel" placeholder="Phone Number *" aria-label="Phone number" className={inputClass} />
       <input name="city" defaultValue={defaultCity} maxLength={80} autoComplete="address-level2" placeholder="City" aria-label="City" className={inputClass} />
       <select name="service" defaultValue={defaultService} aria-label="Service needed" className={inputClass}>
-        {SERVICES.map((service) => <option key={service}>{service}</option>)}
+        {services.map((service) => <option key={service}>{service}</option>)}
       </select>
-      <label className="flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm font-semibold text-black">
-        <input name="emergency" type="checkbox" className="h-5 w-5 accent-brand" />
-        Active leak? Need an emergency tarp now
-      </label>
+      {!exteriorOnly && (
+        <label className="flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm font-semibold text-black">
+          <input name="emergency" type="checkbox" className="h-5 w-5 accent-brand" />
+          Active leak? Need an emergency tarp now
+        </label>
+      )}
       {/* Spam trap: hidden from people, bots fill it in. */}
       <input name="company" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-px w-px opacity-0" />
       <details className="group rounded-xl border border-zinc-200 bg-white/70 px-4 py-3 text-sm text-black">
@@ -156,9 +162,9 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
           <input name="address" maxLength={200} autoComplete="street-address" placeholder="Street address" aria-label="Street address" className={inputClass} />
           <label className="block font-semibold">
             Issue
-            <input name="issue_type" maxLength={200} placeholder="Leak, storm damage, aging roof, or other issue" className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black" />
+            <input name="issue_type" maxLength={200} placeholder={exteriorOnly ? "Siding damage, overflowing gutters, rotted fascia, or other issue" : "Leak, storm damage, aging roof, or other issue"} className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black" />
           </label>
-          <label className="block font-semibold">
+          {!exteriorOnly && <label className="block font-semibold">
             Age of Roof
             <select name="roof_age" defaultValue="Unknown" className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black">
               <option value="<5 years">&lt;5 years</option>
@@ -168,14 +174,14 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
               <option value="20+ years">20+ years</option>
               <option value="Unknown">Unknown</option>
             </select>
-          </label>
-          <textarea name="details" maxLength={2000} placeholder="What's going on with your roof?" aria-label="What's going on with your roof?" rows={3} className={inputClass}></textarea>
+          </label>}
+          <textarea name="details" maxLength={2000} placeholder={exteriorOnly ? "What's going on with your siding or gutters?" : "What's going on with your roof?"} aria-label="Project details" rows={3} className={inputClass}></textarea>
         </div>
       </details>
       <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
-        {sending ? "Sending..." : "GET MY FREE PHOTO REPORT →"}
+        {sending ? "Sending..." : exteriorOnly ? "GET MY FREE EXTERIOR QUOTE →" : "GET MY FREE PHOTO REPORT →"}
       </button>
-      <p className="text-center text-xs text-zinc-500">We only use your info to contact you about your roof. <Link href="/privacy" className="underline">Privacy Policy</Link></p>
+      <p className="text-center text-xs text-zinc-500">We only use your info to contact you about your {exteriorOnly ? "project" : "roof"}. <Link href="/privacy" className="underline">Privacy Policy</Link></p>
       {footer}
     </form>
   );

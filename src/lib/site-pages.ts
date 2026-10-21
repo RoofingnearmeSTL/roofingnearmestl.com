@@ -1,14 +1,31 @@
 // Content for the service and city landing pages rendered by src/app/[slug]/page.tsx.
+// BUSINESS RULES (src/lib/business.ts): Missouri = roofing + siding + gutters + soffit/fascia.
+// Illinois = siding + gutters + soffit/fascia ONLY ("Roofing coming soon after IL license"). The checks at the
+// bottom of this file fail the build if an Illinois page offers roofing.
 // Only use claims the owner has confirmed: 5.0★ Google, 10-Yr Workmanship Warranty, 24/7 emergency
-// repair and tarping, financing, metal installs, same-day evaluations when the schedule allows.
+// repair and tarping (Missouri), financing, metal installs, same-day evaluations when the schedule allows.
+// Insurance: say only what the 03/17/2026 COI shows ($1M per occurrence / $2M aggregate general liability).
+// Workers' comp is not on the COI, so do not claim it.
 // Shingle brands we install (owner-confirmed): Owens Corning, CertainTeed, TAMKO and IKO. Say "we install", never certified/preferred.
 // NOT true (do not add): GAF Certified, Owens Corning Preferred, BBB A+, 500+ roofs.
 // The wider St. Louis city pages are generated from src/lib/service-areas.ts.
 import { areaNames, buildAreaPages, regions, type RegionId } from "./service-areas";
+import { IL_LEAD_SERVICES, INSURANCE, INSURANCE_SENTENCE, LEGAL_NAME, PHONES } from "./business";
+import { IL_COMING_SOON } from "./pricing";
+
+/**
+ * Which services a page offers, which decides phones, process copy, certifications and lead-form choices:
+ * - roofing: Missouri roofing service pages
+ * - exterior: siding / gutters / soffit-fascia service pages (Missouri and Illinois)
+ * - mo-all: Missouri city pages (roofing + exterior)
+ * - il-exterior: Illinois city pages (exterior only)
+ */
+export type Scope = "roofing" | "exterior" | "mo-all" | "il-exterior";
 
 export type SitePage = {
   slug: string;
   kind: "service" | "city";
+  scope: Scope;
   navLabel: string;
   title: string;
   description: string;
@@ -35,12 +52,13 @@ const corePages: SitePage[] = [
   {
     slug: "roof-replacement",
     kind: "service",
+    scope: "roofing",
     navLabel: "Roof Replacement",
-    title: "Roof Replacement Metro East & St. Louis | RoofingnearmeSTL",
+    title: "Roof Replacement in St. Louis, MO | RoofingnearmeSTL",
     description:
-      "Roof replacement in Waterloo, Columbia, Belleville & St. Louis. Free photo-documented inspection first, real price range, 10-yr workmanship warranty.",
+      "Roof replacement in St. Louis, MO: 30-yr architectural shingles $450-$750/SQ, free photo-documented inspection, 10-yr workmanship warranty. 314-202-7663.",
     eyebrow: "Roof Replacement",
-    h1: "Roof Replacement in St. Louis & the Metro East",
+    h1: "Roof Replacement in St. Louis, Missouri",
     intro:
       "Don't replace yet. Before we quote a new roof, we photograph every slope and show you what we see. If a repair will buy you years, we tell you. If replacement is the right call, you get a clear plan, a real price range, and a local crew that stands behind the work.",
     defaultService: "Roof Replacement",
@@ -74,9 +92,14 @@ const corePages: SitePage[] = [
           "Age alone doesn't decide it. We look for widespread granule loss, curling or cracked shingles, repeated leaks, soft decking, and storm damage across multiple slopes. If only one area is failing, a repair is often the better value, and we'll say so.",
       },
       {
-        heading: "Know your price range before anyone visits",
+        heading: "Know your price before anyone visits",
         body:
-          "Use the Instant Roof Cost Estimator on our homepage to get a St. Louis price range in three clicks, then request your free evaluation to lock it in. Financing is available on retail projects.",
+          "A 30-year architectural shingle roof runs $450-$750 per square (100 sq ft) in the St. Louis area: $5,400-$9,000 for 12 squares, $8,100-$13,500 for 18 and $10,800-$18,000 for 24. Low-pitch roofs land at the low end and steep roofs at the high end. Use the estimator below, then request a free evaluation to lock your price. Financing is available on retail projects.",
+      },
+      {
+        heading: "Missouri roofing",
+        body:
+          `Roof replacement is available for homes in Missouri. In Illinois we offer siding, gutters, soffit and fascia; ${IL_COMING_SOON.toLowerCase()}.`,
       },
     ],
     faqs: [
@@ -105,12 +128,13 @@ const corePages: SitePage[] = [
   {
     slug: "roof-repair",
     kind: "service",
+    scope: "roofing",
     navLabel: "Roof Repair",
-    title: "Roof Leak Repair Metro East & St. Louis | RoofingnearmeSTL",
+    title: "Roof Leak Repair in St. Louis, MO | RoofingnearmeSTL",
     description:
-      "Roof leaking? 24/7 emergency tarping and honest roof repair in Waterloo, Columbia, Belleville & St. Louis. Photos before & after. Call 618-612-5192.",
+      "Roof leaking? 24/7 emergency tarping and honest roof repair across the St. Louis area in Missouri. Photos before & after. Call 314-202-7663.",
     eyebrow: "Roof Repair",
-    h1: "Roof Repair & Leak Repair in St. Louis & the Metro East",
+    h1: "Roof Repair & Leak Repair in St. Louis, Missouri",
     intro:
       "A leak doesn't automatically mean a new roof. We find the source, stop the water, and show you photos of exactly what we fixed. No pushy replacement pitch unless the photos prove you need one.",
     defaultService: "Roof Repair",
@@ -118,7 +142,7 @@ const corePages: SitePage[] = [
       {
         heading: "Active leak? Call now",
         body:
-          "Water coming in today? Call Illinois: 618-612-5192 or Missouri: 314-202-7663. We offer 24/7 emergency roof repair across the St. Louis metro, including emergency tarping to protect your home until a permanent repair can be made.",
+          "Water coming in today? Call 314-202-7663. We offer 24/7 emergency roof repair across the St. Louis area in Missouri, including emergency tarping to protect your home until a permanent repair can be made. (Roof work is Missouri only for now; in Illinois we handle siding, gutters, soffit and fascia.)",
       },
       {
         heading: "Common repairs we handle",
@@ -165,12 +189,13 @@ const corePages: SitePage[] = [
   {
     slug: "storm-damage-insurance",
     kind: "service",
+    scope: "roofing",
     navLabel: "Storm Damage & Insurance",
-    title: "Hail Damage Roof Inspection Metro East | RoofingnearmeSTL",
+    title: "Hail Damage Roof Inspection St. Louis, MO | RoofingnearmeSTL",
     description:
-      "Free hail & wind damage roof inspection by a BEI-certified inspector. Photo report you can share with your insurer. Waterloo, Columbia, Belleville, STL.",
+      "Free hail & wind damage roof inspection in the St. Louis area, Missouri, by a BEI-certified inspector. Photo report you can share with your insurer.",
     eyebrow: "Storm Damage & Insurance",
-    h1: "Hail & Storm Damage Roof Inspections in St. Louis & the Metro East",
+    h1: "Hail & Storm Damage Roof Inspections in St. Louis, Missouri",
     intro:
       "After hail or high winds, you need to know what really happened to your roof. Our Free Photo-Documented Report gives you shingle identification and clear photos of the damage, so you can make the next decision with facts in hand.",
     defaultService: "Storm Damage / Insurance",
@@ -194,12 +219,12 @@ const corePages: SitePage[] = [
       {
         heading: "Local, not storm chasers",
         body:
-          "We're your neighbors in Waterloo, Columbia, Belleville and St. Louis. Fully insured with $2M liability and workers' comp, and still here long after the storm crews leave town.",
+          `We're a local crew from Waterloo, working across the St. Louis area. ${INSURANCE_SENTENCE}, and still here long after the storm crews leave town. Roof inspections and repairs are offered in Missouri; for Illinois homes we document and fix storm damage to siding, gutters, soffit and fascia.`,
       },
       {
         heading: "Protect your home right away",
         body:
-          "If the storm opened up your roof, call Illinois: 618-612-5192 or Missouri: 314-202-7663 for emergency tarping. Taking quick steps to prevent further damage matters to your home and is often expected by insurance carriers.",
+          "If the storm opened up your roof, call 314-202-7663 for emergency tarping (Missouri). Taking quick steps to prevent further damage matters to your home and is often expected by insurance carriers.",
       },
     ],
     faqs: [
@@ -217,13 +242,14 @@ const corePages: SitePage[] = [
       ],
       [
         "Are you a storm chaser?",
-        "No. We're local to Waterloo, Columbia, Belleville and St. Louis, and we'll be here long after the storm crews leave.",
+        "No. We're a local crew based in Waterloo, working across the St. Louis area, and we'll be here long after the storm crews leave.",
       ],
     ],
   },
   {
     slug: "siding",
     kind: "service",
+    scope: "exterior",
     navLabel: "Siding",
     title: "Siding Repair & Replacement in St. Louis | RoofingnearmeSTL",
     description:
@@ -256,8 +282,8 @@ const corePages: SitePage[] = [
           "Roof and siding damage often come from the same storm. One local crew handling both keeps the details where the roof meets the walls, like flashing and trim, coordinated, with one point of contact for the whole project.",
       },
       {
-        heading: "Financing available",
-        body: "Financing is available on retail siding projects. Ask about it during your free evaluation.",
+        heading: "Missouri and Illinois",
+        body: `We repair and replace siding on both sides of the river, in Missouri and the Illinois Metro East. Roofing is Missouri only for now (${IL_COMING_SOON.toLowerCase()}). Financing is available on retail siding projects.`,
       },
     ],
     faqs: [
@@ -282,6 +308,7 @@ const corePages: SitePage[] = [
   {
     slug: "gutters-downspouts",
     kind: "service",
+    scope: "exterior",
     navLabel: "Gutters & Downspouts",
     title: "Gutter Installation & Repair in St. Louis | RoofingnearmeSTL",
     description:
@@ -315,6 +342,10 @@ const corePages: SitePage[] = [
           "Replacing your roof is often the right time to replace worn gutters, so the new drip edge and gutters work together. If your existing gutters still have life left, we'll tell you.",
       },
       {
+        heading: "Missouri and Illinois",
+        body: `Gutters and downspouts are installed and repaired in both Missouri and the Illinois Metro East. Roofing is Missouri only for now (${IL_COMING_SOON.toLowerCase()}).`,
+      },
+      {
         heading: "Dented gutters can mean hail damage",
         body:
           "Dented gutters and downspouts are one of the easiest signs of hail to spot from the ground. If you see dents, have the roof looked at too. Our Free Photo-Documented Report covers both.",
@@ -342,6 +373,7 @@ const corePages: SitePage[] = [
   {
     slug: "soffit-fascia",
     kind: "service",
+    scope: "exterior",
     navLabel: "Soffit & Fascia",
     title: "Soffit & Fascia Repair in St. Louis | RoofingnearmeSTL",
     description:
@@ -375,6 +407,10 @@ const corePages: SitePage[] = [
           "Rotted fascia is usually a symptom of overflowing gutters, missing drip edge or a leak at the eaves. We find the source, so your new soffit and fascia last.",
       },
       {
+        heading: "Missouri and Illinois",
+        body: `Soffit and fascia work is available in both Missouri and the Illinois Metro East. Roofing is Missouri only for now (${IL_COMING_SOON.toLowerCase()}).`,
+      },
+      {
         heading: "Part of a roof or gutter project",
         body:
           "Soffit and fascia work often goes hand in hand with a new roof or new gutters. One local crew can handle all of it in the same project.",
@@ -399,168 +435,6 @@ const corePages: SitePage[] = [
       ],
     ],
   },
-  {
-    slug: "roofing-waterloo-il",
-    kind: "city",
-    navLabel: "Waterloo, IL",
-    city: "Waterloo",
-    state: "IL",
-    county: "Monroe County",
-    region: "il-monroe-st-clair",
-    nearby: ["roofing-columbia-il", "roofing-dupo-il"],
-    title: "Roofer in Waterloo, IL | Free Roof Inspection | RoofingnearmeSTL",
-    description:
-      "Local roofer in Waterloo, IL. Free photo-documented roof inspection by a BEI-certified inspector, repair, replacement & 24/7 tarping. 618-612-5192.",
-    eyebrow: "Waterloo, Illinois",
-    h1: "Roofing Company in Waterloo, IL",
-    intro:
-      "Waterloo homeowners call us for leaks, storm damage and full roof replacements, and to find out honestly which one they need. Every visit starts with a Free Photo-Documented Report, so you see your roof before you decide anything.",
-    defaultService: "Roof Repair",
-    sections: [
-      {
-        heading: "Roofing services in Waterloo",
-        body: "One local crew for your whole exterior:",
-        bullets: [
-          "Roof leak repair and 24/7 emergency tarping",
-          "Roof replacement with Owens Corning, CertainTeed, TAMKO or IKO shingles, or metal",
-          "Hail and wind damage inspections with photo documentation",
-          "Gutters, siding, soffit and fascia",
-        ],
-      },
-      {
-        heading: "Your neighbors, not a storm crew",
-        body:
-          "A local crew serving Waterloo, Columbia, Belleville and St. Louis. Fully insured with $2M liability and workers' comp, 5.0★ on Google, and every job is backed by a 10-Year Workmanship Warranty.",
-      },
-      {
-        heading: "Fast response in Monroe County",
-        body:
-          "During business hours, we call as soon as your request comes in. Same-day evaluations are available when our schedule allows. For an active leak, call our Illinois line: 618-612-5192.",
-      },
-    ],
-    faqs: [
-      [
-        "Do you serve all of Waterloo, IL?",
-        "Yes. We work throughout Waterloo and nearby Columbia, plus Belleville and the greater St. Louis area.",
-      ],
-      [
-        "How much does a new roof cost in Waterloo?",
-        "It depends on size, pitch and material. Use the Instant Roof Cost Estimator on our homepage for a quick range, then request a free evaluation for an exact quote.",
-      ],
-      [
-        "Can you check my roof after a storm?",
-        "Yes. Our Free Photo-Documented Report includes shingle ID and damage photos you can keep and share with your insurance carrier.",
-      ],
-    ],
-  },
-  {
-    slug: "roofing-columbia-il",
-    kind: "city",
-    navLabel: "Columbia, IL",
-    city: "Columbia",
-    state: "IL",
-    county: "Monroe County",
-    region: "il-monroe-st-clair",
-    nearby: ["roofing-waterloo-il", "roofing-dupo-il", "roofing-belleville-il"],
-    title: "Roofer in Columbia, IL | Free Roof Inspection | RoofingnearmeSTL",
-    description:
-      "Columbia, IL roof inspections by a BEI-certified inspector. Honest repair-or-replace photo report, 24/7 tarping, 10-yr workmanship warranty. 618-612-5192.",
-    eyebrow: "Columbia, Illinois",
-    h1: "Roofing Company in Columbia, IL",
-    intro:
-      "Columbia homeowners trust us to tell them the truth about their roof. We photograph what we see, explain your Repair vs Replace options, and only recommend a new roof when the photos prove you need one.",
-    defaultService: "Roof Repair",
-    sections: [
-      {
-        heading: "Roofing services in Columbia",
-        body: "Everything your roof and exterior need, from one local crew:",
-        bullets: [
-          "Leak repair and 24/7 emergency tarping",
-          "Roof replacement with Owens Corning, CertainTeed, TAMKO or IKO shingles, or metal",
-          "Hail and wind damage inspections",
-          "Gutters, siding, soffit and fascia",
-        ],
-      },
-      {
-        heading: "Local, insured and accountable",
-        body:
-          "A local crew serving Columbia, Waterloo, Belleville and St. Louis. Fully insured with $2M liability and workers' comp, 5.0★ on Google, and a 10-Year Workmanship Warranty on our work.",
-      },
-      {
-        heading: "Quick answers, no pressure",
-        body:
-          "Request your free evaluation below and we'll call as soon as it comes in during business hours. For a leak happening right now, call 618-612-5192.",
-      },
-    ],
-    faqs: [
-      [
-        "Do you work in Columbia, IL?",
-        "Yes. Columbia is one of our core service areas, along with Waterloo, Belleville and St. Louis.",
-      ],
-      [
-        "Do I need a full replacement or a repair?",
-        "Our Free Photo-Documented Report answers that with photos and honest Repair vs Replace options.",
-      ],
-      [
-        "Do you offer financing?",
-        "Financing is available for retail roof, siding and gutter projects.",
-      ],
-    ],
-  },
-  {
-    slug: "roofing-belleville-il",
-    kind: "city",
-    navLabel: "Belleville, IL",
-    city: "Belleville",
-    state: "IL",
-    county: "St. Clair County",
-    region: "il-monroe-st-clair",
-    nearby: ["roofing-ofallon-il", "roofing-columbia-il", "roofing-cahokia-heights-il"],
-    title: "Roofer in Belleville, IL | Free Roof Inspection | RoofingnearmeSTL",
-    description:
-      "Belleville, IL roofer: free roof inspection by a BEI-certified inspector, honest photo report, 24/7 emergency tarping, 10-yr warranty. Call 618-612-5192.",
-    eyebrow: "Belleville, Illinois",
-    h1: "Roofing Company in Belleville, IL",
-    intro:
-      "From quick leak repairs to full replacements, Belleville homeowners get the same promise from us: photos first, honest options, and no pushy sales. You decide with the facts in front of you.",
-    defaultService: "Roof Repair",
-    sections: [
-      {
-        heading: "Roofing services in Belleville",
-        body: "One local crew for roofs and exteriors:",
-        bullets: [
-          "Roof leak repair and 24/7 emergency tarping",
-          "Roof replacement with Owens Corning, CertainTeed, TAMKO or IKO shingles, or metal",
-          "Storm and hail damage inspections with photo reports",
-          "Gutters, siding, soffit and fascia",
-        ],
-      },
-      {
-        heading: "Why Belleville neighbors choose us",
-        body:
-          "A local crew serving Belleville, Waterloo, Columbia and St. Louis. Fully insured with $2M liability and workers' comp, 5.0★ on Google, and backed by a 10-Year Workmanship Warranty.",
-      },
-      {
-        heading: "Fast response across St. Clair County",
-        body:
-          "During business hours, we call as soon as your request arrives, and same-day evaluations are available when our schedule allows. Active leak? Call 618-612-5192.",
-      },
-    ],
-    faqs: [
-      [
-        "Do you serve Belleville, IL?",
-        "Yes. Belleville is one of our core service areas, along with Waterloo, Columbia and St. Louis.",
-      ],
-      [
-        "Can you inspect my roof after hail?",
-        "Yes. You'll get a Free Photo-Documented Report with shingle ID and damage photos you can share with your insurance carrier.",
-      ],
-      [
-        "How fast can you get here?",
-        "We call as soon as your request comes in during business hours, and same-day evaluations are available when our schedule allows.",
-      ],
-    ],
-  },
 ];
 
 const coreNames: Record<string, string> = Object.fromEntries(corePages.map((page) => [page.slug, page.navLabel]));
@@ -578,12 +452,31 @@ for (const [index, page] of sitePages.entries()) {
   if (page.kind === "city" && (!page.state || !page.county || !page.region || !page.city)) throw new Error(`City page missing location fields: ${page.slug}`);
   page.nearby?.forEach(nameOf);
   if (!LEAD_SERVICES.includes(page.defaultService)) throw new Error(`Unknown defaultService on ${page.slug}: ${page.defaultService}`);
+  if (page.state === "IL") assertIllinoisExteriorOnly(page.slug, page.scope, page.defaultService, [page.title, page.description, page.h1, page.intro, ...page.sections.flatMap((x) => [x.heading, x.body, ...(x.bullets ?? [])]), ...page.faqs.flat()]);
+}
+
+/**
+ * Illinois pages may not offer roofing (no license yet). Fails the build if Illinois page text offers
+ * roof work. Allowed: the brand name, "Roofing coming soon after IL license", and the "Roofing in Illinois" note.
+ */
+export function assertIllinoisExteriorOnly(where: string, scope: Scope, defaultService: string, texts: string[]) {
+  if (scope !== "il-exterior") throw new Error(`Illinois page must be exterior-only: ${where}`);
+  if (!IL_LEAD_SERVICES.includes(defaultService)) throw new Error(`Illinois page offers a non-exterior service: ${where}`);
+  const allowed = /RoofingnearmeSTL|roofing coming soon after il license|roofing in illinois|do you do roofing in|roofing is (available|missouri only)[^.]*/gi;
+  const banned = /\broof(er|ers|ing company|ing contractor|ing services?| repair| replacement| inspection| leak|s? (repaired|replaced|inspected))|\b(re-?roof|tarp|tarping|shingles?)\b|replace (your|the) roof|new roof/i;
+  for (const text of texts) {
+    const hit = text.replace(allowed, "").match(banned);
+    if (hit) throw new Error(`Illinois page offers roofing ("${hit[0]}") on ${where}: ${text.slice(0, 120)}`);
+  }
 }
 
 export const servicePages = sitePages.filter((page) => page.kind === "service");
 export const cityPages = sitePages.filter((page) => page.kind === "city");
 /** City pages grouped for menus, the homepage and /areas-we-serve. */
 export const areaGroups = regions.map((region) => ({ ...region, pages: cityPages.filter((page) => page.region === region.id) }));
+
+/** The county/region note shown on a city page. */
+export const regionNote = (page: SitePage) => regions.find((region) => region.id === page.region)?.note ?? "";
 
 export function getSitePage(slug: string) {
   return sitePages.find((page) => page.slug === slug);
@@ -594,16 +487,16 @@ export const homeFaqs: [question: string, answer: string][] = [
   ["Do I really need a full roof replacement?", "Don't Replace Yet! Free Photo-Documented Report - Shingle ID, damage evidence, and Repair vs Replace options. We document damage, we don't just sell roofs."],
   ["What's a Photo-Documented Shingle Report?", "We photograph every slope, identify your shingle, document granule loss, bruising, cracks, seal failure. You get photos + honest assessment."],
   ["My insurance denied my claim. Can you help?", "We're roofing contractors, not public adjusters - we don't negotiate claims. What we do provide is a Free Photo-Documented Report: Shingle ID + photos of what we see + Repair vs Replace options. It's yours to keep and share with your carrier if you choose. Many neighbors use it for a second look."],
-  ["Are you local or chasing storms?", "We're your neighbors - Waterloo • Columbia • Belleville • STL. Not a storm chaser. Fully Insured $2M Liability + Workers Comp. Local. Reliable. Protecting What Matters."],
+  ["Are you local or chasing storms?", `We're local, based in Waterloo, IL, and working across the St. Louis area. Not a storm chaser. ${INSURANCE_SENTENCE}. Local. Reliable. Protecting What Matters.`],
   ["How fast do you respond?", "During business hours, we call as soon as we receive your request to reach out with the right information to help you take the next step. Fill out what's needed and we look forward to talking soon and sharing your free photo-documented options. Same-day evaluations when available."],
   ["What warranty?", "10-Year Workmanship Warranty on our work, plus the manufacturer warranty on the materials we install. 5.0★ Google Reviews."],
-  ["Do you offer emergency tarping?", "Yes. We offer 24/7 emergency roof repair and tarping across the St. Louis metro. Call Illinois: 618-612-5192 or Missouri: 314-202-7663."],
-  ["What areas do you serve?", "In Illinois: Waterloo, Columbia, Belleville, O'Fallon, Dupo, Cahokia Heights, Edwardsville, Collinsville, Granite City, Alton and Wood River. In Missouri: St. Louis and communities across St. Louis County, St. Charles County, Jefferson County and Franklin County, including St. Charles, St. Peters, O'Fallon, Wentzville, Chesterfield, Kirkwood, Florissant, Arnold, Festus and Washington. See every city on our Areas We Serve page."],
-  ["How much does a new roof cost?", "It depends on roof size, pitch and material. Use our Instant Roof Cost Estimator above for a quick St. Louis price range, then request a free evaluation for an exact quote. Clay and slate tile need an in-person evaluation."],
+  ["Do you offer emergency tarping?", "Yes, in Missouri. We offer 24/7 emergency roof repair and tarping across the St. Louis area in Missouri. Call 314-202-7663."],
+  ["What areas do you serve?", "Roofing: St. Louis and communities across St. Louis County, St. Charles County, Jefferson County and Franklin County in Missouri, including St. Charles, St. Peters, O'Fallon, Wentzville, Chesterfield, Kirkwood, Florissant, Arnold, Festus and Washington. Siding, gutters, soffit and fascia: those Missouri communities plus the Illinois Metro East, including Waterloo, Columbia, Belleville, O'Fallon, Fairview Heights, Edwardsville, Collinsville, Granite City and Alton. Illinois roofing is coming soon after our IL license."],
+  ["How much does a new roof cost?", "In the St. Louis area (Missouri), a 30-year architectural shingle roof runs $450-$750 per square, so most homes with 12-24 squares pay $5,400-$18,000. 3-tab starts at $350 per square; clay, metal and slate are custom quotes. Low pitch is the low end, steep pitch the high end. Try the estimator above, then get a free inspection to lock your price."],
   ["Do you offer financing?", "Yes. Financing is available for retail roof, siding and gutter projects. Ask during your free evaluation."],
   ["What roofing materials do you install?", "Architectural and 3-tab asphalt shingles from Owens Corning, CertainTeed, TAMKO and IKO, plus metal roofing. Clay and slate tile projects are priced after an in-person evaluation."],
-  ["Are you insured?", "Yes. We're fully insured with $2M general liability and workers' compensation coverage."],
-  ["Do you do gutters and siding too?", "Yes. Roof, siding, gutters, soffit and fascia. One local crew."],
+  ["Are you insured?", `Yes. Roofing Near Me STL LLC carries commercial general liability insurance with ${INSURANCE.carrier}: $1,000,000 per occurrence and $2,000,000 aggregate. Ask and we'll send a current certificate of insurance. See our accreditation page for details.`],
+  ["Do you do gutters and siding too?", "Yes. Siding, gutters, soffit and fascia in Missouri and Illinois, and roofing in Missouri. One local crew."],
   ["What happens during the free evaluation?", "We inspect and photograph every slope, identify your shingle, and document any damage. Then we walk you through honest Repair vs Replace options with the photos in front of you."],
   ["Do I have to hire you after the free report?", "No. The Free Photo-Documented Report is yours to keep, whether you hire us, get other quotes, or share it with your insurance carrier."],
 ];
@@ -626,14 +519,30 @@ export const businessSchema = {
   "@id": `${SITE_URL}/#business`,
   name: "RoofingnearmeSTL",
   alternateName: "Roofing Near Me STL",
+  legalName: LEGAL_NAME,
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
   image: `${SITE_URL}/og-image.jpg`,
   slogan: "Local. Reliable. Protecting What Matters.",
-  telephone: ["+1-618-612-5192", "+1-314-202-7663"],
+  telephone: [PHONES.IL.e164, PHONES.MO.e164],
   areaServed: [...cityPages.map((page) => page.navLabel), "St. Louis, MO"].map((name) => ({ "@type": "City", name })),
   knowsAbout: ["Roof repair", "Roof replacement", "Hail and wind damage inspection", "Owens Corning shingles", "CertainTeed shingles", "TAMKO shingles", "IKO shingles", "Metal roofing", "Siding", "Gutters and downspouts", "Soffit and fascia"],
   founder: { "@type": "Person", name: "Mike Williamson" },
+  // Roofing is offered in Missouri only; exterior work in Missouri and Illinois.
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Roofing and exterior services",
+    itemListElement: [
+      ...["Roof replacement", "Roof repair", "Hail and storm damage roof inspection", "Emergency roof tarping"].map((name) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name }, areaServed: { "@type": "State", name: "Missouri" } })),
+      ...["Siding", "Gutters and downspouts", "Soffit and fascia"].map((name) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name }, areaServed: [{ "@type": "State", name: "Missouri" }, { "@type": "State", name: "Illinois" }] })),
+    ],
+  },
+  hasCredential: [
+    ["Hail Damage Identification", "1772825948-28-1442"],
+    ["Wind Damage Identification", "1772943831-29-1442"],
+    ["Installation (Asphalt Shingle Roofs)", "1773862133-30-1442"],
+    ["Building Code (Asphalt Shingle Roofs)", "1773114388-31-1442"],
+  ].map(([name, id]) => ({ "@type": "EducationalOccupationalCredential", name: `Building Experts Institute: ${name}`, identifier: id, credentialCategory: "certificate", recognizedBy: { "@type": "Organization", name: "Building Experts Institute" } })),
   hasMap: GOOGLE_BUSINESS_URL,
   sameAs: [FACEBOOK_URL, GOOGLE_BUSINESS_URL].filter(Boolean),
 };
@@ -661,6 +570,13 @@ export function jsonLd(data: object) {
   // Escape "<" so text inside the data (e.g. a review) can never close the script tag.
   return { __html: JSON.stringify(data).replace(/</g, String.fromCharCode(92) + "u003c") };
 }
+
+export const exteriorProcessSteps: [title: string, body: string][] = [
+  ["Call or Request Online", "Tell us what's going on with your siding, gutters, soffit or fascia. During business hours, we call as soon as your request comes in."],
+  ["Photo-Documented Look", "We photograph the siding, gutters, downspouts, soffit and fascia and mark any storm damage, rot or loose sections we find."],
+  ["Honest Options, In Writing", "You get the photos plus honest repair vs replace options and a written estimate. No pressure, and the photos are yours to keep."],
+  ["Repair or Replace, Then Clean-Up", "Our crew does the work and cleans up the job site, backed by our 10-Year Workmanship Warranty."],
+];
 
 export const processSteps: [title: string, body: string][] = [
   ["Call or Request Online", "Tell us what's going on. During business hours, we call as soon as your request comes in. Active leak? We offer 24/7 emergency tarping."],

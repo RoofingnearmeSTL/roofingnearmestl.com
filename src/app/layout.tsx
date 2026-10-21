@@ -14,12 +14,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const shareDescription = "Don't replace yet! Free photo-documented roof report in Waterloo, Columbia, Belleville & St. Louis. Call IL 618-612-5192 or MO 314-202-7663.";
+const shareDescription = "Don't replace yet! Free photo-documented roof report in St. Louis, MO. Siding, gutters, soffit & fascia in MO and the IL Metro East. MO 314-202-7663 · IL 618-612-5192.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.roofingnearmestl.com"),
-  title: "RoofingnearmeSTL | Roofer in Waterloo, Columbia & Belleville IL",
-  description: "Don't replace yet. Free photo-documented roof inspection from a BEI-certified inspector in Waterloo, Columbia, Belleville & St. Louis. Call 618-612-5192.",
+  title: "RoofingnearmeSTL | St. Louis Roofer + Metro East Siding & Gutters",
+  description: "Roofing in St. Louis, MO: free photo-documented inspection, $450-$750/SQ architectural roofs. Siding, gutters, soffit & fascia in MO and IL. 314-202-7663.",
   // Homepage canonical; landing pages and the thank-you page set their own.
   alternates: { canonical: "/" },
   // Preview card used when the site is shared on Facebook, Google, texts, etc.
