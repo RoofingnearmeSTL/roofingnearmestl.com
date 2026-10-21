@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { ADS_LEAD_SEND_TO } from "@/lib/tracking";
+import { ADS_LEAD_SEND_TO, META_PIXEL_ID } from "@/lib/tracking";
 
 type AnalyticsWindow = Window & {
   gtag?: (command: "event", name: string, parameters: Record<string, string>) => void;
@@ -15,7 +15,7 @@ export default function Conversion() {
     const pendingTags = new Set([
       "ads",
       !!process.env.NEXT_PUBLIC_GA4_ID && "ga4",
-      !!process.env.NEXT_PUBLIC_META_PIXEL_ID && "meta",
+      !!META_PIXEL_ID && "meta",
     ].filter((tag): tag is string => !!tag));
     let leadId = "";
     try {

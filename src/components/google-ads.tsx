@@ -4,17 +4,17 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { rememberLandingSource } from "./lead-form";
-import { ADS_CALL_SEND_TO, ADS_TAG_ID } from "@/lib/tracking";
+import { ADS_CALL_SEND_TO, ADS_TAG_ID, META_PIXEL_ID } from "@/lib/tracking";
 
 // Marketing tags:
 // - Google Ads: always on; conversion IDs live in src/lib/tracking.ts (Vercel env vars can override them)
 // - NEXT_PUBLIC_GA4_ID (G-XXXXXXX): Google Analytics 4, off until set in Vercel
-// - NEXT_PUBLIC_META_PIXEL_ID (digits): Meta (Facebook/Instagram) Pixel, off until set in Vercel
+// - Meta (Facebook/Instagram) Pixel: always on; ID in src/lib/tracking.ts (NEXT_PUBLIC_META_PIXEL_ID overrides it)
 const googleTagIds = [
   ADS_TAG_ID,
   /^G-[A-Z0-9]+$/.test(process.env.NEXT_PUBLIC_GA4_ID ?? "") ? process.env.NEXT_PUBLIC_GA4_ID! : "",
 ].filter(Boolean);
-const metaPixelId = /^\d{6,20}$/.test(process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "") ? process.env.NEXT_PUBLIC_META_PIXEL_ID! : "";
+const metaPixelId = META_PIXEL_ID;
 
 type TrackingWindow = Window & {
   gtag?: (command: "event", name: string, parameters: Record<string, string>) => void;
