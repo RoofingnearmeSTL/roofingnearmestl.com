@@ -138,7 +138,7 @@ export default function Home() {
           {homeFaqs.map(([question, answer]) => (
             <details key={question} className="bg-white border border-zinc-200 rounded-xl p-5">
               <summary className="text-black font-bold cursor-pointer focus-visible:outline-brand">{question}</summary>
-              <p className="text-zinc-600 text-sm leading-relaxed mt-3">{answer}</p>
+              <p className="text-zinc-600 text-sm leading-relaxed mt-3 whitespace-pre-line">{answer}</p>
             </details>
           ))}
         </div>

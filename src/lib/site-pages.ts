@@ -11,7 +11,7 @@
 // The wider St. Louis city pages are generated from src/lib/service-areas.ts.
 import { areaNames, buildAreaPages, regions, type RegionId } from "./service-areas";
 import { IL_LEAD_SERVICES, INSURANCE, INSURANCE_SENTENCE, LEGAL_NAME, PHONES } from "./business";
-import { IL_COMING_SOON } from "./pricing";
+import { IL_COMING_SOON, priceRange, usd } from "./pricing";
 
 /**
  * Which services a page offers, which decides phones, process copy, certifications and lead-form choices:
@@ -482,7 +482,11 @@ export function getSitePage(slug: string) {
   return sitePages.find((page) => page.slug === slug);
 }
 
+// Average St. Louis home (12-15 SQ) range for a shingle, from the estimator's pricing so they never disagree.
+const averageHome = (shingle: "3tab" | "architectural") => `${usd(priceRange(12, shingle).low)} - ${usd(priceRange(15, shingle).high)}`;
+
 // Homepage FAQ (also published as FAQPage schema). Same claim rules as above.
+// Answers keep their line breaks on the page (the cost answer is a short list).
 export const homeFaqs: [question: string, answer: string][] = [
   ["Do I really need a full roof replacement?", "Don't Replace Yet! Free Photo-Documented Report - Shingle ID, damage evidence, and Repair vs Replace options. We document damage, we don't just sell roofs."],
   ["What's a Photo-Documented Shingle Report?", "We photograph every slope, identify your shingle, document granule loss, bruising, cracks, seal failure. You get photos + honest assessment."],
@@ -492,7 +496,16 @@ export const homeFaqs: [question: string, answer: string][] = [
   ["What warranty?", "10-Year Workmanship Warranty on our work, plus the manufacturer warranty on the materials we install. 5.0★ Google Reviews."],
   ["Do you offer emergency tarping?", "Yes, in Missouri. We offer 24/7 emergency roof repair and tarping across the St. Louis area in Missouri. Call 314-202-7663."],
   ["What areas do you serve?", "Roofing: St. Louis and communities across St. Louis County, St. Charles County, Jefferson County and Franklin County in Missouri, including St. Charles, St. Peters, O'Fallon, Wentzville, Chesterfield, Kirkwood, Florissant, Arnold, Festus and Washington. Siding, gutters, soffit and fascia: those Missouri communities plus the Illinois Metro East, including Waterloo, Columbia, Belleville, O'Fallon, Fairview Heights, Edwardsville, Collinsville, Granite City and Alton. Illinois roofing is coming soon after our IL license."],
-  ["How much does a new roof cost?", "In the St. Louis area (Missouri), a 30-year architectural shingle roof runs $450-$750 per square, so most homes with 12-24 squares pay $5,400-$18,000. 3-tab starts at $350 per square; clay, metal and slate are custom quotes. Low pitch is the low end, steep pitch the high end. Try the estimator above, then get a free inspection to lock your price."],
+  ["How much does a new roof cost?", `For the average home in St. Louis (12SQ-15SQ / 1,200-1,500 sq ft):
+
+- 3-Tab 25yr: ${averageHome("3tab")}
+- 30yr Architectural [Most Popular]: ${averageHome("architectural")}
+- Premium 50yr / Designer: Custom Quote
+- Clay, Metal, Slate: Call to Lock Price - Custom Quote
+
+Low pitch = low end of range, Medium pitch = middle, Steep pitch = high end.
+
+Final price depends on pitch, decking condition, tear-off layers, code related items pertaining to your area, and location. That's why we do a Free 12-pt Photo Inspection.`],
   ["Do you offer financing?", "Yes. Financing is available for retail roof, siding and gutter projects. Ask during your free evaluation."],
   ["What roofing materials do you install?", "Architectural and 3-tab asphalt shingles from Owens Corning, CertainTeed, TAMKO and IKO, plus metal roofing. Clay and slate tile projects are priced after an in-person evaluation."],
   ["Are you insured?", `Yes. Roofing Near Me STL LLC carries commercial general liability insurance with ${INSURANCE.carrier}: $1,000,000 per occurrence and $2,000,000 aggregate. Ask and we'll send a current certificate of insurance. See our accreditation page for details.`],
