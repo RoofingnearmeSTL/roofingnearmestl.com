@@ -9,3 +9,7 @@ export const ADS_LEAD_SEND_TO = pick(process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSI
 export const ADS_CALL_SEND_TO = pick(process.env.NEXT_PUBLIC_GOOGLE_ADS_CALL_CONVERSION_SEND_TO, "AW-18498850414/rTzvCKzl4qMdEO6c-PRE");
 /** The Google tag ID both conversions belong to. */
 export const ADS_TAG_ID = ADS_LEAD_SEND_TO.split("/")[0];
+
+/** Meta Pixel "RoofingnearmeSTL Website" (Events Manager, ad account 1245694118635705). Public ID; Vercel can override it. */
+const META_PIXEL = /^\d{6,20}$/;
+export const META_PIXEL_ID = META_PIXEL.test(process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "") ? process.env.NEXT_PUBLIC_META_PIXEL_ID! : "1445098534241466";
