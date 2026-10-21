@@ -146,8 +146,9 @@ export async function POST(req: Request) {
     } catch (smsError) {
       console.error('LEAD SMS CRASH', { name: smsError instanceof Error ? smsError.name : 'UnknownError' })
     }
-    // Optional: send the saved lead to the CRM (RoofLink, through a Zapier "Catch Hook" URL).
-    // Skipped until LEAD_WEBHOOK_URL is set. Must not fail or slow down a saved lead for long.
+    // Optional: send the saved lead to the CRM. LEAD_WEBHOOK_URL is a Make.com custom webhook whose
+    // scenario posts rooflink_job_json to RoofLink's "Create a new job" API (POST /light/public/jobs/).
+    // Skipped until the variable is set. Must not fail or slow down a saved lead for long.
     try {
       const hook = process.env.LEAD_WEBHOOK_URL
       if (hook && !hook.startsWith('https://')) {
@@ -155,6 +156,42 @@ export async function POST(req: Request) {
       } else if (hook) {
         const [firstName, ...rest] = leadValue(lead.name).split(/\s+/)
         const location = leadValue(field(body.est_location, 80)) || leadValue(lead.city)
+        const state = /\bIL\b|illinois/i.test(location) ? 'IL' : /\bMO\b|missouri/i.test(location) ? 'MO' : ''
+        const cityName = leadValue(lead.city) || location.split(',')[0].trim()
+        const service = leadValue(lead.service_type)
+        const estimate = leadValue(field(body.est_price))
+        // RoofLink needs a first name and an address; without a street, the city is used and the note says so.
+        const rooflinkJob = {
+          name: `${leadValue(lead.name)} - ${service || 'Website lead'}`,
+          job_type: 'r',
+          ...(/repair/i.test(service) ? { bid_type: 'r' } : {}),
+          address: leadValue(lead.address) || [cityName, state].filter(Boolean).join(', ') || 'Address not given',
+          ...(cityName ? { city: cityName } : {}),
+          ...(state ? { state } : {}),
+          customer: {
+            first_name: firstName || 'Website',
+            ...(rest.length ? { last_name: rest.join(' ') } : {}),
+            phone: leadValue(lead.phone),
+            ...(lead.email ? { email: lead.email } : {}),
+          },
+          platform: 'Website',
+          ...(lead.utm_campaign ? { campaign_name: leadValue(lead.utm_campaign) } : {}),
+          note: {
+            message: [
+              'Website lead from roofingnearmestl.com',
+              lead.emergency === true ? 'EMERGENCY - needs a tarp now' : '',
+              service && `Service: ${service}`,
+              leadValue(lead.issue_type) && `Issue: ${leadValue(lead.issue_type)}`,
+              !leadValue(lead.address) && 'No street address given - call to confirm',
+              leadValue(lead.roof_age) && `Age of roof: ${leadValue(lead.roof_age)}`,
+              leadValue(lead.roof_size) && `Estimator: ${[leadValue(lead.roof_size), leadValue(lead.roof_pitch), leadValue(lead.roof_material)].filter(Boolean).join(', ')}`,
+              estimate && `Estimate shown: ${Number(estimate).toLocaleString('en-US')}`,
+              leadValue(lead.message) && `Message: ${leadValue(lead.message)}`,
+              `Source: ${sourceLabel}`,
+              leadValue(lead.page_url) && `Form page: ${leadValue(lead.page_url)}`,
+            ].filter(Boolean).join('\n'),
+          },
+        }
         const res = await fetch(hook, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -162,7 +199,7 @@ export async function POST(req: Request) {
             ...lead,
             first_name: firstName,
             last_name: rest.join(' '),
-            state: /\bIL\b|illinois/i.test(location) ? 'IL' : /\bMO\b|missouri/i.test(location) ? 'MO' : '',
+            state,
             estimator_location: field(body.est_location, 80),
             estimate_price: field(body.est_price),
             estimate_low: field(body.est_price_low),
@@ -170,6 +207,7 @@ export async function POST(req: Request) {
             lead_source: sourceLabel,
             website: 'roofingnearmestl.com',
             submitted_at: new Date().toISOString(),
+            rooflink_job_json: JSON.stringify(rooflinkJob),
           }),
           signal: AbortSignal.timeout(5000),
         })
