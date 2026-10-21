@@ -216,7 +216,7 @@ test('a failed text alert does not fail a saved lead', async () => {
   assert.ok(calls.logs.some(([message]) => message === 'LEAD SMS FAILED'))
 })
 
-const hook = { LEAD_WEBHOOK_URL: 'https://hooks.zapier.com/hooks/catch/123/abc/' }
+const hook = { LEAD_WEBHOOK_URL: 'https://hook.us2.make.com/abc123' }
 
 test('no CRM webhook is sent until LEAD_WEBHOOK_URL is set', async () => {
   const { calls, post } = handler()
@@ -245,6 +245,27 @@ test('configured CRM webhook receives the saved lead as JSON', async () => {
   assert.equal(sent.lead_source, 'google / cpc')
   assert.equal(sent.emergency, true)
   assert.match(sent.submitted_at, /^\d{4}-\d{2}-\d{2}T/)
+  // RoofLink "Create a new job" body: first name and address are required.
+  const job = JSON.parse(sent.rooflink_job_json)
+  assert.equal(job.job_type, 'r')
+  assert.equal(job.bid_type, 'r') // service "repair"
+  assert.equal(job.address, '123 Example St')
+  assert.equal(job.city, 'St Louis')
+  assert.equal(job.state, 'IL')
+  assert.deepEqual(job.customer, { first_name: 'Pat', last_name: 'Q Customer', phone: '3145550100', email: 'customer@example.invalid' })
+  assert.equal(job.platform, 'Website')
+  assert.match(job.note.message, /^Website lead from roofingnearmestl\.com\nEMERGENCY - needs a tarp now\nService: repair\nIssue: leak/)
+  assert.match(job.note.message, /Source: google \/ cpc/)
+})
+
+test('RoofLink job uses the city when no street address is given', async () => {
+  const { calls, post } = handler({ env: hook })
+  await post({ ...lead, name: 'Sam', address: '', city: 'Waterloo', est_location: 'Waterloo, IL', service_type: 'Siding', emergency: false, email: '' })
+  const job = JSON.parse(JSON.parse(calls.sms[0].body).rooflink_job_json)
+  assert.equal(job.address, 'Waterloo, IL')
+  assert.equal(job.bid_type, undefined)
+  assert.deepEqual(job.customer, { first_name: 'Sam', phone: '3145550100' })
+  assert.match(job.note.message, /No street address given - call to confirm/)
 })
 
 test('a failed or non-https CRM webhook does not fail a saved lead', async () => {
