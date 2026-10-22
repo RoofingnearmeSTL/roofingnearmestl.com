@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "crawl:safe": "python3 scripts/crawl4ai/crawl.py",
+    "crawl:analyze": "python3 scripts/crawl4ai/analyze.py"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
