@@ -44,3 +44,6 @@ next-env.d.ts
 /scripts/crawl4ai/output/
 .venv-crawl4ai/
 __pycache__/
+
+# local AI tool settings (may hold API keys)
+.codex/
