@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-import { ILLINOIS_ROOFING_MESSAGE, illinoisRoofingBlocked } from '../../../lib/illinois-guard'
+import { ILLINOIS_ROOFING_MESSAGE, illinoisRoofingBlocked, looksIllinois } from '../../../lib/illinois-guard'
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => ({
@@ -132,6 +132,52 @@ export async function POST(req: Request) {
       }
     } catch (emailError) {
       console.error('RESEND EMAIL CRASH', { name: emailError instanceof Error ? emailError.name : 'UnknownError' })
+    }
+    // Instant confirmation to the customer, sent the moment the lead is saved (only when they gave an email).
+    // Transactional: it answers their own request, with no marketing. Replies go to the owner's inbox.
+    // Must not fail a saved lead.
+    try {
+      // Only when the owner inbox is set: the owner must get the lead, and replies need somewhere to go.
+      if (lead.email && process.env.RESEND_API_KEY && process.env.LEAD_TO_EMAIL) {
+        const illinois = looksIllinois({ city: lead.city, address: lead.address, estLocation: body.est_location, page: body.page })
+        const firstName = leadValue(lead.name).split(/\s+/)[0] || 'there'
+        const service = leadValue(lead.service_type)
+        const place = leadValue(lead.city)
+        const phone = illinois ? '618-612-5192' : '314-202-7663'
+        const visit = illinois ? 'a free siding, gutter or soffit & fascia estimate' : 'your Free Photo-Documented Roof Report'
+        const paragraphs = [
+          `Hi ${firstName},`,
+          `Thanks for contacting RoofingnearmeSTL. We received your request${service ? ` for ${service}` : ''}${place ? ` in ${place}` : ''}.`,
+          `What happens next: someone from our local team will call you at ${leadValue(lead.phone)} to set up ${visit}.`,
+          lead.emergency === true && !illinois
+            ? 'If water is coming in right now, call our 24/7 emergency line: 314-202-7663.'
+            : `Need us sooner? Call ${phone}.`,
+          `You can reply to this email with photos or questions about your ${illinois ? 'project' : 'roof'}.`,
+          'Thank you,\nRoofingnearmeSTL (Roofing Near Me STL LLC)',
+        ]
+        const footer = 'RoofingnearmeSTL · 421 Janice Dr, Waterloo, IL 62298 · Illinois 618-612-5192 · Missouri 314-202-7663 · roofingnearmestl.com\n' +
+          "You're getting this one email because you asked for an estimate at roofingnearmestl.com. If that wasn't you, reply and let us know."
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        const { data: confirmData, error: confirmError } = await resend.emails.send({
+          from: 'RoofingnearmeSTL <leads@roofingnearmestl.com>',
+          to: lead.email,
+          replyTo: process.env.LEAD_TO_EMAIL,
+          subject: 'We got your request - RoofingnearmeSTL',
+          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#111">
+            <img src="https://www.roofingnearmestl.com/logo.png" alt="RoofingnearmeSTL" width="180" />
+            ${paragraphs.map((p) => `<p style="font-size:16px;line-height:1.5">${escapeHtml(p).replace(/\n/g, '<br>')}</p>`).join('')}
+            <p style="font-size:12px;color:#666;line-height:1.5;border-top:1px solid #ddd;padding-top:12px">${escapeHtml(footer).replace(/\n/g, '<br>')}</p>
+          </div>`,
+          text: [...paragraphs, '', footer].join('\n\n'),
+        })
+        if (confirmError) {
+          console.error('CUSTOMER CONFIRMATION FAILED', { name: confirmError.name })
+        } else {
+          console.log('CUSTOMER CONFIRMATION SENT', { id: confirmData?.id })
+        }
+      }
+    } catch (confirmError) {
+      console.error('CUSTOMER CONFIRMATION CRASH', { name: confirmError instanceof Error ? confirmError.name : 'UnknownError' })
     }
     // Optional text alert via Twilio; skipped until all four variables are set. Must not fail a saved lead.
     try {

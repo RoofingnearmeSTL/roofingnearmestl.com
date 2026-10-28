@@ -44,7 +44,7 @@ const sections: { heading: string; body: React.ReactNode }[] = [
     heading: "Who we share it with",
     body: (
       <>
-        <p>We do not sell your personal information. We share it only with service providers that help us run the website and respond to you: Vercel (website hosting), Supabase (secure storage of requests), Resend (emails your request to our team), Twilio (text alerts to our team), Make and RoofLink (pass your request into the customer management system we use to schedule and follow up on jobs), Elfsight (shows our Google reviews on the homepage; their script loads when that section is displayed), and Google and Meta (analytics and advertising, as described above).</p>
+        <p>We do not sell your personal information. We share it only with service providers that help us run the website and respond to you: Vercel (website hosting), Supabase (secure storage of requests), Resend (emails your request to our team, and sends you one confirmation email when you give us your email address), Twilio (text alerts to our team), Make and RoofLink (pass your request into the customer management system we use to schedule and follow up on jobs), Elfsight (shows our Google reviews on the homepage; their script loads when that section is displayed), and Google and Meta (analytics and advertising, as described above).</p>
         <p>We may also share information if the law requires it.</p>
       </>
     ),
@@ -82,7 +82,7 @@ export default function PrivacyPage() {
       <main className="px-6 py-14">
         <article className="mx-auto max-w-3xl">
           <h1 className="text-4xl font-black tracking-tight">Privacy Policy</h1>
-          <p className="mt-3 text-sm text-zinc-500">Last updated October 19, 2026</p>
+          <p className="mt-3 text-sm text-zinc-500">Last updated October 29, 2026</p>
           <p className="mt-6 leading-relaxed text-zinc-700">This policy explains what information RoofingnearmeSTL collects through roofingnearmestl.com, how we use it and the choices you have.</p>
           {sections.map((section) => (
             <section key={section.heading} className="mt-9">
