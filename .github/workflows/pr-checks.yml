@@ -42,6 +42,43 @@ jobs:
         run: npx next build
       - name: Compliance scan (Illinois rule, claims, whole-roof pricing)
         run: node scripts/compliance-scan.mjs
+      - name: Install the test browser
+        run: npx playwright install --with-deps chromium
+      - name: Lead form browser tests (desktop + phone; /api/lead is mocked, nothing is saved)
+        run: npx playwright test
+      - name: Keep the browser test trace if a test failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-trace
+          path: test-results/
+          retention-days: 7
+
+  lighthouse:
+    name: Lighthouse (report only, never blocks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Production build
+        run: npx next build
+      - name: Lighthouse on the homepage, a roofing page and an Illinois page
+        run: npx --yes @lhci/cli@0.15.1 autorun
+      - name: Keep the Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          retention-days: 14
 
   secrets:
     name: Secret scan
