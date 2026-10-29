@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "crawl:safe": "python3 scripts/crawl4ai/crawl.py",
-    "crawl:analyze": "python3 scripts/crawl4ai/analyze.py"
+    "crawl:analyze": "python3 scripts/crawl4ai/analyze.py",
+    "test": "node --test tests/*.mjs",
+    "compliance": "node scripts/compliance-scan.mjs",
+    "check": "eslint . && tsc --noEmit && node --test tests/*.mjs && next build && node scripts/compliance-scan.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

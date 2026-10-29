@@ -51,8 +51,9 @@ This repo is public: never add anything here you would not publish.
 ## 4. How changes ship
 
 1. Work on a new branch from `main`; one agent per branch, never two agents on the same files.
-2. Before opening a PR run: `npx eslint .`, `npx tsc --noEmit`, `node --test tests/*.mjs`,
-   `npx next build`. All must pass.
+2. Before opening a PR run `npm run check` (eslint, `tsc --noEmit`, `node --test tests/*.mjs`,
+   `next build`, then `scripts/compliance-scan.mjs`). All must pass. GitHub Actions runs the same checks
+   plus a secret scan on every PR (`.github/workflows/pr-checks.yml`); never merge with a red check.
 3. Open a pull request; the owner reviews and merges. Never push to `main` directly
    (it is protected), never force-push, never merge your own PR.
 4. Save multi-step plans in `docs/plans/` so the next agent can pick up the work.
