@@ -5,8 +5,8 @@ const pick = (value: string | undefined, fallback: string) => (value && SEND_TO.
 
 /** "Website estimate form": one per saved estimate request, fired on /thank-you. */
 export const ADS_LEAD_SEND_TO = pick(process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_SEND_TO, "AW-18498850414/07H2CKnl4qMdEO6c-PRE");
-/** "Website phone tap": a tap on one of the site's tel: links. */
-export const ADS_CALL_SEND_TO = pick(process.env.NEXT_PUBLIC_GOOGLE_ADS_CALL_CONVERSION_SEND_TO, "AW-18498850414/rTzvCKzl4qMdEO6c-PRE");
+// The "Website phone tap" conversion was removed on purpose (Engineering Package 001, Oct 28): a tap is not
+// a lead. Real calls should be measured with Google call reporting instead.
 /** The Google tag ID both conversions belong to. */
 export const ADS_TAG_ID = ADS_LEAD_SEND_TO.split("/")[0];
 

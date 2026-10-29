@@ -4,6 +4,12 @@ import fs from 'node:fs'
 import vm from 'node:vm'
 import ts from 'typescript'
 
+const guardSource = ts.transpileModule(fs.readFileSync('src/lib/illinois-guard.ts', 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText
+const guard = {}
+vm.runInNewContext(guardSource, { exports: guard })
+
 const source = ts.transpileModule(fs.readFileSync('src/app/api/lead/route.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
@@ -32,6 +38,7 @@ function handler({ insertError = null, emailError = null, env = {}, smsStatus = 
           return Object.assign(Promise.resolve(result), { select: async () => result })
         } } } }
       } }
+      if (name.endsWith('illinois-guard')) return guard
       if (name === 'resend') return { Resend: class {
         constructor(key) { calls.emailKey = key }
         emails = { send: async (payload) => {
@@ -226,7 +233,7 @@ test('no CRM webhook is sent until LEAD_WEBHOOK_URL is set', async () => {
 
 test('configured CRM webhook receives the saved lead as JSON', async () => {
   const { calls, post } = handler({ env: hook })
-  const response = await post({ ...lead, name: 'Pat Q Customer', est_location: 'Waterloo, IL', est_price: null, utm_source: 'google', utm_medium: 'cpc' })
+  const response = await post({ ...lead, name: 'Pat Q Customer', est_location: 'St. Charles, MO', est_price: null, utm_source: 'google', utm_medium: 'cpc' })
   assert.equal(response.status, 200)
   assert.equal(calls.sms.length, 1)
   const call = calls.sms[0]
@@ -240,7 +247,7 @@ test('configured CRM webhook receives the saved lead as JSON', async () => {
   assert.equal(sent.last_name, 'Q Customer')
   assert.equal(sent.phone, '3145550100')
   assert.equal(sent.email, 'customer@example.invalid')
-  assert.equal(sent.state, 'IL')
+  assert.equal(sent.state, 'MO')
   assert.equal(sent.estimate_price, null)
   assert.equal(sent.lead_source, 'google / cpc')
   assert.equal(sent.emergency, true)
@@ -251,7 +258,7 @@ test('configured CRM webhook receives the saved lead as JSON', async () => {
   assert.equal(job.bid_type, 'r') // service "repair"
   assert.equal(job.address, '123 Example St')
   assert.equal(job.city, 'St Louis')
-  assert.equal(job.state, 'IL')
+  assert.equal(job.state, 'MO')
   assert.deepEqual(job.customer, { first_name: 'Pat', last_name: 'Q Customer', phone: '3145550100', email: 'customer@example.invalid' })
   assert.equal(job.platform, 'Website')
   assert.match(job.note.message, /^Website lead from roofingnearmestl\.com\nEMERGENCY - needs a tarp now\nService: repair\nIssue: leak/)
@@ -325,4 +332,51 @@ test('an ad click without UTM tags is still labeled in the email', async () => {
   assert.ok(calls.emails[0].text.includes('Source: Google Ads click'))
   await post({ ...lead })
   assert.ok(calls.emails[1].text.includes('Source: Direct or unknown'))
+})
+
+test('Illinois roofing requests are refused and nothing is saved or sent', async () => {
+  const cases = [
+    { city: 'Waterloo', service_type: 'Roof Repair' },
+    { city: "O'Fallon, IL", service_type: 'Roof Replacement' },
+    { city: 'Columbia', address: '12 Main St, Columbia IL 62236', service_type: 'Storm Damage / Insurance' },
+    { city: '', est_location: 'Belleville, IL', service_type: 'Roof Replacement' },
+    { city: 'Belleville', service_type: 'Siding', emergency: true },
+  ]
+  for (const extra of cases) {
+    const { calls, post } = handler()
+    const response = await post({ ...lead, emergency: false, ...extra })
+    assert.equal(response.status, 422, JSON.stringify(extra))
+    assert.equal(response.data.error, 'illinois_roofing')
+    assert.equal(calls.inserts.length, 0)
+    assert.equal(calls.emails.length, 0)
+  }
+})
+
+test('Illinois exterior work and Missouri roofing still go through', async () => {
+  const cases = [
+    { city: 'Waterloo', service_type: 'Siding' },
+    { city: 'Edwardsville', service_type: 'Gutters / Downspouts' },
+    { city: "O'Fallon", service_type: 'Roof Repair' },
+    { city: 'Columbia', service_type: 'Roof Replacement' },
+    { city: 'St. Charles', address: '1 Main St, St Charles MO 63301', service_type: 'Roof Replacement' },
+  ]
+  for (const extra of cases) {
+    const { calls, post } = handler()
+    const response = await post({ ...lead, emergency: false, ...extra })
+    assert.equal(response.status, 200, JSON.stringify(extra))
+    assert.equal(calls.inserts.length, 1)
+  }
+})
+
+test('phone taps are no longer sent as Google Ads or Meta conversions', () => {
+  const tags = fs.readFileSync('src/components/google-ads.tsx', 'utf8')
+  assert.doesNotMatch(tags, /send_to: ADS_CALL_SEND_TO/)
+  assert.doesNotMatch(tags, /fbq\?\.\("track", "Contact"/)
+  assert.match(tags, /click_to_call/)
+})
+
+test('the browser form uses the same Illinois guard as the server', () => {
+  const form = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
+  assert.match(form, /illinoisRoofingBlocked\(/)
+  assert.match(form, /res\.status === 422/)
 })

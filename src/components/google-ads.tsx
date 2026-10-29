@@ -4,7 +4,7 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { rememberLandingSource } from "./lead-form";
-import { ADS_CALL_SEND_TO, ADS_TAG_ID, META_PIXEL_ID } from "@/lib/tracking";
+import { ADS_TAG_ID, META_PIXEL_ID } from "@/lib/tracking";
 
 // Marketing tags:
 // - Google Ads: always on; conversion IDs live in src/lib/tracking.ts (Vercel env vars can override them)
@@ -21,7 +21,8 @@ type TrackingWindow = Window & {
   fbq?: (command: "track", name: string, parameters?: Record<string, string>) => void;
 };
 
-// Reports taps on phone links as "contact" events, since many leads call instead of filling the form.
+// Reports taps on phone links as a plain "click_to_call" analytics event (read in GA4 once it is on).
+// A tap is not a lead: it is NOT sent as a Google Ads or Meta conversion (Engineering Package 001, Oct 28).
 function useCallTracking() {
   useEffect(() => {
     function onClick(event: MouseEvent) {
@@ -30,9 +31,6 @@ function useCallTracking() {
       const phone = link.getAttribute("href")!.slice(4);
       const w = window as TrackingWindow;
       w.gtag?.("event", "click_to_call", { phone_number: phone, page_path: location.pathname });
-      // Google Ads "Website phone tap" conversion (counted once per ad click).
-      w.gtag?.("event", "conversion", { send_to: ADS_CALL_SEND_TO });
-      w.fbq?.("track", "Contact", { content_name: phone });
     }
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);

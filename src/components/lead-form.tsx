@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { LEAD_SERVICES } from "@/lib/site-pages";
+import { ILLINOIS_ROOFING_MESSAGE, illinoisRoofingBlocked } from "@/lib/illinois-guard";
 
 function subscribeToLocation(onChange: () => void) {
   window.addEventListener("popstate", onChange);
@@ -84,12 +85,21 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
   const router = useRouter();
   const utm = useLandingUtm();
   const [sending, setSending] = useState(false);
+  const [notice, setNotice] = useState("");
 
   async function handleLeadSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if(sending) return;
     setSending(true);
     const fd = new FormData(e.target as HTMLFormElement);
+    setNotice("");
+    // Illinois = siding, gutters, soffit & fascia only (no roofing until the IL license).
+    if (illinoisRoofingBlocked({ service: fd.get("service"), emergency: fd.get("emergency") === "on", city: fd.get("city"),
+      address: fd.get("address"), estLocation: extras?.est_location, page: window.location.pathname })) {
+      setNotice(ILLINOIS_ROOFING_MESSAGE);
+      setSending(false);
+      return;
+    }
     const payload = {
       ...extras,
       name: fd.get("name"),
@@ -129,6 +139,8 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
           // Storage restrictions must not prevent confirmation of a saved lead.
         }
         router.push("/thank-you");
+      } else if (res.status === 422) {
+        setNotice(ILLINOIS_ROOFING_MESSAGE);
       } else {
         alert("Error - please call Illinois: 618-612-5192 or Missouri: 314-202-7663");
       }
@@ -178,6 +190,7 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
           <textarea name="details" maxLength={2000} placeholder={exteriorOnly ? "What's going on with your siding or gutters?" : "What's going on with your roof?"} aria-label="Project details" rows={3} className={inputClass}></textarea>
         </div>
       </details>
+      {notice && <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-black">{notice}</p>}
       <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
         {sending ? "Sending..." : exteriorOnly ? "GET MY FREE EXTERIOR QUOTE →" : "GET MY FREE PHOTO REPORT →"}
       </button>

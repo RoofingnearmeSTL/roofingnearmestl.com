@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { ILLINOIS_ROOFING_MESSAGE, illinoisRoofingBlocked } from '../../../lib/illinois-guard'
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => ({
@@ -40,6 +41,12 @@ export async function POST(req: Request) {
     }
     if (body.phone.replace(/\D/g, '').length < 10) {
       return NextResponse.json({ error: 'valid phone required' }, { status: 400 })
+    }
+    // Illinois rule (Engineering Package 001): no roofing requests for Illinois properties until the IL license.
+    if (illinoisRoofingBlocked({ service: body.service_type ?? body.service, emergency: body.emergency === true,
+      city: body.city, address: body.address, estLocation: body.est_location, page: body.page })) {
+      console.log('LEAD ILLINOIS ROOFING REFUSED')
+      return NextResponse.json({ error: 'illinois_roofing', message: ILLINOIS_ROOFING_MESSAGE }, { status: 422 })
     }
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in Production')
