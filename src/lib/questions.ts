@@ -1,6 +1,6 @@
 // Q&A library (/questions/<slug>) written for Google AI Overviews and answer engines:
 // the direct answer comes first, in 40-60 words, then the detail. Roofing answers are Missouri-only.
-import { IL_COMING_SOON, SHINGLES, priceRange, usd } from "./pricing";
+import { IL_COMING_SOON, priceRange, usd } from "./pricing";
 
 export type Question = {
   slug: string;
@@ -14,8 +14,6 @@ export type Question = {
   datePublished: string;
 };
 
-const arch = SHINGLES.architectural;
-const tab = SHINGLES["3tab"];
 const [p12, p18, p24] = [12, 18, 24].map((sq) => priceRange(sq, "architectural"));
 
 export const questions: Question[] = [
@@ -43,11 +41,11 @@ export const questions: Question[] = [
     slug: "how-much-does-a-new-roof-cost-in-missouri",
     question: "How much does a new roof cost in Missouri?",
     title: "How Much Does a New Roof Cost in Missouri? (2026) | RoofingnearmeSTL",
-    description: `St. Louis-area roof replacement runs ${usd(arch.low)}-${usd(arch.high)} per square for 30-yr architectural shingles: ${usd(p12.low)}-${usd(p24.high)} for most homes. Prices by size, pitch and shingle.`,
-    answer: `In the St. Louis area, a 30-year architectural shingle roof costs about ${usd(arch.low)}-${usd(arch.high)} per square (100 sq ft of roof), so most homes with 12-24 squares pay ${usd(p12.low)}-${usd(p24.high)}. 3-tab shingles run ${usd(tab.low)}-${usd(tab.high)} per square. Low-pitch roofs land at the low end and steep roofs at the high end; clay, metal and slate are custom quotes.`,
+    description: `St. Louis-area roof replacement with 30-yr architectural shingles runs ${usd(p12.low)}-${usd(p24.high)} for most homes. Prices by roof size, pitch and shingle.`,
+    answer: `In the St. Louis area, a 30-year architectural shingle roof costs about ${usd(p12.low)}-${usd(p24.high)} for most homes (12-24 squares, about 1,200-2,400 sq ft of roof). 3-tab shingles cost less. Low-pitch roofs land at the low end and steep roofs at the high end; clay, metal and slate are custom quotes.`,
     sections: [
       { heading: "Typical prices by roof size (30-year architectural)", body: `12 squares (about 1,200 sq ft of roof): ${usd(p12.low)}-${usd(p12.high)}. 18 squares (about 1,800 sq ft): ${usd(p18.low)}-${usd(p18.high)}. 24 squares (about 2,400 sq ft): ${usd(p24.low)}-${usd(p24.high)}.` },
-      { heading: "Why pitch matters", body: "Steeper roofs take more time, safety gear and care, so they cost more per square. We price low-pitch roofs (2/12-4/12) at the low end of the range, medium pitch (5/12-7/12) in the middle and steep roofs (8/12 and up) at the high end." },
+      { heading: "Why pitch matters", body: "Steeper roofs take more time, safety gear and care, so they cost more. We price low-pitch roofs (2/12-4/12) at the low end of the range, medium pitch (5/12-7/12) in the middle and steep roofs (8/12 and up) at the high end." },
       { heading: "What can change your final price", body: "Your free inspection sets the final number. Common reasons it moves:", bullets: ["Roof decking that needs replacing once the old shingles are off", "More than one layer of old shingles to tear off", "Chimneys, skylights and walls that need new flashing", "Ventilation that needs to be added or corrected"] },
       { heading: "Where these prices apply", body: `These are our 2026 prices for roofing in the St. Louis area of Missouri. ${IL_COMING_SOON}; in Illinois we offer siding, gutters, soffit and fascia.` },
     ],

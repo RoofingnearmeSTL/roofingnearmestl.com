@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 const articles = [
-  { href: "/blog/roof-replacement-cost-st-louis-mo", title: "2026 Roof Replacement Cost in St. Louis, MO", summary: "Prices per square, a full table by roof size and pitch, and the estimator." },
+  { href: "/blog/roof-replacement-cost-st-louis-mo", title: "2026 Roof Replacement Cost in St. Louis, MO", summary: "Whole-roof prices by roof size and pitch, plus the estimator." },
   ...questions.map((q) => ({ href: `/questions/${q.slug}`, title: q.question, summary: q.answer.split(". ")[0] + "." })),
 ];
 

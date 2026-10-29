@@ -102,7 +102,7 @@ export default function RoofEstimator({ onChange, defaultPlace = "St. Louis, MO"
               <>
                 <div className="text-sm">Estimated replacement, {squares} SQ {SHINGLES[shingle as "3tab" | "architectural"].label}:</div>
                 <div className="text-4xl font-black text-brand">{usd(result.price)}</div>
-                <p className="text-xs text-zinc-600 mt-1">Full range {usd(range.low)} - {usd(range.high)} ({usd(SHINGLES[shingle as "3tab" | "architectural"].low)}-{usd(SHINGLES[shingle as "3tab" | "architectural"].high)}/SQ). {PITCHES[pitch].label.split(" (")[0]} uses the {PITCHES[pitch].rule}.</p>
+                <p className="text-xs text-zinc-600 mt-1">Full range {usd(range.low)} - {usd(range.high)}. {PITCHES[pitch].label.split(" (")[0]} uses the {PITCHES[pitch].rule}.</p>
                 <div className="mt-3 flex flex-wrap justify-center gap-2">
                   <EstimateLink className="bg-brand hover:bg-brand-dark text-white px-5 py-2 rounded-full font-bold shadow-md shadow-brand/20">Lock This Price</EstimateLink>
                   <a href={MO_PHONE.href} className="border border-brand text-black px-5 py-2 rounded-full font-bold">Call Mike to Lock Price</a>

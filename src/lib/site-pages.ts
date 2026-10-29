@@ -49,6 +49,9 @@ export const SITE_URL = "https://www.roofingnearmestl.com";
 // Roofing choices are Missouri only; the exterior choices are offered in Missouri and Illinois.
 export const LEAD_SERVICES = ["Roof Repair", "Roof Replacement", "Leak / Emergency", "Storm Damage / Insurance", ...IL_LEAD_SERVICES];
 
+/** Whole-roof price range for an architectural roof of this size. The site shows totals only, never per-square rates. */
+const archTotal = (sq: number) => { const p = priceRange(sq, "architectural"); return `${usd(p.low)}-${usd(p.high)}`; };
+
 const corePages: SitePage[] = [
   {
     slug: "roof-replacement",
@@ -57,7 +60,7 @@ const corePages: SitePage[] = [
     navLabel: "Roof Replacement",
     title: "Roof Replacement in St. Louis, MO | RoofingnearmeSTL",
     description:
-      "Roof replacement in St. Louis, MO: 30-yr architectural shingles $450-$750/SQ, free photo-documented inspection, 10-yr workmanship warranty. 314-202-7663.",
+      "Roof replacement in St. Louis, MO: instant cost estimate, free photo-documented inspection, 10-yr workmanship warranty. Call 314-202-7663.",
     eyebrow: "Roof Replacement",
     h1: "Roof Replacement in St. Louis, Missouri",
     intro:
@@ -95,7 +98,7 @@ const corePages: SitePage[] = [
       {
         heading: "Know your price before anyone visits",
         body:
-          "A 30-year architectural shingle roof runs $450-$750 per square (100 sq ft) in the St. Louis area: $5,400-$9,000 for 12 squares, $8,100-$13,500 for 18 and $10,800-$18,000 for 24. Low-pitch roofs land at the low end and steep roofs at the high end. Use the estimator below, then request a free evaluation to lock your price. Financing is available on retail projects.",
+          `A 30-year architectural shingle roof in the St. Louis area costs ${archTotal(12)} for about 1,200 sq ft of roof, ${archTotal(18)} for 1,800 and ${archTotal(24)} for 2,400. Low-pitch roofs land at the low end and steep roofs at the high end. Use the estimator below, then request a free evaluation to lock your price. Financing is available on retail projects.`,
       },
       {
         heading: "Missouri roofing",

@@ -2,7 +2,7 @@
 // BUSINESS RULE: roofing services are Missouri-only. Illinois cities get siding, gutters and soffit/fascia only,
 // never /services/roof-repair/waterloo-il. The checks at the bottom fail the build if that is ever broken.
 import { INSURANCE_SENTENCE, IL_LEAD_SERVICES, PHONES, offersRoofing, type State } from "./business";
-import { IL_COMING_SOON, SHINGLES, priceRange, usd } from "./pricing";
+import { IL_COMING_SOON, priceRange, usd } from "./pricing";
 import { assertIllinoisExteriorOnly, cityPages, regionNote, type Scope, type SitePage } from "./site-pages";
 
 type Section = SitePage["sections"][number];
@@ -30,9 +30,8 @@ export type GridService = {
 export const MO_GRID_CITIES = ["st-charles", "kirkwood", "arnold", "ofallon", "ballwin", "chesterfield", "florissant", "st-peters"];
 export const IL_GRID_CITIES = ["waterloo", "columbia", "belleville", "ofallon", "edwardsville", "collinsville", "granite-city", "fairview-heights"];
 
-const arch = SHINGLES.architectural;
 const [p12, p18, p24] = [12, 18, 24].map((sq) => priceRange(sq, "architectural"));
-const priceSentence = `Our 2026 Missouri pricing for a 30-year architectural shingle roof is ${usd(arch.low)}-${usd(arch.high)} per square (100 sq ft): ${usd(p12.low)}-${usd(p12.high)} for 12 squares, ${usd(p18.low)}-${usd(p18.high)} for 18 and ${usd(p24.low)}-${usd(p24.high)} for 24. Low-pitch roofs land at the low end, steep roofs at the high end. 3-tab starts at ${usd(SHINGLES["3tab"].low)} per square; clay, metal and slate are custom quotes.`;
+const priceSentence = `Our 2026 Missouri pricing for a 30-year architectural shingle roof: ${usd(p12.low)}-${usd(p12.high)} for about 1,200 sq ft of roof, ${usd(p18.low)}-${usd(p18.high)} for 1,800 and ${usd(p24.low)}-${usd(p24.high)} for 2,400. Low-pitch roofs land at the low end, steep roofs at the high end. 3-tab costs less; premium, clay, metal and slate are custom quotes.`;
 const trust = (where: string): Section => ({ heading: "Local, insured and accountable", body: `A local crew based in Waterloo, IL, serving ${where}. ${INSURANCE_SENTENCE}, 5.0★ on Google, and our work is backed by a 10-Year Workmanship Warranty.` });
 const ilNote = (city: string): Section => ({ heading: "Roofing in Illinois", body: `${IL_COMING_SOON}. Today in ${city} we repair and replace siding, gutters, downspouts, soffit and fascia.` });
 const callFaq = (c: City): Faq => [`Which number should I call in ${c.page.city}?`, c.state === "MO"
@@ -49,12 +48,12 @@ export const GRID_SERVICES: GridService[] = [
     key: "roof-replacement", label: "Roof Replacement", hub: "/roof-replacement", roofing: true, leadService: "Roof Replacement",
     title: (place) => fit(`Roof Replacement in ${place} | RoofingnearmeSTL`, `Roof Replacement, ${place}`),
     shortTitle: (place) => `Roof Replacement in ${place}`,
-    description: (place) => `Roof replacement in ${place}: 30-yr architectural shingles ${usd(arch.low)}-${usd(arch.high)}/SQ, free photo-documented inspection, 10-yr workmanship warranty. ${PHONES.MO.display}.`,
+    description: (place) => `Roof replacement in ${place}: instant cost estimate, free photo-documented inspection, 10-yr workmanship warranty. ${PHONES.MO.display}.`,
     h1: (place) => `Roof Replacement in ${place}`,
     intros: [
       (city) => `Thinking about a new roof in ${city}? We start with a free photo-documented inspection, show you every slope and give you a written price, so you know whether you need a full replacement or just a repair.`,
-      (city, county) => `${city} homeowners across ${county} get the same straight answer from us: photos of what we found, a clear price per square, and no pressure to replace a roof that still has life left.`,
-      (city) => `A roof replacement in ${city} is a big decision. Our free photo report, published per-square pricing and 10-year workmanship warranty make it easy to check before you sign anything.`,
+      (city, county) => `${city} homeowners across ${county} get the same straight answer from us: photos of what we found, a clear written price, and no pressure to replace a roof that still has life left.`,
+      (city) => `A roof replacement in ${city} is a big decision. Our free photo report, instant online estimate and 10-year workmanship warranty make it easy to check before you sign anything.`,
     ],
     sections: (c) => [
       { heading: `What a new roof costs in ${c.page.city}`, body: priceSentence },
@@ -64,7 +63,7 @@ export const GRID_SERVICES: GridService[] = [
       trust(`${c.page.city} and the St. Louis area`),
     ],
     faqs: (c) => [
-      [`How much does a new roof cost in ${c.page.city}?`, `${usd(arch.low)}-${usd(arch.high)} per square for a 30-year architectural roof, so most homes with 12-24 squares pay ${usd(p12.low)}-${usd(p24.high)}. Pitch decides where you land in the range. Try the estimator on this page, then get a free inspection to lock your price.`],
+      [`How much does a new roof cost in ${c.page.city}?`, `Most homes with 12-24 squares (about 1,200-2,400 sq ft of roof) pay ${usd(p12.low)}-${usd(p24.high)} for a 30-year architectural roof. Pitch decides where you land in the range. Try the estimator on this page, then get a free inspection to lock your price.`],
       ["Do I really need a full replacement?", "Not always. Our Free Photo-Documented Report shows every slope, identifies your shingle and gives you honest Repair vs Replace options. If a repair will do, we say so."],
       [`Which shingles do you install in ${c.page.city}?`, "Owens Corning, CertainTeed, TAMKO and IKO architectural and 3-tab shingles, plus metal roofing (custom quote)."],
       callFaq(c),

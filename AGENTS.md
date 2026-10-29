@@ -44,6 +44,9 @@ This repo is public: never add anything here you would not publish.
 - Never hard-code a dollar amount in a page; compute it from `pricing.ts` so the estimator, FAQ and
   cost guide always agree. Tests in `tests/pricing.test.mjs` must keep passing.
 - Do not remove the adjustable estimator (`src/components/roof-estimator.tsx`).
+- Show whole-roof totals only. Never publish per-square rates ("$X/SQ", "per square") or a
+  "Premium from" price anywhere on the site, in metadata or in llms.txt (owner decision, Oct 29 2026).
+  Premium, clay, metal and slate are custom quotes. `tests/pricing.test.mjs` checks this.
 
 ## 4. How changes ship
 

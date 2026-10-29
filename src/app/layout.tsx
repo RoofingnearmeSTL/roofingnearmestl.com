@@ -19,7 +19,7 @@ const shareDescription = "Don't replace yet! Free photo-documented roof report i
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.roofingnearmestl.com"),
   title: "RoofingnearmeSTL | St. Louis Roofer + Metro East Siding & Gutters",
-  description: "Roofing in St. Louis, MO: free photo-documented inspection, $450-$750/SQ architectural roofs. Siding, gutters, soffit & fascia in MO and IL. 314-202-7663.",
+  description: "Roofing in St. Louis, MO: free photo-documented inspection and an instant roof cost estimate. Siding, gutters, soffit & fascia in MO and IL. 314-202-7663.",
   // Homepage canonical; landing pages and the thank-you page set their own.
   alternates: { canonical: "/" },
   // Preview card used when the site is shared on Facebook, Google, texts, etc.
