@@ -103,7 +103,7 @@ test('email failure does not fail a saved lead', async () => {
   const { calls, post } = handler({ emailError: { name: 'validation_error', message: 'private details' } })
   assert.equal((await post(lead)).status, 200)
   assert.equal(calls.inserts.length, 1)
-  assert.equal(calls.emails.length, 1)
+  assert.equal(calls.emails.filter((e) => e.to === 'recipient@example.invalid').length, 1)
 })
 
 test('missing recipient never falls back to a hardcoded address', async () => {
@@ -213,7 +213,7 @@ test('configured Twilio sends one text alert with the lead summary', async () =>
   assert.equal(body.get('From'), '+16185550100')
   assert.equal(body.get('To'), '+16185550199')
   assert.equal(body.get('Body'), 'EMERGENCY - New roofing lead: <Customer> | 3145550100 | St Louis | repair | leak')
-  assert.equal(calls.emails.length, 1)
+  assert.equal(calls.emails.filter((e) => e.to === 'recipient@example.invalid').length, 1)
 })
 
 test('a failed text alert does not fail a saved lead', async () => {
@@ -331,7 +331,7 @@ test('an ad click without UTM tags is still labeled in the email', async () => {
   await post({ ...lead, gclid: 'abc' })
   assert.ok(calls.emails[0].text.includes('Source: Google Ads click'))
   await post({ ...lead })
-  assert.ok(calls.emails[1].text.includes('Source: Direct or unknown'))
+  assert.ok(calls.emails.filter((e) => e.to === 'recipient@example.invalid')[1].text.includes('Source: Direct or unknown'))
 })
 
 test('Illinois roofing requests are refused and nothing is saved or sent', async () => {
@@ -379,4 +379,49 @@ test('the browser form uses the same Illinois guard as the server', () => {
   const form = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
   assert.match(form, /illinoisRoofingBlocked\(/)
   assert.match(form, /res\.status === 422/)
+})
+
+test('the customer gets an instant confirmation email when they give an email', async () => {
+  const { calls, post } = handler()
+  assert.equal((await post({ ...lead, name: 'Pat Q Customer', city: 'Kirkwood', service_type: 'Roof Replacement', emergency: false })).status, 200)
+  const owner = calls.emails.filter((e) => e.to === 'recipient@example.invalid')
+  const customer = calls.emails.filter((e) => e.to === lead.email)
+  assert.equal(owner.length, 1)
+  assert.equal(customer.length, 1)
+  const email = customer[0]
+  assert.equal(email.from, 'RoofingnearmeSTL <leads@roofingnearmestl.com>')
+  assert.equal(email.replyTo, 'recipient@example.invalid') // replies reach the owner
+  assert.equal(email.subject, 'We got your request - RoofingnearmeSTL')
+  assert.match(email.text, /^Hi Pat,/)
+  assert.match(email.text, /request for Roof Replacement in Kirkwood/)
+  assert.match(email.text, /call you at 3145550100/)
+  assert.match(email.text, /Free Photo-Documented Roof Report/)
+  assert.match(email.text, /Need us sooner\? Call 314-202-7663/)
+  assert.match(email.text, /421 Janice Dr, Waterloo, IL 62298/)
+  assert.doesNotMatch(email.text, /discount|offer|sale|promo/i)
+})
+
+test('a Missouri emergency confirmation points to the 24/7 line', async () => {
+  const { calls, post } = handler()
+  await post({ ...lead, city: 'Arnold', emergency: true })
+  const email = calls.emails.find((e) => e.to === lead.email)
+  assert.match(email.text, /24\/7 emergency line: 314-202-7663/)
+})
+
+test('an Illinois exterior confirmation uses Illinois wording and phone, never roofing', async () => {
+  const { calls, post } = handler()
+  await post({ ...lead, city: 'Waterloo', service_type: 'Siding', emergency: false })
+  const email = calls.emails.find((e) => e.to === lead.email)
+  assert.match(email.text, /siding, gutter or soffit & fascia estimate/)
+  assert.match(email.text, /Need us sooner\? Call 618-612-5192/)
+  assert.match(email.text, /about your project/)
+  const body = email.text.split('\n\n').slice(0, -1).join(' ').replace(/RoofingnearmeSTL|Roofing Near Me STL/g, '')
+  assert.doesNotMatch(body, /roof/i) // body only, brand name aside
+})
+
+test('no customer email address means no confirmation email', async () => {
+  const { calls, post } = handler()
+  await post({ ...lead, email: '' })
+  assert.equal(calls.emails.length, 1)
+  assert.equal(calls.emails[0].to, 'recipient@example.invalid')
 })
