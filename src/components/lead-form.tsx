@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { LEAD_SERVICES } from "@/lib/site-pages";
 import { ILLINOIS_ROOFING_NOTICE, isIllinoisRoofingRequest } from "@/lib/illinois-guard";
 
@@ -86,6 +86,9 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
   const utm = useLandingUtm();
   const [sending, setSending] = useState(false);
   const [ilRoofing, setIlRoofing] = useState(false);
+  // When the form appeared; a submission faster than a person could type is flagged (never dropped) by the server.
+  const shownAt = useRef(0);
+  useEffect(() => { shownAt.current = Date.now(); }, []);
 
   // Illinois roofing requests are still sent and saved (tagged license pending on the server); the homeowner
   // just sees a small note first, so nobody is surprised that we can't do roof work in Illinois yet.
@@ -112,6 +115,7 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       roof_age: fd.get("roof_age"),
       emergency: fd.get("emergency") === "on",
       urgent: fd.get("urgent") === "on",
+      form_ms: shownAt.current ? Date.now() - shownAt.current : null,
       message: fd.get("details"),
       company: fd.get("company"),
       utm_source: utm.source,
@@ -131,13 +135,13 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
         body: JSON.stringify(payload),
       });
       if(res.ok){
-        const result: { data?: { id?: string | number }[]; area?: "il" | "il-pending" } = await res.json();
+        const result: { data?: { id?: string | number }[]; area?: "il" | "il-pending"; suspected?: boolean } = await res.json();
         const ilPending = result.area === "il-pending";
         try {
           sessionStorage.setItem("roofing-lead-conversion", JSON.stringify({
             id: String(result.data?.[0]?.id ?? crypto.randomUUID()),
-            // A license-pending Illinois roofing request is not counted as a Google Ads or Meta conversion.
-            ilPending,
+            // A license-pending Illinois roofing request, or a suspected bot, is not counted as a Google Ads or Meta conversion.
+            ilPending: ilPending || result.suspected === true,
           }));
         } catch {
           // Storage restrictions must not prevent confirmation of a saved lead.

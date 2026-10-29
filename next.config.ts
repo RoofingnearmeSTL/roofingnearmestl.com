@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withBotId } from "botid/next/config";
 import { ilRedirects } from "./src/lib/service-areas";
 
 // Browser security headers for every page. Kept compatible with Google Ads (gtag) scripts.
@@ -23,7 +24,8 @@ const serviceHubs: Record<string, string> = {
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // Every page except BotID's own check path (it needs to run in a same-origin frame, which DENY would block).
+    return [{ source: "/((?!149e9513-01fa-4fb0-aad4-566afd725d1b).*)", headers: securityHeaders }];
   },
   async redirects() {
     return [
@@ -35,4 +37,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBotId(nextConfig);
