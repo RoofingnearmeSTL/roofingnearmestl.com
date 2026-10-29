@@ -31,3 +31,16 @@ test("roof size stays on the 10-40 SQ slider", () => {
   assert.equal(clampSquares(55), 40);
   assert.equal(clampSquares(17.6), 18);
 });
+
+test('the site shows whole-roof totals only, never per-square rates', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const files = []
+  const walk = (dir) => { for (const f of fs.readdirSync(dir)) { const p = path.join(dir, f); if (fs.statSync(p).isDirectory()) walk(p); else if (/\.(tsx?|md)$/.test(f)) files.push(p) } }
+  walk('src')
+  for (const file of files) {
+    if (file.replace(/\\/g, '/').endsWith('src/lib/pricing.ts')) continue
+    const text = fs.readFileSync(file, 'utf8')
+    assert.doesNotMatch(text, /per square(?! f)|\}\/SQ|\$\d[\d,]*\/SQ|Premium from/i, file)
+  }
+})

@@ -5,14 +5,13 @@ import RoofEstimator from "@/components/roof-estimator";
 import LeadForm from "@/components/lead-form";
 import { SITE_URL, businessSchema, faqSchema } from "@/lib/site-pages";
 import { PHONES } from "@/lib/business";
-import { IL_COMING_SOON, PITCHES, SHINGLES, TABLE_SQUARES, estimate, priceRange, usd, type PitchKey } from "@/lib/pricing";
+import { IL_COMING_SOON, PITCHES, TABLE_SQUARES, estimate, priceRange, usd, type PitchKey } from "@/lib/pricing";
 
 const path = "/blog/roof-replacement-cost-st-louis-mo";
-const arch = SHINGLES.architectural;
-const tab = SHINGLES["3tab"];
 const [p12, p18, p24] = [12, 18, 24].map((sq) => priceRange(sq, "architectural"));
+const [t12, t24] = [12, 24].map((sq) => priceRange(sq, "3tab"));
 const title = "2026 Roof Replacement Cost in St. Louis, MO | RoofingnearmeSTL";
-const description = `A 30-yr architectural roof in St. Louis costs ${usd(arch.low)}-${usd(arch.high)} per square, ${usd(p12.low)}-${usd(p24.high)} for most homes. Price table by size, pitch & shingle.`;
+const description = `A 30-yr architectural roof in St. Louis costs ${usd(p12.low)}-${usd(p24.high)} for most homes. Price table by roof size, pitch and shingle.`;
 const crumbs = [{ name: "Blog", href: "/blog" }, { name: "Roof Replacement Cost", href: path }];
 
 export const metadata: Metadata = {
@@ -24,10 +23,10 @@ export const metadata: Metadata = {
 };
 
 const faqs: [string, string][] = [
-  ["How much does a new roof cost in St. Louis?", `A 30-year architectural shingle roof costs ${usd(arch.low)}-${usd(arch.high)} per square, or ${usd(p12.low)}-${usd(p24.high)} for most homes with 12-24 squares. 3-tab runs ${usd(tab.low)}-${usd(tab.high)} per square.`],
+  ["How much does a new roof cost in St. Louis?", `A 30-year architectural shingle roof costs ${usd(p12.low)}-${usd(p24.high)} for most homes with 12-24 squares (about 1,200-2,400 sq ft of roof). 3-tab costs less: ${usd(t12.low)}-${usd(t24.high)}.`],
   ["What is a roofing square?", "One square is 100 square feet of roof surface. A roof with 1,800 sq ft of surface is 18 squares."],
   ["How does roof pitch change the price?", "Low pitch (2/12-4/12) is priced at the low end of the range, medium pitch (5/12-7/12) in the middle and steep pitch (8/12 and up) at the high end."],
-  ["Is 3-tab or architectural shingle better value?", `3-tab costs less (${usd(tab.low)}-${usd(tab.high)} per square, 25-year). Architectural shingles (${usd(arch.low)}-${usd(arch.high)} per square, 30-year) are thicker, last longer and are what most St. Louis homeowners choose.`],
+  ["Is 3-tab or architectural shingle better value?", `3-tab costs less (${usd(t12.low)}-${usd(t24.high)} for most homes, 25-year). Architectural shingles (${usd(p12.low)}-${usd(p24.high)}, 30-year) are thicker, last longer and are what most St. Louis homeowners choose.`],
   ["Do you price clay, metal or slate online?", "No. Clay, metal and slate need an in-person look, so they're a custom quote. Call Mike to lock your price."],
   ["Do you offer financing?", "Yes. Financing is available for retail roof, siding and gutter projects. Ask during your free evaluation."],
   ["Do these prices apply in Illinois?", `No. These prices are for roofing in the St. Louis area of Missouri. ${IL_COMING_SOON}; in Illinois we offer siding, gutters, soffit and fascia.`],
@@ -56,7 +55,7 @@ export default function RoofCostGuide() {
         <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Cost guide · Updated October 2026</p>
         <h1 className="mt-2 text-4xl font-black tracking-tight text-black sm:text-5xl">2026 Roof Replacement Cost in St. Louis, MO</h1>
         <p className="mt-5 text-lg leading-relaxed text-zinc-700">
-          <b>A new 30-year architectural shingle roof in St. Louis, MO costs {usd(arch.low)}-{usd(arch.high)} per square (100 sq ft), or {usd(p12.low)}-{usd(p24.high)} for most homes with 12-24 squares.</b> 3-tab shingles run {usd(tab.low)}-{usd(tab.high)} per square. Low-pitch roofs land at the low end and steep roofs at the high end. Clay, metal and slate are custom quotes.
+          <b>A new 30-year architectural shingle roof in St. Louis, MO costs {usd(p12.low)}-{usd(p24.high)} for most homes with 12-24 squares (about 1,200-2,400 sq ft of roof).</b> 3-tab shingles cost less. Low-pitch roofs land at the low end and steep roofs at the high end. Clay, metal and slate are custom quotes.
         </p>
         <ul className="mt-5 grid gap-2 sm:grid-cols-3 text-center">
           {[[12, p12], [18, p18], [24, p24]].map(([sq, range]) => (
@@ -65,7 +64,7 @@ export default function RoofCostGuide() {
         </ul>
 
         <h2 className="mt-10 text-2xl font-extrabold text-black">Price by roof size, shingle and pitch</h2>
-        <p className="mt-2 text-zinc-700">Every row uses our 2026 Missouri pricing: 30-year architectural {usd(arch.low)}-{usd(arch.high)}/SQ and 3-tab 25-year {usd(tab.low)}-{usd(tab.high)}/SQ. The pitch columns show the architectural estimate for each pitch.</p>
+        <p className="mt-2 text-zinc-700">Every row is a whole-roof price from our 2026 Missouri pricing. The pitch columns show the architectural estimate for each pitch.</p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <caption className="sr-only">Roof replacement cost in St. Louis, MO by roof size</caption>

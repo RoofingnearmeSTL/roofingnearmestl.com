@@ -1,7 +1,7 @@
 import { FACEBOOK_URL, GOOGLE_BUSINESS_URL, SITE_URL, areaGroups, sitePages } from "@/lib/site-pages";
 import { gridPages } from "@/lib/service-grid";
 import { questions } from "@/lib/questions";
-import { IL_COMING_SOON, SHINGLES, priceRange, usd } from "@/lib/pricing";
+import { IL_COMING_SOON, priceRange, usd } from "@/lib/pricing";
 import { INSURANCE_SENTENCE } from "@/lib/business";
 
 export const dynamic = "force-static";
@@ -24,7 +24,7 @@ export function GET() {
 - Phone (Missouri): 314-202-7663
 - Installs shingles from Owens Corning, CertainTeed, TAMKO and IKO, plus metal roofing
 - 24/7 emergency roof repair and tarping (Missouri)
-- Roof replacement pricing (Missouri, 2026): 30-year architectural shingles ${usd(SHINGLES.architectural.low)}-${usd(SHINGLES.architectural.high)} per square (${usd(priceRange(12, "architectural").low)}-${usd(priceRange(24, "architectural").high)} for most homes, 12-24 squares); 3-tab ${usd(SHINGLES["3tab"].low)}-${usd(SHINGLES["3tab"].high)} per square; low pitch = low end, medium = middle, steep = high end; clay, metal and slate are custom quotes
+- Roof replacement pricing (Missouri, 2026): 30-year architectural shingles ${usd(priceRange(12, "architectural").low)}-${usd(priceRange(24, "architectural").high)} for most homes (12-24 squares); 3-tab costs less; low pitch = low end, medium = middle, steep = high end; premium, clay, metal and slate are custom quotes
 - ${INSURANCE_SENTENCE} (Sutton Specialty Insurance Company)
 - 10-Year Workmanship Warranty
 - 5.0-star Google rating
