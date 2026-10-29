@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { LEAD_SERVICES } from "@/lib/site-pages";
-import { ILLINOIS_ROOFING_MESSAGE, illinoisRoofingBlocked } from "@/lib/illinois-guard";
+import { ILLINOIS_ROOFING_NOTICE, isIllinoisRoofingRequest } from "@/lib/illinois-guard";
 
 function subscribeToLocation(onChange: () => void) {
   window.addEventListener("popstate", onChange);
@@ -85,21 +85,21 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
   const router = useRouter();
   const utm = useLandingUtm();
   const [sending, setSending] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [ilRoofing, setIlRoofing] = useState(false);
+
+  // Illinois roofing requests are still sent and saved (tagged license pending on the server); the homeowner
+  // just sees a small note first, so nobody is surprised that we can't do roof work in Illinois yet.
+  function checkIllinoisRoofing(e: React.FormEvent<HTMLFormElement>) {
+    const fd = new FormData(e.currentTarget);
+    setIlRoofing(isIllinoisRoofingRequest({ service: fd.get("service"), emergency: fd.get("emergency") === "on", city: fd.get("city"),
+      address: fd.get("address"), estLocation: extras?.est_location, page: window.location.pathname }));
+  }
 
   async function handleLeadSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if(sending) return;
     setSending(true);
     const fd = new FormData(e.target as HTMLFormElement);
-    setNotice("");
-    // Illinois = siding, gutters, soffit & fascia only (no roofing until the IL license).
-    if (illinoisRoofingBlocked({ service: fd.get("service"), emergency: fd.get("emergency") === "on", city: fd.get("city"),
-      address: fd.get("address"), estLocation: extras?.est_location, page: window.location.pathname })) {
-      setNotice(ILLINOIS_ROOFING_MESSAGE);
-      setSending(false);
-      return;
-    }
     const payload = {
       ...extras,
       name: fd.get("name"),
@@ -111,6 +111,7 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       issue_type: fd.get("issue_type"),
       roof_age: fd.get("roof_age"),
       emergency: fd.get("emergency") === "on",
+      urgent: fd.get("urgent") === "on",
       message: fd.get("details"),
       company: fd.get("company"),
       utm_source: utm.source,
@@ -130,17 +131,21 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
         body: JSON.stringify(payload),
       });
       if(res.ok){
-        const result: { data?: { id?: string | number }[] } = await res.json();
+        const result: { data?: { id?: string | number }[]; area?: "il" | "il-pending" } = await res.json();
+        const ilPending = result.area === "il-pending";
         try {
           sessionStorage.setItem("roofing-lead-conversion", JSON.stringify({
             id: String(result.data?.[0]?.id ?? crypto.randomUUID()),
+            // A license-pending Illinois roofing request is not counted as a Google Ads or Meta conversion.
+            ilPending,
           }));
         } catch {
           // Storage restrictions must not prevent confirmation of a saved lead.
         }
-        router.push("/thank-you");
-      } else if (res.status === 422) {
-        setNotice(ILLINOIS_ROOFING_MESSAGE);
+        const query = new URLSearchParams();
+        if (result.area) query.set("area", result.area);
+        if (ilPending && payload.emergency) query.set("urgent", "1");
+        router.push(query.size ? `/thank-you?${query}` : "/thank-you");
       } else {
         alert("Error - please call Illinois: 618-612-5192 or Missouri: 314-202-7663");
       }
@@ -152,7 +157,7 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
   }
 
   return (
-    <form className="space-y-3" onSubmit={handleLeadSubmit}>
+    <form className="space-y-3" onSubmit={handleLeadSubmit} onChange={checkIllinoisRoofing}>
       <input name="name" required maxLength={100} autoComplete="name" placeholder="Your Name *" aria-label="Your name" className={inputClass} />
       <input name="phone" required type="tel" inputMode="tel" maxLength={30} pattern="(?:\D*\d){10,}\D*" title="Please enter a 10-digit phone number" autoComplete="tel" placeholder="Phone Number *" aria-label="Phone number" className={inputClass} />
       <input name="city" defaultValue={defaultCity} maxLength={80} autoComplete="address-level2" placeholder="City" aria-label="City" className={inputClass} />
@@ -163,6 +168,12 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
         <label className="flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm font-semibold text-black">
           <input name="emergency" type="checkbox" className="h-5 w-5 accent-brand" />
           Active leak? Need an emergency tarp now
+        </label>
+      )}
+      {exteriorOnly && (
+        <label className="flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm font-semibold text-black">
+          <input name="urgent" type="checkbox" className="h-5 w-5 accent-brand" />
+          Storm damage to siding, gutters or trim? Call me back fast
         </label>
       )}
       {/* Spam trap: hidden from people, bots fill it in. */}
@@ -190,7 +201,8 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
           <textarea name="details" maxLength={2000} placeholder={exteriorOnly ? "What's going on with your siding or gutters?" : "What's going on with your roof?"} aria-label="Project details" rows={3} className={inputClass}></textarea>
         </div>
       </details>
-      {notice && <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-black">{notice}</p>}
+      {/* Small print, like a disclaimer (Mike, Oct 29). */}
+      {ilRoofing && <p role="status" className="px-1 text-xs leading-snug text-zinc-500">{ILLINOIS_ROOFING_NOTICE}</p>}
       <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
         {sending ? "Sending..." : exteriorOnly ? "GET MY FREE EXTERIOR QUOTE →" : "GET MY FREE PHOTO REPORT →"}
       </button>

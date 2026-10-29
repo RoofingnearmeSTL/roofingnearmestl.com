@@ -18,8 +18,28 @@ export const PHONES: Record<State, { display: string; href: string; e164: string
 export const ROOFING_STATES: readonly State[] = ["MO"];
 export const offersRoofing = (state: State) => ROOFING_STATES.includes(state);
 
-/** Lead form choices offered in Illinois (exterior only). */
-export const IL_LEAD_SERVICES = ["Siding", "Gutters / Downspouts", "Soffit & Fascia"];
+/** Lead form choices offered in Illinois (exterior only; trade list confirmed by the owner Oct 29, 2026). */
+export const IL_LEAD_SERVICES = [
+  "Siding", "Siding Repair", "Gutters / Downspouts", "Gutter Cleaning", "Gutter Guards", "Soffit & Fascia",
+  "Trim Wraps", "Porch & Patio Decks", "House & Siding Soft Wash", "Gable & Wall Vents", "Christmas Lights",
+];
+
+/**
+ * Exterior trades as shown on pages. Illinois limits until the IL roofing license (225 ILCS 335): decks are
+ * porch/patio decks (never roof decking), soft washing is siding and the house (never the roof), and ventilation
+ * work is gable and wall vents only (no vents cut into the roof).
+ */
+export const EXTERIOR_SERVICE_BULLETS = [
+  "Siding repair and replacement",
+  "Gutters and downspouts: new, repaired or re-routed, plus gutter cleaning and gutter guards",
+  "Soffit and fascia repair and replacement",
+  "Aluminum trim wraps for windows, doors, garage doors and porch beams",
+  "Porch and patio decks",
+  "House and siding soft washing",
+  "Attic ventilation correction with gable and wall vents, checked with the Lomanco ventilation calculator",
+  "Christmas light installation",
+  "Storm damage to siding, gutters and trim, documented with photos",
+];
 
 // Certificate of liability insurance (ACORD 25) dated 03/17/2026. Workers' compensation is NOT listed on it,
 // so the site does not claim workers' comp until a certificate for it is provided.

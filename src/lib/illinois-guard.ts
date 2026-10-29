@@ -1,9 +1,14 @@
-// Illinois rule for the lead form and the lead API (Engineering Package 001, approved 2026-10-28):
-// roofing is offered in Missouri only; Illinois = siding, gutters, soffit & fascia until the IL roofing
-// license. Plain functions with no imports, so the browser form and the server use the exact same check.
+// Illinois rule for the lead form and the lead API: roofing is offered in Missouri only until the IL roofing
+// license (225 ILCS 335/9). A roofing request for an Illinois home is still saved (Mike, Oct 29, 2026), tagged
+// "il_license_pending" so nobody quotes, schedules or does roof work on it, and the homeowner is told so plainly.
+// Plain functions with no imports, so the browser form and the server use the exact same check.
 
-export const ILLINOIS_ROOFING_MESSAGE =
-  "Roofing in Illinois is coming soon after our IL license. For an Illinois home we can help with siding, gutters, soffit & fascia: pick one of those above, or call 618-612-5192.";
+/** The leads.status value for a roofing request on an Illinois home. */
+export const IL_LICENSE_PENDING = "il_license_pending";
+
+/** Shown under the form before sending, so the homeowner knows up front. */
+export const ILLINOIS_ROOFING_NOTICE =
+  "Roofing in Illinois is pending our IL license, which we expect soon. Send your request anyway: we'll save it, call you, and help now with siding, gutters, soffit, fascia and other exterior work. Illinois line: 618-612-5192.";
 
 // Lead-form services that are roof work (everything except the exterior services).
 const ROOFING_SERVICES = new Set(["Roof Repair", "Roof Replacement", "Leak / Emergency", "Storm Damage / Insurance"]);
@@ -33,7 +38,8 @@ export function looksIllinois(input: { city?: unknown; address?: unknown; estLoc
   return false;
 }
 
-export function illinoisRoofingBlocked(input: {
+/** A roofing request (or an emergency roof tarp) for a home that is clearly in Illinois. */
+export function isIllinoisRoofingRequest(input: {
   service?: unknown; emergency?: unknown; city?: unknown; address?: unknown; estLocation?: unknown; page?: unknown;
 }): boolean {
   return isRoofingRequest(input.service, input.emergency) && looksIllinois(input);

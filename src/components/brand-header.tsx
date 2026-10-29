@@ -15,7 +15,7 @@ export default function BrandHeader() {
           <div className="hidden lg:block">
             <p className="text-xs font-bold tracking-[0.14em] text-black uppercase">Local. Reliable.</p>
             <p className="text-xs font-bold tracking-[0.14em] text-brand uppercase mt-1">Protecting What Matters.</p>
-            <p className="text-xs text-zinc-500 mt-2">Waterloo • Columbia • Belleville • STL</p>
+            <p className="text-xs text-zinc-500 mt-2">Serving the St. Louis Metro Area</p>
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-4 xl:gap-6 shrink-0">

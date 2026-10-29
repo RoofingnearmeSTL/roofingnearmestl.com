@@ -334,7 +334,7 @@ test('an ad click without UTM tags is still labeled in the email', async () => {
   assert.ok(calls.emails.filter((e) => e.to === 'recipient@example.invalid')[1].text.includes('Source: Direct or unknown'))
 })
 
-test('Illinois roofing requests are refused and nothing is saved or sent', async () => {
+test('Illinois roofing requests are saved, tagged license pending, and flagged to the team', async () => {
   const cases = [
     { city: 'Waterloo', service_type: 'Roof Repair' },
     { city: "O'Fallon, IL", service_type: 'Roof Replacement' },
@@ -345,11 +345,51 @@ test('Illinois roofing requests are refused and nothing is saved or sent', async
   for (const extra of cases) {
     const { calls, post } = handler()
     const response = await post({ ...lead, emergency: false, ...extra })
-    assert.equal(response.status, 422, JSON.stringify(extra))
-    assert.equal(response.data.error, 'illinois_roofing')
-    assert.equal(calls.inserts.length, 0)
-    assert.equal(calls.emails.length, 0)
+    assert.equal(response.status, 200, JSON.stringify(extra))
+    assert.equal(response.data.area, 'il-pending')
+    assert.equal(calls.inserts.length, 1)
+    assert.equal(calls.inserts[0][0].status, 'il_license_pending')
+    const owner = calls.emails.find((e) => e.to === 'recipient@example.invalid')
+    assert.match(owner.subject, /^IL ROOFING - LICENSE PENDING - do not quote or schedule roofing - New Roofing Lead/)
+    assert.match(owner.text, /^Illinois License Pending: YES .*Do NOT quote, schedule or do any roof work/)
   }
+})
+
+test('an Illinois roofing confirmation is honest about the license, in small print', async () => {
+  const { calls, post } = handler()
+  await post({ ...lead, city: 'Waterloo', service_type: 'Roof Repair', emergency: false })
+  const email = calls.emails.find((e) => e.to === lead.email)
+  assert.match(email.text, /point you to a licensed Illinois roofer/)
+  assert.match(email.text, /siding, gutters, soffit, fascia and other exterior work/)
+  assert.match(email.text, /Roofing in Illinois is pending our Illinois roofing license/)
+  assert.match(email.html, /<p style="font-size:12px;color:#666;line-height:1.5">Roofing in Illinois is pending/)
+  assert.doesNotMatch(email.text, /Free Photo-Documented Roof Report|24\/7/)
+})
+
+test('an Illinois emergency roof request gets a fast call back, never a tarp promise', async () => {
+  const { calls, post } = handler()
+  const response = await post({ ...lead, city: 'Waterloo', service_type: 'Siding', emergency: true })
+  assert.equal(response.data.area, 'il-pending')
+  assert.equal(calls.inserts[0][0].emergency, true)
+  const owner = calls.emails.find((e) => e.to === 'recipient@example.invalid')
+  assert.ok(owner.text.includes('Emergency Tarp Needed: YES - Emergency (Illinois: no roof tarp; call back fast)'))
+  const email = calls.emails.find((e) => e.to === lead.email)
+  assert.match(email.text, /call us at 618-612-5192 and we'll point you to a licensed Illinois roofer right away/)
+  assert.doesNotMatch(email.text, /24\/7|tarp/i)
+})
+
+test('urgent Illinois siding damage is flagged without counting as a roof request', async () => {
+  const { calls, post } = handler()
+  const response = await post({ ...lead, city: 'Belleville', service_type: 'Siding Repair', emergency: false, urgent: true })
+  assert.equal(response.data.area, 'il')
+  const row = calls.inserts[0][0]
+  assert.equal(row.emergency, true)
+  assert.equal(row.status, undefined) // table default "new"
+  const owner = calls.emails.find((e) => e.to === 'recipient@example.invalid')
+  assert.ok(owner.text.includes('Urgent: YES - storm damage to siding, gutters or trim (call back fast)'))
+  assert.doesNotMatch(owner.subject, /LICENSE PENDING/)
+  const email = calls.emails.find((e) => e.to === lead.email)
+  assert.match(email.text, /urgent storm damage, so we'll call you back as fast as we can/)
 })
 
 test('Illinois exterior work and Missouri roofing still go through', async () => {
@@ -365,6 +405,8 @@ test('Illinois exterior work and Missouri roofing still go through', async () =>
     const response = await post({ ...lead, emergency: false, ...extra })
     assert.equal(response.status, 200, JSON.stringify(extra))
     assert.equal(calls.inserts.length, 1)
+    assert.equal(calls.inserts[0][0].status, undefined)
+    assert.notEqual(response.data.area, 'il-pending')
   }
 })
 
@@ -375,10 +417,14 @@ test('phone taps are no longer sent as Google Ads or Meta conversions', () => {
   assert.match(tags, /click_to_call/)
 })
 
-test('the browser form uses the same Illinois guard as the server', () => {
+test('the browser form always sends, shows the Illinois note in small print, and skips ad conversions for pending leads', () => {
   const form = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
-  assert.match(form, /illinoisRoofingBlocked\(/)
-  assert.match(form, /res\.status === 422/)
+  assert.match(form, /isIllinoisRoofingRequest\(/)
+  assert.doesNotMatch(form, /res\.status === 422|setSending\(false\);\n\s*return;/)
+  assert.match(form, /ilRoofing && <p role="status" className="px-1 text-xs leading-snug text-zinc-500">/)
+  assert.match(form, /name="urgent" type="checkbox"/)
+  const conversion = fs.readFileSync('src/app/thank-you/conversion.tsx', 'utf8')
+  assert.match(conversion, /lead\.ilPending === true\) \{[\s\S]*pendingTags\.delete\("ads"\);[\s\S]*pendingTags\.delete\("meta"\);/)
 })
 
 test('the customer gets an instant confirmation email when they give an email', async () => {

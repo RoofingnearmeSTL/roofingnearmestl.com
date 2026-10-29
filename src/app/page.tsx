@@ -59,7 +59,7 @@ export default function Home() {
         <HeroBackground />
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
         <div className="lg:col-start-1 lg:row-start-1">
-          <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-bold mb-4">✓ RoofingnearmeSTL - St. Louis Roofing · Metro East Siding &amp; Gutters</div>
+          <div className="inline-flex bg-brand-light text-black border border-brand/20 px-4 py-1.5 rounded-full text-sm font-bold mb-4">✓ RoofingnearmeSTL · St. Louis Metro Area · Roofing in Missouri · Exteriors in MO &amp; IL</div>
           <h1 className="text-white tracking-tight leading-[1.1]">
             <span className="font-extrabold text-4xl sm:text-5xl">Don&apos;t Replace Yet!</span><br/>
             <span className="font-bold text-2xl sm:text-3xl">Get a Free Photo-Documented</span><br/>
@@ -103,7 +103,7 @@ export default function Home() {
           <h2 className="text-black font-extrabold text-3xl text-center">We Document Damage. We Don&apos;t Just Sell Roofs.</h2>
           <p className="text-zinc-600 text-center max-w-3xl mx-auto mt-4 leading-relaxed">Free Photo-Documented: Shingle ID + Damage Evidence + Repair vs Replace Options. That&apos;s Why Your Neighbors Chose Us.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-            {[["DON'T REPLACE YET!", "Free Honest Evaluation - Should you repair or replace? We show you the photos."], ["Storm Damage? Aging Roof?", "Free Photo-Documented Report - We photograph what we see. Shingle ID + Damage Photos + Repair vs Replace options you keep. We document damage, we don't just sell roofs."], ["Aging Roof?", "Is it time? We document granular loss, seal strip failure, and remaining life."], ["Roof Repair", "Leak stopped today. No pushy replacement pitch unless photos prove you need it."], ["Retail Upgrades Welcome - F&I Available", "Roof • Siding • Gutters • Soffit & Fascia. One local crew."], ["Why Your Neighbors Chose Us", "Roofing across the St. Louis area in Missouri. Siding, gutters, soffit & fascia in Missouri and the Illinois Metro East. Local. Reliable. Protecting What Matters."]].map(([title, description]) => (
+            {[["DON'T REPLACE YET!", "Free Honest Evaluation - Should you repair or replace? We show you the photos."], ["Storm Damage? Aging Roof?", "Free Photo-Documented Report - We photograph what we see. Shingle ID + Damage Photos + Repair vs Replace options you keep. We document damage, we don't just sell roofs."], ["Aging Roof?", "Is it time? We document granular loss, seal strip failure, and remaining life."], ["Roof Repair", "Leak stopped today. No pushy replacement pitch unless photos prove you need it."], ["Retail Upgrades Welcome - F&I Available", "Roof • Siding • Gutters • Soffit & Fascia. One local crew."], ["Why Your Neighbors Chose Us", "Serving the St. Louis Metro Area: roofing in Missouri; siding, gutters, soffit, fascia and more exterior work on both sides of the river. Local. Reliable. Protecting What Matters."]].map(([title, description]) => (
               <article key={title} className="bg-white border-2 border-zinc-200 rounded-2xl p-6 shadow-sm hover:border-brand/40 transition-colors">
                 <h3 className="text-black font-bold text-lg">{title}</h3>
                 <p className="text-zinc-600 text-sm leading-relaxed mt-2">{description}</p>

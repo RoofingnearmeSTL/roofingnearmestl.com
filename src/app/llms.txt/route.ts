@@ -18,7 +18,7 @@ export function GET() {
 
   const body = `# RoofingnearmeSTL (Roofing Near Me STL)
 
-> Local crew based in Waterloo, Illinois. ROOFING (repair, replacement, hail and storm damage inspections, 24/7 emergency tarping) is offered in MISSOURI ONLY: St. Louis, St. Louis County, St. Charles County, Jefferson County and Franklin County. SIDING, GUTTERS AND DOWNSPOUTS, SOFFIT AND FASCIA are offered in Missouri and the Illinois Metro East (Monroe, St. Clair and Madison counties). ${IL_COMING_SOON}. Every roofing visit starts with a free photo-documented roof report with honest repair-vs-replace options.
+> Local crew based in Waterloo, Illinois. ROOFING (repair, replacement, hail and storm damage inspections, 24/7 emergency tarping) is offered in MISSOURI ONLY: St. Louis, St. Louis County, St. Charles County, Jefferson County and Franklin County. SIDING, GUTTERS AND DOWNSPOUTS, SOFFIT AND FASCIA are offered across the St. Louis Metro Area: Missouri and the Illinois Metro East (Monroe, St. Clair and Madison counties). In Illinois we also do siding repairs, gutter cleaning, gutter guards, trim wraps (windows, doors, garage doors, porch beams), porch and patio decks, house and siding soft washing, gable and wall vent corrections, and Christmas lights. ${IL_COMING_SOON}; Illinois roofing requests are saved and answered, but no roof work is quoted or done in Illinois until then. Every roofing visit starts with a free photo-documented roof report with honest repair-vs-replace options.
 
 - Phone (Illinois): 618-612-5192
 - Phone (Missouri): 314-202-7663

@@ -4,7 +4,7 @@
 // BUSINESS RULE: Missouri cities get roofing + exterior pages; Illinois cities get exterior-only pages
 // (siding, gutters, soffit & fascia) until the Illinois roofing license. See src/lib/business.ts.
 import type { SitePage } from "./site-pages";
-import { INSURANCE_SENTENCE, PHONES } from "./business";
+import { EXTERIOR_SERVICE_BULLETS, INSURANCE_SENTENCE, PHONES } from "./business";
 import { IL_COMING_SOON, SHINGLES, priceRange, usd } from "./pricing";
 
 export type RegionId = "il-monroe-st-clair" | "il-madison" | "mo-st-charles" | "mo-west-county" | "mo-central-county" | "mo-north-county" | "mo-jefferson" | "mo-franklin";
@@ -365,14 +365,9 @@ function exteriorPage(area: Area, index: number, nameOf: (slug: string) => strin
       {
         heading: `Exterior services in ${city}`,
         body: "One local crew for the outside of your home:",
-        bullets: [
-          "Siding repair and replacement",
-          "Gutters and downspouts: new, repaired or re-routed",
-          "Soffit and fascia repair and replacement",
-          "Storm damage to siding, gutters and trim, documented with photos",
-        ],
+        bullets: EXTERIOR_SERVICE_BULLETS,
       },
-      { heading: "Roofing in Illinois", body: `${IL_COMING_SOON}. Today in ${city} we repair and replace siding, gutters, downspouts, soffit and fascia. Roofing is available for homes in Missouri.` },
+      { heading: "Roofing in Illinois", body: `${IL_COMING_SOON}, which we expect soon. Today in ${city} we handle siding, gutters, soffit, fascia and the other exterior work above. Roofing is available for homes in Missouri.` },
       { heading: "Local, insured and accountable", body: `A local crew serving ${county} from our home base in Waterloo. ${INSURANCE_SENTENCE}, 5.0★ on Google, and our work is backed by a 10-Year Workmanship Warranty.` },
       { heading: `Fast response in ${city}`, body: `During business hours, we call as soon as your request comes in, and same-day estimates are available when our schedule allows. Call our Illinois line: ${phone}.` },
     ],
