@@ -1,0 +1,62 @@
+# Automatic checks on every pull request (and on main after a merge).
+# They run the same checks AGENTS.md asks every agent to run before opening a PR, so the owner sees a
+# green check (or a clear failure) on the PR before merging. Read-only: nothing here deploys or uses secrets.
+name: PR checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  site:
+    name: Lint, types, tests, build, compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npx eslint .
+      - name: Type check (generates Next.js route types first)
+        run: npx next typegen && npx tsc --noEmit
+      - name: Tests (pricing, lead route, per-square guard)
+        run: node --test tests/*.mjs
+      - name: Production build (includes the Illinois and page-length guards)
+        run: npx next build
+      - name: Compliance scan (Illinois rule, claims, whole-roof pricing)
+        run: node scripts/compliance-scan.mjs
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Scan new commits for keys, tokens and passwords (gitleaks)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            RANGE="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          else
+            RANGE="HEAD~1..HEAD"
+          fi
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.18.4 \
+            detect --source /repo --no-banner --redact --log-opts="$RANGE"
