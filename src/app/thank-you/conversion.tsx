@@ -18,9 +18,17 @@ export default function Conversion() {
       !!META_PIXEL_ID && "meta",
     ].filter((tag): tag is string => !!tag));
     let leadId = "";
+    let ilPending = false;
     try {
-      const lead: { id?: unknown } = JSON.parse(sessionStorage.getItem("roofing-lead-conversion") ?? "{}");
+      const lead: { id?: unknown; ilPending?: unknown } = JSON.parse(sessionStorage.getItem("roofing-lead-conversion") ?? "{}");
       if (typeof lead.id === "string") leadId = lead.id;
+      // A roofing request for an Illinois home (license pending) is saved but is not an ad conversion, so
+      // Google Ads and Meta don't learn to bring in more Illinois roofing clicks we can't serve yet.
+      if (lead.ilPending === true) {
+        ilPending = true;
+        pendingTags.delete("ads");
+        pendingTags.delete("meta");
+      }
     } catch {
       // Unreadable storage means there is nothing to report.
     }
@@ -31,7 +39,7 @@ export default function Conversion() {
     const track = () => {
       const w = window as AnalyticsWindow;
       if (w.gtag && pendingTags.delete("ads")) w.gtag("event", "conversion", { send_to: ADS_LEAD_SEND_TO, transaction_id: leadId });
-      if (w.gtag && pendingTags.delete("ga4")) w.gtag("event", "generate_lead", { lead_id: leadId });
+      if (w.gtag && pendingTags.delete("ga4")) w.gtag("event", "generate_lead", { lead_id: leadId, lead_status: ilPending ? "il_license_pending" : "new" });
       if (w.fbq && pendingTags.delete("meta")) w.fbq("track", "Lead", { content_name: "Roof estimate request" }, { eventID: leadId });
       // Stop when every tag has reported, or after ~10 seconds (for example, an ad blocker).
       if (pendingTags.size === 0 || ++tries > 40) clearInterval(timer);

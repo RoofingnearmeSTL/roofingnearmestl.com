@@ -46,7 +46,8 @@ export type SitePage = {
 export const SITE_URL = "https://www.roofingnearmestl.com";
 
 // Choices in the lead form's "Service needed" menu. Every page's defaultService must be one of these.
-export const LEAD_SERVICES = ["Roof Repair", "Roof Replacement", "Leak / Emergency", "Storm Damage / Insurance", "Siding", "Gutters / Downspouts", "Soffit & Fascia"];
+// Roofing choices are Missouri only; the exterior choices are offered in Missouri and Illinois.
+export const LEAD_SERVICES = ["Roof Repair", "Roof Replacement", "Leak / Emergency", "Storm Damage / Insurance", ...IL_LEAD_SERVICES];
 
 const corePages: SitePage[] = [
   {
@@ -495,7 +496,7 @@ export const homeFaqs: [question: string, answer: string][] = [
   ["How fast do you respond?", "During business hours, we call as soon as we receive your request to reach out with the right information to help you take the next step. Fill out what's needed and we look forward to talking soon and sharing your free photo-documented options. Same-day evaluations when available."],
   ["What warranty?", "10-Year Workmanship Warranty on our work, plus the manufacturer warranty on the materials we install. 5.0★ Google Reviews."],
   ["Do you offer emergency tarping?", "Yes, in Missouri. We offer 24/7 emergency roof repair and tarping across the St. Louis area in Missouri. Call 314-202-7663."],
-  ["What areas do you serve?", "Roofing: St. Louis and communities across St. Louis County, St. Charles County, Jefferson County and Franklin County in Missouri, including St. Charles, St. Peters, O'Fallon, Wentzville, Chesterfield, Kirkwood, Florissant, Arnold, Festus and Washington. Siding, gutters, soffit and fascia: those Missouri communities plus the Illinois Metro East, including Waterloo, Columbia, Belleville, O'Fallon, Fairview Heights, Edwardsville, Collinsville, Granite City and Alton. Illinois roofing is coming soon after our IL license."],
+  ["What areas do you serve?", "We serve the St. Louis Metro Area on both sides of the river. Roofing: St. Louis and communities across St. Louis County, St. Charles County, Jefferson County and Franklin County in Missouri, including St. Charles, St. Peters, O'Fallon, Wentzville, Chesterfield, Kirkwood, Florissant, Arnold, Festus and Washington. Siding, gutters, soffit, fascia and other exterior work: those Missouri communities plus the Illinois Metro East, including Waterloo, Columbia, Belleville, O'Fallon, Fairview Heights, Edwardsville, Collinsville, Granite City and Alton. Illinois roofing is coming soon after our IL license."],
   ["How much does a new roof cost?", `For the average home in St. Louis (12SQ-15SQ / 1,200-1,500 sq ft):
 
 - 3-Tab 25yr: ${averageHome("3tab")}

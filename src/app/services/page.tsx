@@ -68,7 +68,7 @@ export default function ServicesPage() {
             <a href="tel:+13142027663" className="rounded-full bg-white px-6 py-3 text-center font-bold text-black shadow-sm hover:bg-zinc-100">Missouri: 314-202-7663</a>
             <EstimateLink className="rounded-full bg-brand px-6 py-3 text-center font-bold text-white hover:bg-brand-dark">Free Photo-Documented Report</EstimateLink>
           </div>
-          <p className="mt-8 text-center text-sm text-zinc-600">Serving St. Louis and the Metro East. <Link href="/areas-we-serve" className="font-bold text-brand underline">See all areas we serve</Link></p>
+          <p className="mt-8 text-center text-sm text-zinc-600">Serving the St. Louis Metro Area: roofing in Missouri, exteriors in Missouri and Illinois. <Link href="/areas-we-serve" className="font-bold text-brand underline">See all areas we serve</Link></p>
         </div>
       </main>
       <BrandFooter />

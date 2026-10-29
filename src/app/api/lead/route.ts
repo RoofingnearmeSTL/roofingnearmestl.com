@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-import { ILLINOIS_ROOFING_MESSAGE, illinoisRoofingBlocked, looksIllinois } from '../../../lib/illinois-guard'
+import { IL_LICENSE_PENDING, isIllinoisRoofingRequest, looksIllinois } from '../../../lib/illinois-guard'
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => ({
@@ -42,12 +42,14 @@ export async function POST(req: Request) {
     if (body.phone.replace(/\D/g, '').length < 10) {
       return NextResponse.json({ error: 'valid phone required' }, { status: 400 })
     }
-    // Illinois rule (Engineering Package 001): no roofing requests for Illinois properties until the IL license.
-    if (illinoisRoofingBlocked({ service: body.service_type ?? body.service, emergency: body.emergency === true,
-      city: body.city, address: body.address, estLocation: body.est_location, page: body.page })) {
-      console.log('LEAD ILLINOIS ROOFING REFUSED')
-      return NextResponse.json({ error: 'illinois_roofing', message: ILLINOIS_ROOFING_MESSAGE }, { status: 422 })
-    }
+    // Illinois rule: no roof work on Illinois homes until the IL roofing license (225 ILCS 335/9). The request is
+    // still saved, tagged il_license_pending, and the team email says not to quote or schedule roofing.
+    const homeLocation = { city: body.city, address: body.address, estLocation: body.est_location, page: body.page }
+    const illinois = looksIllinois(homeLocation)
+    const ilLicensePending = isIllinoisRoofingRequest({ ...homeLocation, service: body.service_type ?? body.service, emergency: body.emergency === true })
+    // Illinois pages ask "storm damage to siding, gutters or trim?" instead of the roof tarp box.
+    const urgentExterior = body.urgent === true
+    if (ilLicensePending) console.log('LEAD ILLINOIS ROOFING LICENSE PENDING')
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in Production')
     }
@@ -67,7 +69,9 @@ export async function POST(req: Request) {
       roof_size: field(body.roof_size ?? body.est_size, 40),
       roof_pitch: field(body.roof_pitch ?? body.est_pitch, 40),
       roof_material: field(body.roof_material ?? body.est_material, 40),
-      emergency: body.emergency === true,
+      emergency: body.emergency === true || urgentExterior,
+      // Every other lead keeps the table default ("new").
+      ...(ilLicensePending ? { status: IL_LICENSE_PENDING } : {}),
       message: field(body.message ?? body.details, 2000),
       // Where the lead came from (campaign tags and ad click IDs from the landing URL).
       utm_source: field(body.utm_source, 120),
@@ -93,6 +97,7 @@ export async function POST(req: Request) {
         console.error('RESEND CONFIGURATION MISSING: RESEND_API_KEY or LEAD_TO_EMAIL')
       } else {
         const fields = [
+          ...(ilLicensePending ? [['Illinois License Pending', 'YES - roofing request for an Illinois home. Do NOT quote, schedule or do any roof work. Call back fast, help with exterior work, and point roof needs to a licensed Illinois roofer.']] : []),
           ['Name', leadValue(lead.name)],
           ['Phone', leadValue(lead.phone)],
           ['Email', leadValue(lead.email)],
@@ -100,7 +105,11 @@ export async function POST(req: Request) {
           ['Service', leadValue(lead.service_type)],
           ['Issue', leadValue(lead.issue_type)],
           ['Age of Roof', leadValue(lead.roof_age)],
-          ['Emergency Tarp Needed', lead.emergency === true ? 'YES - Emergency' : 'No'],
+          body.emergency === true
+            ? ['Emergency Tarp Needed', ilLicensePending ? 'YES - Emergency (Illinois: no roof tarp; call back fast)' : 'YES - Emergency']
+            : urgentExterior
+              ? ['Urgent', 'YES - storm damage to siding, gutters or trim (call back fast)']
+              : ['Emergency Tarp Needed', 'No'],
           ['Roof Size', leadValue(lead.roof_size)],
           ['Pitch', leadValue(lead.roof_pitch)],
           ['Material', leadValue(lead.roof_material)],
@@ -114,10 +123,10 @@ export async function POST(req: Request) {
           from: 'RoofingnearmeSTL <leads@roofingnearmestl.com>',
           to: process.env.LEAD_TO_EMAIL,
           ...(lead.email ? { replyTo: lead.email } : {}),
-          subject: `New Roofing Lead: ${leadValue(lead.city)} - ${leadValue(lead.service_type)} - ${leadValue(lead.issue_type)}`.replace(/[\r\n]/g, ' '),
+          subject: `${ilLicensePending ? 'IL ROOFING - LICENSE PENDING - do not quote or schedule roofing - ' : ''}New Roofing Lead: ${leadValue(lead.city)} - ${leadValue(lead.service_type)} - ${leadValue(lead.issue_type)}`.replace(/[\r\n]/g, ' '),
           html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
             <img src="https://www.roofingnearmestl.com/logo.png" alt="RoofingnearmeSTL" width="180" />
-            <h2>New Roofing Lead</h2>
+            <h2>${ilLicensePending ? 'IL License Pending: do not quote or schedule roofing' : 'New Roofing Lead'}</h2>
             <table style="width:100%;border-collapse:collapse">${fields.map(([label, value]) =>
               `<tr><th style="text-align:left;padding:8px 0">${escapeHtml(label)}:</th><td>${escapeHtml(value).replace(/\r?\n/g, '<br>')}</td></tr>`
             ).join('')}</table>
@@ -139,22 +148,38 @@ export async function POST(req: Request) {
     try {
       // Only when the owner inbox is set: the owner must get the lead, and replies need somewhere to go.
       if (lead.email && process.env.RESEND_API_KEY && process.env.LEAD_TO_EMAIL) {
-        const illinois = looksIllinois({ city: lead.city, address: lead.address, estLocation: body.est_location, page: body.page })
         const firstName = leadValue(lead.name).split(/\s+/)[0] || 'there'
         const service = leadValue(lead.service_type)
         const place = leadValue(lead.city)
         const phone = illinois ? '618-612-5192' : '314-202-7663'
         const visit = illinois ? 'a free siding, gutter or soffit & fascia estimate' : 'your Free Photo-Documented Roof Report'
-        const paragraphs = [
-          `Hi ${firstName},`,
-          `Thanks for contacting RoofingnearmeSTL. We received your request${service ? ` for ${service}` : ''}${place ? ` in ${place}` : ''}.`,
-          `What happens next: someone from our local team will call you at ${leadValue(lead.phone)} to set up ${visit}.`,
-          lead.emergency === true && !illinois
-            ? 'If water is coming in right now, call our 24/7 emergency line: 314-202-7663.'
-            : `Need us sooner? Call ${phone}.`,
-          `You can reply to this email with photos or questions about your ${illinois ? 'project' : 'roof'}.`,
-          'Thank you,\nRoofingnearmeSTL (Roofing Near Me STL LLC)',
-        ]
+        const received = `Thanks for contacting RoofingnearmeSTL. We received your request${service ? ` for ${service}` : ''}${place ? ` in ${place}` : ''}.`
+        const paragraphs = ilLicensePending
+          ? [
+              `Hi ${firstName},`,
+              received,
+              body.emergency === true
+                ? `We're local and we'll call you at ${leadValue(lead.phone)} as soon as we can. If water is coming in, call us at 618-612-5192 and we'll point you to a licensed Illinois roofer right away.`
+                : `What happens next: someone from our local team will call you at ${leadValue(lead.phone)}. If your roof needs work now, we'll point you to a licensed Illinois roofer, and we can help right away with siding, gutters, soffit, fascia and other exterior work.`,
+              'You can reply to this email with photos or questions about your home.',
+              'Thank you,\nRoofingnearmeSTL (Roofing Near Me STL LLC)',
+            ]
+          : [
+              `Hi ${firstName},`,
+              received,
+              `What happens next: someone from our local team will call you at ${leadValue(lead.phone)} to set up ${visit}.`,
+              lead.emergency === true && !illinois
+                ? 'If water is coming in right now, call our 24/7 emergency line: 314-202-7663.'
+                : urgentExterior
+                  ? `You marked this as urgent storm damage, so we'll call you back as fast as we can. Need us sooner? Call ${phone}.`
+                  : `Need us sooner? Call ${phone}.`,
+              `You can reply to this email with photos or questions about your ${illinois ? 'project' : 'roof'}.`,
+              'Thank you,\nRoofingnearmeSTL (Roofing Near Me STL LLC)',
+            ]
+        // Illinois license note: small print, like a disclaimer (Mike, Oct 29).
+        const licenseNote = ilLicensePending
+          ? "Roofing in Illinois is pending our Illinois roofing license, which we expect soon. Until then we don't quote, schedule or do roof work on Illinois homes. We've saved your request and will reach out when roofing opens for Illinois."
+          : ''
         const footer = 'RoofingnearmeSTL · 421 Janice Dr, Waterloo, IL 62298 · Illinois 618-612-5192 · Missouri 314-202-7663 · roofingnearmestl.com\n' +
           "You're getting this one email because you asked for an estimate at roofingnearmestl.com. If that wasn't you, reply and let us know."
         const resend = new Resend(process.env.RESEND_API_KEY)
@@ -166,9 +191,10 @@ export async function POST(req: Request) {
           html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#111">
             <img src="https://www.roofingnearmestl.com/logo.png" alt="RoofingnearmeSTL" width="180" />
             ${paragraphs.map((p) => `<p style="font-size:16px;line-height:1.5">${escapeHtml(p).replace(/\n/g, '<br>')}</p>`).join('')}
+            ${licenseNote ? `<p style="font-size:12px;color:#666;line-height:1.5">${escapeHtml(licenseNote)}</p>` : ''}
             <p style="font-size:12px;color:#666;line-height:1.5;border-top:1px solid #ddd;padding-top:12px">${escapeHtml(footer).replace(/\n/g, '<br>')}</p>
           </div>`,
-          text: [...paragraphs, '', footer].join('\n\n'),
+          text: [...paragraphs, ...(licenseNote ? [licenseNote] : []), '', footer].join('\n\n'),
         })
         if (confirmError) {
           console.error('CUSTOMER CONFIRMATION FAILED', { name: confirmError.name })
@@ -186,7 +212,7 @@ export async function POST(req: Request) {
       const from = process.env.TWILIO_FROM_NUMBER
       const to = process.env.LEAD_ALERT_PHONE
       if (sid && token && from && to) {
-        const text = `${lead.emergency === true ? 'EMERGENCY - ' : ''}New roofing lead: ${[
+        const text = `${ilLicensePending ? 'IL LICENSE PENDING - no roof work - ' : ''}${lead.emergency === true ? 'EMERGENCY - ' : ''}New roofing lead: ${[
           leadValue(lead.name), leadValue(lead.phone), leadValue(lead.city), leadValue(lead.service_type), leadValue(lead.issue_type),
         ].filter(Boolean).join(' | ')}`.replace(/[\r\n]+/g, ' ').slice(0, 320)
         const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(sid)}/Messages.json`, {
@@ -232,6 +258,7 @@ export async function POST(req: Request) {
           note: {
             message: [
               'Website lead from roofingnearmestl.com',
+              ilLicensePending ? 'ILLINOIS LICENSE PENDING - do not quote or schedule roofing' : '',
               lead.emergency === true ? 'EMERGENCY - needs a tarp now' : '',
               service && `Service: ${service}`,
               leadValue(lead.issue_type) && `Issue: ${leadValue(lead.issue_type)}`,
@@ -269,7 +296,8 @@ export async function POST(req: Request) {
     } catch (hookError) {
       console.error('LEAD WEBHOOK CRASH', { name: hookError instanceof Error ? hookError.name : 'UnknownError' })
     }
-    return NextResponse.json({ ok: true })
+    // Tells the form which thank-you page to show (a license-pending lead is not reported as an ad conversion).
+    return NextResponse.json({ ok: true, ...(ilLicensePending ? { area: 'il-pending' } : illinois ? { area: 'il' } : {}) })
   } catch (error) {
     console.error('LEAD API FAILED', { name: error instanceof Error ? error.name : 'UnknownError' })
     return NextResponse.json({ error: 'Unable to submit lead' }, { status: 500 })
