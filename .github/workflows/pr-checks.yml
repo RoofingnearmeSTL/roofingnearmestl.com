@@ -72,12 +72,16 @@ jobs:
         run: npx next build
       - name: Lighthouse on the homepage, a roofing page and an Illinois page
         run: npx --yes @lhci/cli@0.15.1 autorun
+      - name: Lighthouse scores
+        if: always()
+        run: |
+          node -e 'const m=require("./lighthouse-reports/manifest.json");for(const r of m){const s=r.summary;console.log(r.url.replace("http://localhost:3300","")||"/","| performance",Math.round(s.performance*100),"| accessibility",Math.round(s.accessibility*100),"| best practices",Math.round(s["best-practices"]*100),"| SEO",Math.round(s.seo*100))}'
       - name: Keep the Lighthouse reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-reports
-          path: .lighthouseci/
+          path: lighthouse-reports/
           retention-days: 14
 
   secrets:
