@@ -14,7 +14,7 @@ const source = ts.transpileModule(fs.readFileSync('src/app/api/lead/route.ts', '
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
 
-function handler({ insertError = null, emailError = null, env = {}, smsStatus = 201 } = {}) {
+function handler({ insertError = null, emailError = null, emailErrorsFirst = 0, env = {}, smsStatus = 201, bot = { isBot: false }, botThrows = false } = {}) {
   const calls = { inserts: [], emails: [], logs: [], sms: [] }
   const environment = {
     NEXT_PUBLIC_SUPABASE_URL: 'https://example.invalid',
@@ -25,7 +25,7 @@ function handler({ insertError = null, emailError = null, env = {}, smsStatus = 
   }
   const exports = {}
   vm.runInNewContext(source, {
-    exports, process: { env: environment }, btoa, URLSearchParams, AbortSignal, Date,
+    exports, process: { env: environment }, btoa, URLSearchParams, AbortSignal, Date, setTimeout: (fn) => setTimeout(fn, 0),
     fetch: async (url, options) => { calls.sms.push({ url, ...options }); return { ok: smsStatus < 400, status: smsStatus } },
     console: Object.fromEntries(['log', 'error'].map(level => [level, (...args) => calls.logs.push(args)])),
     require(name) {
@@ -39,10 +39,14 @@ function handler({ insertError = null, emailError = null, env = {}, smsStatus = 
         } } } }
       } }
       if (name.endsWith('illinois-guard')) return guard
+      if (name === 'botid/server') return { checkBotId: async () => { if (botThrows) throw new Error('botid down'); return bot } }
       if (name === 'resend') return { Resend: class {
         constructor(key) { calls.emailKey = key }
         emails = { send: async (payload) => {
           calls.emails.push(payload)
+          if (payload.to === 'recipient@example.invalid' && calls.emails.filter((e) => e.to === payload.to).length <= emailErrorsFirst) {
+            return { data: null, error: { name: 'rate_limit_exceeded' } }
+          }
           return { data: { id: 'test-id' }, error: emailError }
         } }
       } }
@@ -103,7 +107,8 @@ test('email failure does not fail a saved lead', async () => {
   const { calls, post } = handler({ emailError: { name: 'validation_error', message: 'private details' } })
   assert.equal((await post(lead)).status, 200)
   assert.equal(calls.inserts.length, 1)
-  assert.equal(calls.emails.filter((e) => e.to === 'recipient@example.invalid').length, 1)
+  // one automatic retry, then the daily lead check takes over
+  assert.equal(calls.emails.filter((e) => e.to === 'recipient@example.invalid').length, 2)
 })
 
 test('missing recipient never falls back to a hardcoded address', async () => {
@@ -142,7 +147,7 @@ for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate'], ['me
       roof_age: '15-20 years', emergency: 'on', details: '<Leak>\nPlease tarp' }))
     const exports = {}
     const extras = estimatorExtras({ squares: 18, shingle: material, pitch: 'medium', place: 'St. Louis, MO', state: 'MO' })
-    vm.runInNewContext(compiled, { exports, fd: form, extras, utm: {} })
+    vm.runInNewContext(compiled, { exports, fd: form, extras, utm: {}, shownAt: { current: 0 }, Date })
     const payload = exports.payload
     assert.equal(payload.roof_material, label)
     assert.equal(payload.roof_age, '15-20 years')
@@ -470,4 +475,109 @@ test('no customer email address means no confirmation email', async () => {
   await post({ ...lead, email: '' })
   assert.equal(calls.emails.length, 1)
   assert.equal(calls.emails[0].to, 'recipient@example.invalid')
+})
+
+test('a failed team email is retried once and the retry succeeds', async () => {
+  const { calls, post } = handler({ emailErrorsFirst: 1 })
+  assert.equal((await post({ ...lead, emergency: false })).status, 200)
+  assert.equal(calls.emails.filter((e) => e.to === 'recipient@example.invalid').length, 2)
+  assert.ok(calls.logs.some((l) => l[0] === 'LEAD EMAIL SENT' && l[1].attempt === 2))
+})
+
+test('a BotID bot is saved and flagged, gets no customer email, and is not an ad conversion', async () => {
+  const { calls, post } = handler({ bot: { isBot: true, isVerifiedBot: false } })
+  const response = await post({ ...lead, emergency: false })
+  assert.equal(response.status, 200)
+  assert.equal(response.data.suspected, true)
+  assert.equal(calls.inserts[0][0].status, 'suspected_bot')
+  const owner = calls.emails.filter((e) => e.to === 'recipient@example.invalid')
+  assert.equal(owner.length, 1)
+  assert.match(owner[0].subject, /^\[POSSIBLE SPAM\] New Roofing Lead/)
+  assert.match(owner[0].text, /^Possible spam: YES - looks automated \(BotID\)/)
+  assert.equal(calls.emails.filter((e) => e.to === lead.email).length, 0)
+})
+
+test('a form sent faster than a person could type is flagged, never dropped', async () => {
+  const { calls, post } = handler()
+  const response = await post({ ...lead, emergency: false, form_ms: 400 })
+  assert.equal(response.data.suspected, true)
+  assert.equal(calls.inserts.length, 1)
+  assert.match(calls.emails[0].text, /sent too fast/)
+})
+
+test('a normal lead (human, normal speed) is not flagged; a BotID outage never flags or blocks', async () => {
+  for (const options of [{}, { botThrows: true }]) {
+    const { calls, post } = handler(options)
+    const response = await post({ ...lead, emergency: false, form_ms: 9000 })
+    assert.equal(response.status, 200)
+    assert.equal(response.data.suspected, undefined)
+    assert.equal(calls.inserts[0][0].status, undefined)
+    assert.equal(calls.emails.filter((e) => e.to === lead.email).length, 1)
+  }
+})
+
+test('the form sends its timing and treats suspected bots like non-conversions; BotID protects /api/lead', () => {
+  const form = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
+  assert.match(form, /form_ms: shownAt\.current/)
+  assert.match(form, /ilPending: ilPending \|\| result\.suspected === true/)
+  const client = fs.readFileSync('src/instrumentation-client.ts', 'utf8')
+  assert.match(client, /path: "\/api\/lead", method: "POST"/)
+  const config = fs.readFileSync('next.config.ts', 'utf8')
+  assert.match(config, /export default withBotId\(nextConfig\)/)
+})
+
+// ---------- daily lead check (/api/lead-check) ----------
+const checkSource = ts.transpileModule(fs.readFileSync('src/app/api/lead-check/route.ts', 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText
+
+function checker({ leads = [], sent = [], secret = 'cron-test-secret' } = {}) {
+  const calls = { emails: [], logs: [] }
+  const environment = { NEXT_PUBLIC_SUPABASE_URL: 'https://example.invalid', SUPABASE_SERVICE_ROLE_KEY: 'k', RESEND_API_KEY: 'r', LEAD_TO_EMAIL: 'recipient@example.invalid', ...(secret ? { CRON_SECRET: secret } : {}) }
+  const exports = {}
+  vm.runInNewContext(checkSource, {
+    exports, process: { env: environment }, Date, Set,
+    console: Object.fromEntries(['log', 'error'].map(level => [level, (...args) => calls.logs.push(args)])),
+    require(name) {
+      if (name === 'next/server') return { NextResponse: { json: (data, options) => ({ data, status: options?.status ?? 200 }) } }
+      if (name === '@supabase/supabase-js') return { createClient: () => ({ from: () => {
+        const q = { select: () => q, gte: () => q, neq: () => q, order: async () => ({ data: leads, error: null }) }
+        return q
+      } }) }
+      if (name === 'resend') return { Resend: class { emails = {
+        list: async () => ({ data: { data: sent }, error: null }),
+        send: async (payload) => { calls.emails.push(payload); return { data: { id: 'a' }, error: null } },
+      } } }
+      throw new Error('Unexpected import: ' + name)
+    },
+  })
+  return { calls, get: (auth) => exports.GET({ headers: { get: (h) => (h === 'authorization' ? auth : null) } }) }
+}
+const now = () => new Date().toISOString()
+const teamEmail = (event = 'delivered') => ({ created_at: now(), to: ['recipient@example.invalid'], subject: 'New Roofing Lead: Kirkwood - Roof Repair - ', last_event: event })
+
+test('lead check is off without CRON_SECRET and refuses a wrong secret', async () => {
+  assert.equal((await checker({ secret: '' }).get('Bearer x')).status, 503)
+  assert.equal((await checker().get('Bearer wrong')).status, 401)
+})
+
+test('lead check stays quiet when every saved lead has a delivered team email', async () => {
+  const { calls, get } = checker({ leads: [{ created_at: now(), status: 'new' }, { created_at: now(), status: 'il_license_pending' }], sent: [teamEmail(), teamEmail('opened'), { created_at: now(), to: ['customer@example.invalid'], subject: 'We got your request - RoofingnearmeSTL', last_event: 'delivered' }] })
+  const res = await get('Bearer cron-test-secret')
+  assert.equal(res.data.ok, true)
+  assert.equal(res.data.saved, 2)
+  assert.equal(res.data.delivered, 2)
+  assert.equal(calls.emails.length, 0)
+})
+
+test('lead check emails Mike when a saved lead has no delivered team email', async () => {
+  const { calls, get } = checker({ leads: [{ created_at: now(), status: 'new', city: 'Arnold', service_type: 'Roof Repair' }, { created_at: now(), status: 'new' }], sent: [teamEmail(), teamEmail('bounced')] })
+  const res = await get('Bearer cron-test-secret')
+  assert.equal(res.data.ok, false)
+  assert.equal(res.data.missing, 1)
+  assert.equal(res.data.failed, 1)
+  assert.equal(calls.emails.length, 1)
+  assert.equal(calls.emails[0].to, 'recipient@example.invalid')
+  assert.match(calls.emails[0].subject, /^LEAD CHECK: /)
+  assert.match(calls.emails[0].text, /Arnold \| Roof Repair/)
 })

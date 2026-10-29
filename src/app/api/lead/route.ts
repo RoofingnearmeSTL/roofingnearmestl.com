@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { checkBotId } from 'botid/server'
 import { IL_LICENSE_PENDING, isIllinoisRoofingRequest, looksIllinois } from '../../../lib/illinois-guard'
 
 function escapeHtml(value: string): string {
@@ -21,6 +22,24 @@ function field(value: unknown, max = 200): string | number | null {
 }
 
 const EMAIL = /^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]+$/
+/** leads.status for a request that looks automated (BotID or sent too fast). It is still saved and emailed. */
+const SUSPECTED_BOT = 'suspected_bot'
+/** A person needs at least this long to fill in the form; faster submissions are flagged, never dropped. */
+const MIN_FORM_MS = 2000
+
+/** Bot check that can never block a lead: an error or timeout counts as "not a bot". */
+async function looksAutomated(formMs: unknown): Promise<{ suspected: boolean; reason: string }> {
+  if (typeof formMs === 'number' && Number.isFinite(formMs) && formMs >= 0 && formMs < MIN_FORM_MS) {
+    return { suspected: true, reason: 'sent too fast' }
+  }
+  try {
+    const verdict = await checkBotId()
+    if (verdict.isBot && !verdict.isVerifiedBot) return { suspected: true, reason: 'BotID' }
+  } catch (botError) {
+    console.error('BOTID CHECK FAILED', { name: botError instanceof Error ? botError.name : 'UnknownError' })
+  }
+  return { suspected: false, reason: '' }
+}
 const MAX_BODY_BYTES = 20_000
 
 export async function POST(req: Request) {
@@ -50,6 +69,10 @@ export async function POST(req: Request) {
     // Illinois pages ask "storm damage to siding, gutters or trim?" instead of the roof tarp box.
     const urgentExterior = body.urgent === true
     if (ilLicensePending) console.log('LEAD ILLINOIS ROOFING LICENSE PENDING')
+    // Bot protection (Phase 1): a suspected bot is saved and emailed to the team marked POSSIBLE SPAM, but gets
+    // no customer email and no ad conversion. A real lead that is wrongly flagged is therefore never lost.
+    const bot = await looksAutomated(body.form_ms)
+    if (bot.suspected) console.log('LEAD SUSPECTED BOT', { reason: bot.reason })
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in Production')
     }
@@ -71,7 +94,7 @@ export async function POST(req: Request) {
       roof_material: field(body.roof_material ?? body.est_material, 40),
       emergency: body.emergency === true || urgentExterior,
       // Every other lead keeps the table default ("new").
-      ...(ilLicensePending ? { status: IL_LICENSE_PENDING } : {}),
+      ...(bot.suspected ? { status: SUSPECTED_BOT } : ilLicensePending ? { status: IL_LICENSE_PENDING } : {}),
       message: field(body.message ?? body.details, 2000),
       // Where the lead came from (campaign tags and ad click IDs from the landing URL).
       utm_source: field(body.utm_source, 120),
@@ -97,6 +120,7 @@ export async function POST(req: Request) {
         console.error('RESEND CONFIGURATION MISSING: RESEND_API_KEY or LEAD_TO_EMAIL')
       } else {
         const fields = [
+          ...(bot.suspected ? [['Possible spam', `YES - looks automated (${bot.reason}). Saved anyway; no confirmation email was sent to the address given. Check before calling.`]] : []),
           ...(ilLicensePending ? [['Illinois License Pending', 'YES - roofing request for an Illinois home. Do NOT quote, schedule or do any roof work. Call back fast, help with exterior work, and point roof needs to a licensed Illinois roofer.']] : []),
           ['Name', leadValue(lead.name)],
           ['Phone', leadValue(lead.phone)],
@@ -119,11 +143,11 @@ export async function POST(req: Request) {
           ['Form Page', leadValue(lead.page_url)],
         ]
         const resend = new Resend(process.env.RESEND_API_KEY)
-        const { data: emailData, error: emailError } = await resend.emails.send({
+        const ownerEmail = {
           from: 'RoofingnearmeSTL <leads@roofingnearmestl.com>',
           to: process.env.LEAD_TO_EMAIL,
           ...(lead.email ? { replyTo: lead.email } : {}),
-          subject: `${ilLicensePending ? 'IL ROOFING - LICENSE PENDING - do not quote or schedule roofing - ' : ''}New Roofing Lead: ${leadValue(lead.city)} - ${leadValue(lead.service_type)} - ${leadValue(lead.issue_type)}`.replace(/[\r\n]/g, ' '),
+          subject: `${bot.suspected ? '[POSSIBLE SPAM] ' : ''}${ilLicensePending ? 'IL ROOFING - LICENSE PENDING - do not quote or schedule roofing - ' : ''}New Roofing Lead: ${leadValue(lead.city)} - ${leadValue(lead.service_type)} - ${leadValue(lead.issue_type)}`.replace(/[\r\n]/g, ' '),
           html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
             <img src="https://www.roofingnearmestl.com/logo.png" alt="RoofingnearmeSTL" width="180" />
             <h2>${ilLicensePending ? 'IL License Pending: do not quote or schedule roofing' : 'New Roofing Lead'}</h2>
@@ -132,11 +156,21 @@ export async function POST(req: Request) {
             ).join('')}</table>
           </div>`,
           text: fields.map(([label, value]) => `${label}: ${value}`).join('\n'),
-        })
-        if (emailError) {
-          console.error('RESEND EMAIL FAILED', { name: emailError.name })
-        } else {
-          console.log('LEAD EMAIL SENT', { id: emailData?.id })
+        }
+        // One automatic retry: a brief Resend hiccup must not cost a lead. The daily lead check
+        // (/api/lead-check) alerts Mike if a saved lead still has no delivered team email.
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            const { data: emailData, error: emailError } = await resend.emails.send(ownerEmail)
+            if (!emailError) {
+              console.log('LEAD EMAIL SENT', { id: emailData?.id, attempt })
+              break
+            }
+            console.error('RESEND EMAIL FAILED', { name: emailError.name, attempt })
+          } catch (sendError) {
+            console.error('RESEND EMAIL CRASH', { name: sendError instanceof Error ? sendError.name : 'UnknownError', attempt })
+          }
+          if (attempt === 1) await new Promise((resolve) => setTimeout(resolve, 1500))
         }
       }
     } catch (emailError) {
@@ -147,7 +181,8 @@ export async function POST(req: Request) {
     // Must not fail a saved lead.
     try {
       // Only when the owner inbox is set: the owner must get the lead, and replies need somewhere to go.
-      if (lead.email && process.env.RESEND_API_KEY && process.env.LEAD_TO_EMAIL) {
+      // Never to a suspected bot: the form must not be usable to send our email to strangers.
+      if (lead.email && !bot.suspected && process.env.RESEND_API_KEY && process.env.LEAD_TO_EMAIL) {
         const firstName = leadValue(lead.name).split(/\s+/)[0] || 'there'
         const service = leadValue(lead.service_type)
         const place = leadValue(lead.city)
@@ -212,7 +247,7 @@ export async function POST(req: Request) {
       const from = process.env.TWILIO_FROM_NUMBER
       const to = process.env.LEAD_ALERT_PHONE
       if (sid && token && from && to) {
-        const text = `${ilLicensePending ? 'IL LICENSE PENDING - no roof work - ' : ''}${lead.emergency === true ? 'EMERGENCY - ' : ''}New roofing lead: ${[
+        const text = `${bot.suspected ? 'POSSIBLE SPAM - ' : ''}${ilLicensePending ? 'IL LICENSE PENDING - no roof work - ' : ''}${lead.emergency === true ? 'EMERGENCY - ' : ''}New roofing lead: ${[
           leadValue(lead.name), leadValue(lead.phone), leadValue(lead.city), leadValue(lead.service_type), leadValue(lead.issue_type),
         ].filter(Boolean).join(' | ')}`.replace(/[\r\n]+/g, ' ').slice(0, 320)
         const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(sid)}/Messages.json`, {
@@ -297,7 +332,7 @@ export async function POST(req: Request) {
       console.error('LEAD WEBHOOK CRASH', { name: hookError instanceof Error ? hookError.name : 'UnknownError' })
     }
     // Tells the form which thank-you page to show (a license-pending lead is not reported as an ad conversion).
-    return NextResponse.json({ ok: true, ...(ilLicensePending ? { area: 'il-pending' } : illinois ? { area: 'il' } : {}) })
+    return NextResponse.json({ ok: true, ...(bot.suspected ? { suspected: true } : {}), ...(ilLicensePending ? { area: 'il-pending' } : illinois ? { area: 'il' } : {}) })
   } catch (error) {
     console.error('LEAD API FAILED', { name: error instanceof Error ? error.name : 'UnknownError' })
     return NextResponse.json({ error: 'Unable to submit lead' }, { status: 500 })
