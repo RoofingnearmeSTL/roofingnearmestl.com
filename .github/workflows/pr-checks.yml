@@ -25,8 +25,8 @@ jobs:
     env:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -34,8 +34,8 @@ jobs:
         run: npm ci
       - name: Lint
         run: npx eslint .
-      - name: Type check
-        run: npx tsc --noEmit
+      - name: Type check (generates Next.js route types first)
+        run: npx next typegen && npx tsc --noEmit
       - name: Tests (pricing, lead route, per-square guard)
         run: node --test tests/*.mjs
       - name: Production build (includes the Illinois and page-length guards)
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Scan new commits for keys, tokens and passwords (gitleaks)

@@ -11,7 +11,7 @@
     "crawl:analyze": "python3 scripts/crawl4ai/analyze.py",
     "test": "node --test tests/*.mjs",
     "compliance": "node scripts/compliance-scan.mjs",
-    "check": "eslint . && tsc --noEmit && node --test tests/*.mjs && next build && node scripts/compliance-scan.mjs"
+    "check": "eslint . && next typegen && tsc --noEmit && node --test tests/*.mjs && next build && node scripts/compliance-scan.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
