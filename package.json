@@ -11,7 +11,8 @@
     "crawl:analyze": "python3 scripts/crawl4ai/analyze.py",
     "test": "node --test tests/*.mjs",
     "compliance": "node scripts/compliance-scan.mjs",
-    "check": "eslint . && next typegen && tsc --noEmit && node --test tests/*.mjs && next build && node scripts/compliance-scan.mjs"
+    "check": "eslint . && next typegen && tsc --noEmit && node --test tests/*.mjs && next build && node scripts/compliance-scan.mjs && playwright test",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
@@ -22,6 +23,7 @@
     "resend": "^6.32.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

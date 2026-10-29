@@ -1,0 +1,25 @@
+# The owner of every file that sets business rules, prices, claims, the Illinois guard or the release checks.
+# GitHub shows the owner on any pull request that touches these files. (Mike merges every PR; see AGENTS.md.)
+
+# Shared rules for every AI agent
+/AGENTS.md                         @RoofingnearmeSTL
+/CLAUDE.md                         @RoofingnearmeSTL
+/.github/copilot-instructions.md   @RoofingnearmeSTL
+
+# Prices, claims, phones, insurance, trades, Illinois rule
+/src/lib/pricing.ts                @RoofingnearmeSTL
+/src/lib/business.ts               @RoofingnearmeSTL
+/src/lib/illinois-guard.ts         @RoofingnearmeSTL
+/src/lib/site-pages.ts             @RoofingnearmeSTL
+
+# Lead handling and bot protection
+/src/app/api/lead/                 @RoofingnearmeSTL
+/src/app/api/lead-check/           @RoofingnearmeSTL
+/src/instrumentation-client.ts     @RoofingnearmeSTL
+
+# Release checks, security headers, cron
+/.github/                          @RoofingnearmeSTL
+/scripts/compliance-scan.mjs       @RoofingnearmeSTL
+/tests/                            @RoofingnearmeSTL
+/next.config.ts                    @RoofingnearmeSTL
+/vercel.json                       @RoofingnearmeSTL
