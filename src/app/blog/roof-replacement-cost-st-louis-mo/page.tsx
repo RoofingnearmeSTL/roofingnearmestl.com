@@ -52,14 +52,14 @@ export default function RoofCostGuide() {
   return (
     <ContentShell breadcrumbs={crumbs} schema={schema}>
       <article>
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Cost guide · Updated October 2026</p>
+        <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand-ink">Cost guide · Updated October 2026</p>
         <h1 className="mt-2 text-4xl font-black tracking-tight text-black sm:text-5xl">2026 Roof Replacement Cost in St. Louis, MO</h1>
         <p className="mt-5 text-lg leading-relaxed text-zinc-700">
           <b>A new 30-year architectural shingle roof in St. Louis, MO costs {usd(p12.low)}-{usd(p24.high)} for most homes with 12-24 squares (about 1,200-2,400 sq ft of roof).</b> 3-tab shingles cost less. Low-pitch roofs land at the low end and steep roofs at the high end. Clay, metal and slate are custom quotes.
         </p>
         <ul className="mt-5 grid gap-2 sm:grid-cols-3 text-center">
           {[[12, p12], [18, p18], [24, p24]].map(([sq, range]) => (
-            <li key={String(sq)} className="rounded-xl border border-brand/20 bg-brand-light p-4"><div className="text-sm font-bold">{String(sq)} SQ · {(Number(sq) * 100).toLocaleString("en-US")} sq ft</div><div className="text-xl font-black text-brand">{usd((range as { low: number }).low)}-{usd((range as { high: number }).high)}</div></li>
+            <li key={String(sq)} className="rounded-xl border border-brand/20 bg-brand-light p-4"><div className="text-sm font-bold">{String(sq)} SQ · {(Number(sq) * 100).toLocaleString("en-US")} sq ft</div><div className="text-xl font-black text-brand-ink">{usd((range as { low: number }).low)}-{usd((range as { high: number }).high)}</div></li>
           ))}
         </ul>
 
@@ -110,7 +110,7 @@ export default function RoofCostGuide() {
         </ul>
 
         <h2 className="mt-10 text-2xl font-extrabold text-black">Clay, metal and slate</h2>
-        <p className="mt-2 text-zinc-700">These need an in-person look, so they&apos;re a custom quote, not an online price. <a href={PHONES.MO.href} className="font-bold text-brand underline">Call Mike to lock your price: {PHONES.MO.display}</a>.</p>
+        <p className="mt-2 text-zinc-700">These need an in-person look, so they&apos;re a custom quote, not an online price. <a href={PHONES.MO.href} className="font-bold text-brand-ink underline">Call Mike to lock your price: {PHONES.MO.display}</a>.</p>
 
         <h2 className="mt-10 text-2xl font-extrabold text-black">Where these prices apply</h2>
         <p className="mt-2 text-zinc-700">These are our 2026 prices for roofing in the St. Louis area of Missouri. {IL_COMING_SOON}. In Illinois we offer <Link href="/siding" className="underline">siding</Link>, <Link href="/gutters-downspouts" className="underline">gutters</Link>, and <Link href="/soffit-fascia" className="underline">soffit &amp; fascia</Link>.</p>

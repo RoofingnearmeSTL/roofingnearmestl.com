@@ -112,7 +112,7 @@ export default function LandingPage({ model }: { model: LandingModel }) {
             <div>
               <RoofEstimator defaultPlace={model.estimatorPlace} headingLevel="h2" />
               <CostFallback headingLevel="h3" />
-              <p className="mt-3 text-sm"><Link href="/blog/roof-replacement-cost-st-louis-mo" className="font-bold text-brand underline">Full 2026 St. Louis roof cost guide →</Link></p>
+              <p className="mt-3 text-sm"><Link href="/blog/roof-replacement-cost-st-louis-mo" className="font-bold text-brand-ink underline">Full 2026 St. Louis roof cost guide →</Link></p>
             </div>
           )}
         </div>
@@ -145,7 +145,7 @@ export default function LandingPage({ model }: { model: LandingModel }) {
               </ul>
             </div>
           ))}
-          <p className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-bold"><Link href="/services" className="text-brand underline">All services</Link><Link href="/areas-we-serve" className="text-brand underline">All areas we serve</Link><Link href="/accreditation" className="text-brand underline">Insurance &amp; certifications</Link></p>
+          <p className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-bold"><Link href="/services" className="text-brand-ink underline">All services</Link><Link href="/areas-we-serve" className="text-brand-ink underline">All areas we serve</Link><Link href="/accreditation" className="text-brand-ink underline">Insurance &amp; certifications</Link></p>
         </nav>
       </section>
 

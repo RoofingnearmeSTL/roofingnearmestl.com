@@ -207,7 +207,7 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       </details>
       {/* Small print, like a disclaimer (Mike, Oct 29). */}
       {ilRoofing && <p role="status" className="px-1 text-xs leading-snug text-zinc-500">{ILLINOIS_ROOFING_NOTICE}</p>}
-      <button disabled={sending} className="w-full bg-brand py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-dark disabled:opacity-50">
+      <button disabled={sending} className="w-full bg-brand-ink py-4 rounded-full shadow-md shadow-brand/20 text-white text-base font-extrabold tracking-wide hover:bg-brand-ink-dark disabled:opacity-50">
         {sending ? "Sending..." : exteriorOnly ? "GET MY FREE EXTERIOR QUOTE →" : "GET MY FREE PHOTO REPORT →"}
       </button>
       <p className="text-center text-xs text-zinc-500">We only use your info to contact you about your {exteriorOnly ? "project" : "roof"}. <Link href="/privacy" className="underline">Privacy Policy</Link></p>

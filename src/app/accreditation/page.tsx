@@ -57,7 +57,7 @@ export default function Accreditation() {
             ))}
           </tbody>
         </table>
-        <p className="mt-3 text-sm text-zinc-600">Need a certificate of insurance for your HOA, lender or records? Ask and we&apos;ll send a current copy: Missouri <a href={PHONES.MO.href} className="font-bold text-brand underline">{PHONES.MO.display}</a> · Illinois <a href={PHONES.IL.href} className="font-bold text-brand underline">{PHONES.IL.display}</a>.</p>
+        <p className="mt-3 text-sm text-zinc-600">Need a certificate of insurance for your HOA, lender or records? Ask and we&apos;ll send a current copy: Missouri <a href={PHONES.MO.href} className="font-bold text-brand-ink underline">{PHONES.MO.display}</a> · Illinois <a href={PHONES.IL.href} className="font-bold text-brand-ink underline">{PHONES.IL.display}</a>.</p>
       </section>
 
       <section className="mt-10">
@@ -69,7 +69,7 @@ export default function Accreditation() {
               <p className="font-bold text-black">{cert.title}</p>
               <p className="text-sm text-zinc-600">{cert.subject} · Certificate #{cert.number}</p>
               <p className="text-xs text-zinc-500">Issued {cert.issued} · Valid through {cert.expires}</p>
-              <a href={cert.file} target="_blank" rel="noopener" className="mt-2 inline-block text-sm font-bold text-brand underline">View certificate (PDF)</a>
+              <a href={cert.file} target="_blank" rel="noopener" className="mt-2 inline-block text-sm font-bold text-brand-ink underline">View certificate (PDF)</a>
             </li>
           ))}
         </ul>
@@ -90,7 +90,7 @@ export default function Accreditation() {
 
       <section className="mt-10">
         <h2 className="text-2xl font-extrabold text-black">Reviews</h2>
-        <p className="mt-2 text-zinc-700">Rated 5.0★ on Google. <a href={GOOGLE_BUSINESS_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-brand underline">Read our reviews</a> or <Link href="/review" className="font-bold text-brand underline">leave one</Link>.</p>
+        <p className="mt-2 text-zinc-700">Rated 5.0★ on Google. <a href={GOOGLE_BUSINESS_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-brand-ink underline">Read our reviews</a> or <Link href="/review" className="font-bold text-brand-ink underline">leave one</Link>.</p>
       </section>
     </ContentShell>
   );

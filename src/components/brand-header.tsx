@@ -14,13 +14,13 @@ export default function BrandHeader() {
           <div aria-hidden="true" className="hidden lg:block h-16 w-px bg-zinc-200 shrink-0" />
           <div className="hidden lg:block">
             <p className="text-xs font-bold tracking-[0.14em] text-black uppercase">Local. Reliable.</p>
-            <p className="text-xs font-bold tracking-[0.14em] text-brand uppercase mt-1">Protecting What Matters.</p>
+            <p className="text-xs font-bold tracking-[0.14em] text-brand-ink uppercase mt-1">Protecting What Matters.</p>
             <p className="text-xs text-zinc-500 mt-2">Serving the St. Louis Metro Area</p>
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-4 xl:gap-6 shrink-0">
           <DesktopNav />
-          <EstimateLink className="bg-brand hover:bg-brand-dark text-white rounded-full px-4 sm:px-7 py-3 font-bold text-xs sm:text-sm shadow-md shadow-brand/20 whitespace-nowrap">Get Free Quote</EstimateLink>
+          <EstimateLink className="bg-brand-ink hover:bg-brand-ink-dark text-white rounded-full px-4 sm:px-7 py-3 font-bold text-xs sm:text-sm shadow-md shadow-brand/20 whitespace-nowrap">Get Free Quote</EstimateLink>
           <MobileNav />
         </div>
       </div>

@@ -40,14 +40,14 @@ export default function Home() {
           <h1 className="text-white tracking-tight leading-[1.1]">
             <span className="font-extrabold text-4xl sm:text-5xl">Don&apos;t Replace Yet!</span><br/>
             <span className="font-bold text-2xl sm:text-3xl">Get a Free Photo-Documented</span><br/>
-            <span className="font-bold text-2xl sm:text-3xl">Roof Report. We Answer in </span><span className="text-brand font-extrabold text-2xl sm:text-3xl">5 Minutes.</span>
+            <span className="font-bold text-2xl sm:text-3xl">Roof Report.</span>
           </h1>
           <p className="text-zinc-200 text-lg leading-relaxed mt-5">{"RoofingnearmeSTL is a local crew based in Waterloo, IL: roofing in the St. Louis area of Missouri, and siding, gutters, soffit and fascia on both sides of the river. During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options."}</p>
         </div>
 
         <div id="estimate" className="lg:col-start-2 lg:row-start-1 lg:row-span-2 bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
           <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Honest Evaluation in 30 Seconds</h2>
-          <p className="text-zinc-600 text-sm mt-2 mb-6"><span className="text-[#28AADC] font-bold">★★★★★ 5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
+          <p className="text-zinc-600 text-sm mt-2 mb-6"><span className="text-brand-ink font-bold">★★★★★ 5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
           
           <HomeLeadForm footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
         </div>
@@ -71,7 +71,7 @@ export default function Home() {
       <section aria-label="Roof replacement cost" className="bg-white px-6 pt-4">
         <div className="max-w-4xl mx-auto">
           <CostFallback />
-          <p className="mt-2 text-sm text-center"><Link href="/blog/roof-replacement-cost-st-louis-mo" className="font-bold text-brand underline">Full 2026 St. Louis roof cost guide →</Link></p>
+          <p className="mt-2 text-sm text-center"><Link href="/blog/roof-replacement-cost-st-louis-mo" className="font-bold text-brand-ink underline">Full 2026 St. Louis roof cost guide →</Link></p>
         </div>
       </section>
 
@@ -89,7 +89,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
             <nav aria-label="Roofing Services" className="bg-white border-2 border-zinc-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-black font-bold text-lg"><Link href="/services" className="hover:text-brand">Roofing &amp; Exterior Services</Link></h3>
+              <h3 className="text-black font-bold text-lg"><Link href="/services" className="hover:text-brand-ink">Roofing &amp; Exterior Services</Link></h3>
               <ul className="mt-3 flex flex-wrap gap-2">
                 {sitePages.filter((page) => page.kind === "service").map((page) => (
                   <li key={page.slug}><Link href={`/${page.slug}`} className="inline-block bg-brand-light border border-brand/20 text-black hover:border-brand rounded-full px-4 py-2 text-sm font-bold">{page.navLabel} →</Link></li>
@@ -97,9 +97,9 @@ export default function Home() {
               </ul>
             </nav>
             <nav aria-label="Areas We Serve" className="bg-white border-2 border-zinc-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-black font-bold text-lg"><Link href="/areas-we-serve" className="hover:text-brand">Areas We Serve</Link></h3>
+              <h3 className="text-black font-bold text-lg"><Link href="/areas-we-serve" className="hover:text-brand-ink">Areas We Serve</Link></h3>
               <ServiceAreaDirectory compact />
-              <Link href="/areas-we-serve" className="mt-3 inline-block text-sm font-bold text-brand underline">All service areas →</Link>
+              <Link href="/areas-we-serve" className="mt-3 inline-block text-sm font-bold text-brand-ink underline">All service areas →</Link>
             </nav>
           </div>
         </div>
