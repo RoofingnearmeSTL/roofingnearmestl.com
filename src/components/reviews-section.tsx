@@ -1,9 +1,9 @@
 import ReviewButtons from "./review-buttons";
-import { reviews } from "@/lib/reviews";
+import { publicTown, reviews } from "@/lib/reviews";
 import { GOOGLE_BUSINESS_URL } from "@/lib/site-pages";
 
-const Stars = ({ rating }: { rating: number }) => (
-  <span className="text-yellow-500 tracking-wider" aria-label={`${rating} out of 5 stars`}>{"★".repeat(rating)}<span className="text-zinc-300">{"★".repeat(5 - rating)}</span></span>
+export const Stars = ({ rating }: { rating: number }) => (
+  <span role="img" className="text-yellow-500 tracking-wider" aria-label={`${rating} out of 5 stars`}><span aria-hidden="true">{"★".repeat(rating)}<span className="text-zinc-300">{"★".repeat(5 - rating)}</span></span></span>
 );
 
 // Long reviews are trimmed on the card (the full text stays in the page) with a link to read them on Google.
@@ -36,7 +36,7 @@ export default function ReviewsSection() {
                   <a href={GOOGLE_BUSINESS_URL} target="_blank" rel="noopener noreferrer" className="mt-2 text-sm font-bold text-brand-ink underline">Read the full review on Google</a>
                 )}
                 <div className="mt-auto pt-4">
-                  <p className="text-sm font-bold text-black">{review.author}{review.town ? <span className="font-normal text-zinc-500">, {review.town}</span> : null}</p>
+                  <p className="text-sm font-bold text-black">{review.author}{publicTown(review) ? <span className="font-normal text-zinc-500">, {publicTown(review)}</span> : null}</p>
                   <p className="text-xs text-zinc-500">{review.source === "google" ? "Google review" : "Facebook recommendation"} · {new Date(`${review.date}T12:00:00`).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</p>
                 </div>
               </li>
