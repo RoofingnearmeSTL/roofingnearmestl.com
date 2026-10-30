@@ -79,3 +79,22 @@ This repo is public: never add anything here you would not publish.
 
 - Plain, clear wording for homeowners. Brand name is always "RoofingnearmeSTL".
 - Keep page titles under ~60 characters and meta descriptions under 160 (the build checks this).
+
+## 8. Check memory before you act (every AI tool)
+
+The project memory lives in the private Brain-Data repo (a folder next to this one, if you have it). Its
+`ROUTING.md` names the source of truth for everything, including the pinned roadmap and the task board
+(GitHub issues in Brain-Data, not in this repo). Before answering, planning, listing to-dos or changing anything:
+
+1. Read Brain-Data `AGENTS.md`, `CONTEXT.md`, `ROUTING.md`, `docs/memory/lessons.md` and
+   `docs/memory/decisions.md`, and the playbook for the task (e.g. `docs/playbooks/local-pages.md` before
+   touching any city or service page).
+2. Check what is already done: the roadmap's "Pick up here" line, the open Brain-Data issues, and the live
+   site. Never re-list work that is finished.
+3. When Mike says something is done, record every part of it as done (including parts only he can see:
+   "Mike confirmed in chat, <date>") in the Brain-Data roadmap and board issue, following that repo's rules.
+   Never copy private notes, customer data or secrets into this public repo, its commits or PR text.
+4. If a source you need is unavailable, or something still isn't clear, say so and ask Mike in one line
+   instead of guessing or adding a to-do. Review-only work needs no production access.
+
+No access to Brain-Data? Say so and ask Mike before acting, rather than working from memory alone.
