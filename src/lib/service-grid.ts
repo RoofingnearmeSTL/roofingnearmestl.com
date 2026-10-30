@@ -97,7 +97,8 @@ export const GRID_SERVICES: GridService[] = [
   },
   {
     key: "storm-damage", label: "Hail & Storm Damage", hub: "/storm-damage-insurance", roofing: true, leadService: "Storm Damage / Insurance",
-    title: (place) => fit(`Hail Damage Roof Repair in ${place} | RoofingnearmeSTL`, `Hail Damage Roof Repair, ${place}`),
+    // No "Repair" here: the town's roof repair page owns repair searches (one page per search).
+    title: (place) => fit(`Hail & Storm Damage Inspection in ${place} | RoofingnearmeSTL`, `Hail & Storm Damage, ${place}`),
     shortTitle: (place) => `Hail & Storm Damage in ${place}`,
     description: (place, city) => `Hail or wind hit ${city}? Free photo-documented roof inspection by a BEI-certified inspector: shingle ID, hail hits marked, honest options. ${PHONES.MO.display}.`,
     h1: (place) => `Hail & Storm Damage Roof Inspections in ${place}`,

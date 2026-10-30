@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 
 const faqs: [string, string][] = [
   ["How much does a new roof cost in St. Louis?", `A 30-year architectural shingle roof costs ${usd(p12.low)}-${usd(p24.high)} for most homes with 12-24 squares (about 1,200-2,400 sq ft of roof). 3-tab costs less: ${usd(t12.low)}-${usd(t24.high)}.`],
+  ["How much does a new roof cost in Missouri?", `In the St. Louis area of Missouri, our 2026 price for a 30-year architectural shingle roof is ${usd(p12.low)}-${usd(p24.high)} for most homes. Your free inspection sets the final number: rotted decking, extra old layers, flashing and ventilation can change it.`],
   ["What is a roofing square?", "One square is 100 square feet of roof surface. A roof with 1,800 sq ft of surface is 18 squares."],
   ["How does roof pitch change the price?", "Low pitch (2/12-4/12) is priced at the low end of the range, medium pitch (5/12-7/12) in the middle and steep pitch (8/12 and up) at the high end."],
   ["Is 3-tab or architectural shingle better value?", `3-tab costs less (${usd(t12.low)}-${usd(t24.high)} for most homes, 25-year). Architectural shingles (${usd(p12.low)}-${usd(p24.high)}, 30-year) are thicker, last longer and are what most St. Louis homeowners choose.`],
@@ -128,7 +129,7 @@ export default function RoofCostGuide() {
           <LeadForm defaultService="Roof Replacement" footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
         </div>
 
-        <p className="mt-8 text-sm text-zinc-600">More answers: <Link href="/questions/how-much-does-a-new-roof-cost-in-missouri" className="underline">How much does a new roof cost in Missouri?</Link> · <Link href="/questions/will-insurance-pay-for-a-new-roof-in-missouri" className="underline">Will insurance pay for a new roof?</Link> · <Link href="/roof-replacement" className="underline">Roof replacement</Link></p>
+        <p className="mt-8 text-sm text-zinc-600">More answers: <Link href="/questions/will-insurance-pay-for-a-new-roof-in-missouri" className="underline">Will insurance pay for a new roof?</Link> · <Link href="/roof-replacement" className="underline">Roof replacement</Link></p>
       </article>
     </ContentShell>
   );

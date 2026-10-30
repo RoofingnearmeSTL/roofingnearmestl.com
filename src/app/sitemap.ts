@@ -5,9 +5,10 @@ import { questions } from '@/lib/questions';
 
 // Generated from the same lists that build the pages, so every URL here is a real page and new
 // pages (cities, city + service pages, questions) are added automatically.
+// No lastModified: it used to be the build time, so every deploy told Google all pages changed and
+// Google learns to ignore dates that are always "now". Google only trusts lastmod when it's accurate.
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-  const entry = (path: string, priority: number, changeFrequency: 'weekly' | 'monthly' = 'monthly') => ({ url: `${SITE_URL}${path}`, lastModified: now, changeFrequency, priority });
+  const entry = (path: string, priority: number, changeFrequency: 'weekly' | 'monthly' = 'monthly') => ({ url: `${SITE_URL}${path}`, changeFrequency, priority });
   return [
     entry('', 1, 'weekly'),
     entry('/services', 0.9),
