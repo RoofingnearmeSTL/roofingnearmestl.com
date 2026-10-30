@@ -25,7 +25,7 @@ export default function QuestionsIndex() {
       <ul className="mt-8 space-y-4">
         {questions.map((q) => (
           <li key={q.slug} className="rounded-2xl border border-zinc-200 p-5">
-            <Link href={`/questions/${q.slug}`} className="text-xl font-bold text-black hover:text-brand">{q.question}</Link>
+            <Link href={`/questions/${q.slug}`} className="text-xl font-bold text-black hover:text-brand-ink">{q.question}</Link>
             <p className="mt-2 text-sm leading-relaxed text-zinc-600">{q.answer}</p>
           </li>
         ))}

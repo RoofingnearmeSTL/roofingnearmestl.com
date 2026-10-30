@@ -11,7 +11,7 @@ export default function ServiceAreaDirectory({ compact = false }: { compact?: bo
       <div className="mt-3 divide-y divide-zinc-200 border-y border-zinc-200">
         {areaGroups.map((group) => (
           <details key={group.id} className="group">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3 font-bold text-black hover:text-brand [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3 font-bold text-black hover:text-brand-ink [&::-webkit-details-marker]:hidden">
               <span>{group.name} <span className="font-normal text-zinc-500">({group.pages.length})</span></span>
               <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 shrink-0 text-zinc-400 transition-transform group-open:rotate-180"><path d="M5.2 7.2a.75.75 0 0 1 1.06 0L10 10.94l3.74-3.74a.75.75 0 1 1 1.06 1.06l-4.27 4.27a.75.75 0 0 1-1.06 0L5.2 8.26a.75.75 0 0 1 0-1.06Z" /></svg>
             </summary>

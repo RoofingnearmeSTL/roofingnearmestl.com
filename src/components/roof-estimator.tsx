@@ -59,7 +59,7 @@ export default function RoofEstimator({ onChange, defaultPlace = "St. Louis, MO"
         <div role="status" className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-black">
           <p className="font-bold">{IL_ROOFING_NOTE}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <a href={IL_PHONE.href} className="bg-brand hover:bg-brand-dark text-white px-5 py-2 rounded-full font-bold">Call {IL_PHONE.label}</a>
+            <a href={IL_PHONE.href} className="bg-brand-ink hover:bg-brand-ink-dark text-white px-5 py-2 rounded-full font-bold">Call {IL_PHONE.label}</a>
             <Link href="/siding" className="border border-brand text-black px-4 py-2 rounded-full font-bold">Siding</Link>
             <Link href="/gutters-downspouts" className="border border-brand text-black px-4 py-2 rounded-full font-bold">Gutters</Link>
           </div>
@@ -69,7 +69,7 @@ export default function RoofEstimator({ onChange, defaultPlace = "St. Louis, MO"
           <div className="mt-4">
             <label htmlFor="roof-squares" className="flex items-baseline justify-between gap-3 text-sm font-bold">
               <span>Roof size</span>
-              <span className="text-brand text-lg font-black">{squares} SQ <span className="text-xs font-semibold text-zinc-500">≈ {(squares * 100).toLocaleString("en-US")} sq ft of roof</span></span>
+              <span className="text-brand-ink text-lg font-black">{squares} SQ <span className="text-xs font-semibold text-zinc-500">≈ {(squares * 100).toLocaleString("en-US")} sq ft of roof</span></span>
             </label>
             <div className="mt-2 flex items-center gap-3">
               <input id="roof-squares" type="range" min={SQ_MIN} max={SQ_MAX} step={1} value={squares} onChange={(e) => setSquares(clampSquares(Number(e.target.value)))} aria-valuetext={`${squares} squares`} className="w-full accent-brand" />
@@ -94,17 +94,17 @@ export default function RoofEstimator({ onChange, defaultPlace = "St. Louis, MO"
             {custom || !result || !range ? (
               <>
                 <div className="text-sm font-bold">{shingleLabel}</div>
-                <div className="text-2xl font-black text-brand mt-1">Custom - Call to Lock Price</div>
+                <div className="text-2xl font-black text-brand-ink mt-1">Custom - Call to Lock Price</div>
                 <p className="text-xs text-zinc-600 mt-1">Custom Quote Required: clay, metal and slate are priced after an in-person look.</p>
-                <a href={MO_PHONE.href} className="inline-block mt-3 bg-brand hover:bg-brand-dark text-white px-5 py-2 rounded-full font-bold shadow-md shadow-brand/20">Call Mike to Lock Price</a>
+                <a href={MO_PHONE.href} className="inline-block mt-3 bg-brand-ink hover:bg-brand-ink-dark text-white px-5 py-2 rounded-full font-bold shadow-md shadow-brand/20">Call Mike to Lock Price</a>
               </>
             ) : (
               <>
                 <div className="text-sm">Estimated replacement, {squares} SQ {SHINGLES[shingle as "3tab" | "architectural"].label}:</div>
-                <div className="text-4xl font-black text-brand">{usd(result.price)}</div>
+                <div className="text-4xl font-black text-brand-ink">{usd(result.price)}</div>
                 <p className="text-xs text-zinc-600 mt-1">Full range {usd(range.low)} - {usd(range.high)}. {PITCHES[pitch].label.split(" (")[0]} uses the {PITCHES[pitch].rule}.</p>
                 <div className="mt-3 flex flex-wrap justify-center gap-2">
-                  <EstimateLink className="bg-brand hover:bg-brand-dark text-white px-5 py-2 rounded-full font-bold shadow-md shadow-brand/20">Lock This Price</EstimateLink>
+                  <EstimateLink className="bg-brand-ink hover:bg-brand-ink-dark text-white px-5 py-2 rounded-full font-bold shadow-md shadow-brand/20">Lock This Price</EstimateLink>
                   <a href={MO_PHONE.href} className="border border-brand text-black px-5 py-2 rounded-full font-bold">Call Mike to Lock Price</a>
                 </div>
               </>

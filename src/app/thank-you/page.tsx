@@ -41,7 +41,7 @@ export default async function ThankYou({ searchParams }: { searchParams: Promise
               <p className="mt-5 text-2xl font-bold">{urgent ? "We'll call you as soon as we can" : "Our local team will call you"}</p>
               <p className="mt-3 text-zinc-600">
                 {urgent
-                  ? <>Thanks for reaching out to RoofingnearmeSTL. Water coming in? Call us now at <a href={PHONES.IL.href} className="font-bold text-brand">{PHONES.IL.display}</a> and we&apos;ll point you to a licensed Illinois roofer right away.</>
+                  ? <>Thanks for reaching out to RoofingnearmeSTL. Water coming in? Call us now at <a href={PHONES.IL.href} className="font-bold text-brand-ink">{PHONES.IL.display}</a> and we&apos;ll point you to a licensed Illinois roofer right away.</>
                   : <>Thanks for choosing RoofingnearmeSTL. Your request is saved. If your roof needs work now, we&apos;ll point you to a licensed Illinois roofer, and we can help right away with siding, gutters, soffit, fascia and other exterior work.</>}
               </p>
             </>
@@ -58,8 +58,8 @@ export default async function ThankYou({ searchParams }: { searchParams: Promise
             <div className="border rounded-xl p-4">✓ Fully Insured</div>
             <div className="border rounded-xl p-4">✓ 10-Yr Workmanship Warranty</div>
           </div>
-          {illinois && <p className="mt-6 text-sm text-zinc-600">Illinois line: <a href={phone.href} className="font-bold text-brand">{phone.display}</a></p>}
-          <Link href="/" className="inline-block mt-8 bg-brand text-white px-7 py-3 rounded-full font-bold shadow-md shadow-brand/20 hover:bg-brand-dark">Back to Home</Link>
+          {illinois && <p className="mt-6 text-sm text-zinc-600">Illinois line: <a href={phone.href} className="font-bold text-brand-ink">{phone.display}</a></p>}
+          <Link href="/" className="inline-block mt-8 bg-brand-ink text-white px-7 py-3 rounded-full font-bold shadow-md shadow-brand/20 hover:bg-brand-ink-dark">Back to Home</Link>
           {/* Small print, like a disclaimer (Mike, Oct 29). */}
           {pending && (
             <p className="mt-8 text-xs leading-snug text-zinc-500">

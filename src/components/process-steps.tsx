@@ -6,7 +6,7 @@ export default function ProcessSteps({ variant = "roofing" }: { variant?: "roofi
   return (
     <section id="process" className="bg-white py-16 scroll-mt-40">
       <div className="max-w-7xl mx-auto px-6">
-        <p className="text-center text-sm font-bold uppercase tracking-[0.14em] text-brand">How It Works</p>
+        <p className="text-center text-sm font-bold uppercase tracking-[0.14em] text-brand-ink">How It Works</p>
         <h2 className="text-black font-extrabold text-3xl text-center mt-2">Our 4-Step Process</h2>
         <p className="text-zinc-600 text-center max-w-2xl mx-auto mt-3">No vague timelines and no pushy sales. You see the photos before you decide anything.</p>
         <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">

@@ -9,6 +9,9 @@
   --color-brand: #28AADC;
   --color-brand-dark: #1A8AB8;
   --color-brand-light: #E8F5FB;
+  /* Darker blue for small text, links and buttons on light backgrounds (passes WCAG AA: 5.7:1 on white). The logo blue above stays for big color blocks and dark sections. */
+  --color-brand-ink: #0B6E99;
+  --color-brand-ink-dark: #085A7D;
   --color-black: #0A0A0A;
   --color-background: var(--background);
   --color-foreground: var(--foreground);

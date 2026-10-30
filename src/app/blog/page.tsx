@@ -37,7 +37,7 @@ export default function BlogIndex() {
       <ul className="mt-8 space-y-4">
         {articles.map((article) => (
           <li key={article.href} className="rounded-2xl border border-zinc-200 p-5 hover:border-brand/40">
-            <Link href={article.href} className="text-xl font-bold text-black hover:text-brand">{article.title}</Link>
+            <Link href={article.href} className="text-xl font-bold text-black hover:text-brand-ink">{article.title}</Link>
             <p className="mt-1 text-sm text-zinc-600">{article.summary}</p>
           </li>
         ))}

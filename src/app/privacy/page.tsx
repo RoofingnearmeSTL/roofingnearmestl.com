@@ -54,7 +54,7 @@ const sections: { heading: string; body: React.ReactNode }[] = [
     body: (
       <ul className="list-disc space-y-1 pl-5">
         <li>You can block or delete cookies in your browser settings.</li>
-        <li>You can manage ads from Google at <a className="text-brand underline" href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">adssettings.google.com</a> and from Meta in your Facebook ad preferences.</li>
+        <li>You can manage ads from Google at <a className="text-brand-ink underline" href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">adssettings.google.com</a> and from Meta in your Facebook ad preferences.</li>
         <li>You can ask us to see, correct or delete the information you sent us by calling us at a number below.</li>
       </ul>
     ),
@@ -70,7 +70,7 @@ const sections: { heading: string; body: React.ReactNode }[] = [
   {
     heading: "Changes and contact",
     body: (
-      <p>If we change this policy, we&apos;ll update it on this page. Questions? Call RoofingnearmeSTL at <a className="font-bold text-brand" href="tel:+16186125192">618-612-5192</a> (Illinois) or <a className="font-bold text-brand" href="tel:+13142027663">314-202-7663</a> (Missouri).</p>
+      <p>If we change this policy, we&apos;ll update it on this page. Questions? Call RoofingnearmeSTL at <a className="font-bold text-brand-ink" href="tel:+16186125192">618-612-5192</a> (Illinois) or <a className="font-bold text-brand-ink" href="tel:+13142027663">314-202-7663</a> (Missouri).</p>
     ),
   },
 ];

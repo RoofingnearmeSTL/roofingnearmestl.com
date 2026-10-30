@@ -53,7 +53,7 @@ function DesktopMenu({ label, items, all }: (typeof menus)[number]) {
         {items.map((item) => (
           <li key={item.href}><Link href={item.href} className="block rounded-lg px-3 py-2 text-black hover:bg-brand-light">{item.label}</Link></li>
         ))}
-        <li className="mt-1 border-t border-zinc-100 pt-1"><Link href={all.href} className="block rounded-lg px-3 py-2 font-bold text-brand hover:bg-brand-light">{all.label}</Link></li>
+        <li className="mt-1 border-t border-zinc-100 pt-1"><Link href={all.href} className="block rounded-lg px-3 py-2 font-bold text-brand-ink hover:bg-brand-light">{all.label}</Link></li>
       </ul>
     </details>
   );
@@ -89,7 +89,7 @@ export function MobileNav() {
                 {menu.items.map((item) => (
                   <li key={item.href}><Link href={item.href} className="block rounded-lg px-3 py-3 text-base font-bold text-black hover:bg-brand-light">{item.label}</Link></li>
                 ))}
-                <li><Link href={menu.all.href} className="block rounded-lg px-3 py-3 text-base font-bold text-brand hover:bg-brand-light">{menu.all.label}</Link></li>
+                <li><Link href={menu.all.href} className="block rounded-lg px-3 py-3 text-base font-bold text-brand-ink hover:bg-brand-light">{menu.all.label}</Link></li>
               </ul>
             </div>
           ))}
