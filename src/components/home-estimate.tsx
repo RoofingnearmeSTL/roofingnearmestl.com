@@ -27,9 +27,14 @@ export function HomeEstimateProvider({ children }: { children: ReactNode }) {
       fbclid: params.get("fbclid") || "",
       landing,
     };
-    Object.entries(data).forEach(([key, value]) => {
-      if (value) localStorage.setItem(`utm_${key}`, value);
-    });
+    // Storage can be blocked (private mode, strict settings) or full: never let that break the form.
+    try {
+      Object.entries(data).forEach(([key, value]) => {
+        if (value) localStorage.setItem(`utm_${key}`, value);
+      });
+    } catch {
+      // Tags just aren't remembered; the lead form still sends this visit's tags.
+    }
   }, [landing]);
 
   return <EstimateContext.Provider value={{ extras, setExtras }}>{children}</EstimateContext.Provider>;
