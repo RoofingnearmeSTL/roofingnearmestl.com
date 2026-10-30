@@ -44,7 +44,7 @@ const sections: { heading: string; body: React.ReactNode }[] = [
     heading: "Who we share it with",
     body: (
       <>
-        <p>We do not sell your personal information. We share it only with service providers that help us run the website and respond to you: Vercel (website hosting), Supabase (secure storage of requests), Resend (emails your request to our team, and sends you one confirmation email when you give us your email address), Twilio (text alerts to our team), Make and RoofLink (pass your request into the customer management system we use to schedule and follow up on jobs), Elfsight (shows our Google reviews on the homepage; their script loads when that section is displayed), and Google and Meta (analytics and advertising, as described above).</p>
+        <p>We do not sell your personal information. We share it only with service providers that help us run the website and respond to you: Vercel (website hosting), Supabase (secure storage of requests), Resend (emails your request to our team, and sends you one confirmation email when you give us your email address), Twilio (text alerts to our team), Make and RoofLink (pass your request into the customer management system we use to schedule and follow up on jobs), and Google and Meta (analytics and advertising, as described above).</p>
         <p>We may also share information if the law requires it.</p>
       </>
     ),

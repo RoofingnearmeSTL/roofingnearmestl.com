@@ -33,6 +33,8 @@ const nextConfig: NextConfig = {
       // (no roofing in Illinois until the IL roofing license). Permanent, so Google moves the history over.
       ...ilRedirects.map(({ from, to }) => ({ source: from, destination: to, permanent: true })),
       ...Object.entries(serviceHubs).map(([key, hub]) => ({ source: `/services/${key}`, destination: hub, permanent: true })),
+      // There is no contact page: send /contact (old links, guesses) to the homepage quote form.
+      { source: "/contact", destination: "/#estimate", permanent: true },
     ];
   },
 };

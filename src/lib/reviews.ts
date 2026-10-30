@@ -1,5 +1,3 @@
-import { SITE_URL } from "./site-pages";
-
 // ─────────────────────────────────────────────────────────────────────────────
 // HOW TO ADD A REVIEW (takes 1 minute)
 // Copy a review from your Google Business Profile (or Facebook) and add an entry
@@ -16,13 +14,8 @@ import { SITE_URL } from "./site-pages";
 //   },
 //
 // Rules: only real reviews, unedited (you may shorten with "…"), never paid for
-// or rewarded. The homepage section and its schema update automatically.
+// or rewarded. The homepage review section updates automatically.
 // ─────────────────────────────────────────────────────────────────────────────
-
-// Homepage display: false = the site's own cards from the list below (always complete, readable by
-// search engines, no view limit); true = the Elfsight Google Reviews widget (auto-syncs, but its copy of
-// Google can lag a day or more, and the free plan stops showing after 200 views a month).
-export const SHOW_ELFSIGHT_WIDGET = false;
 
 export type Review = {
   author: string;
@@ -56,29 +49,3 @@ export const reviews: Review[] = [
     source: "google",
   },
 ];
-
-// Schema.org data matching the reviews shown on the page. Google does not show star
-// rich results for a business's own reviews, but the markup still describes them
-// accurately for search and AI engines.
-export function reviewSchema() {
-  if (reviews.length === 0) return {};
-  const total = reviews.reduce((sum, review) => sum + review.rating, 0);
-  return {
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: (total / reviews.length).toFixed(1),
-      reviewCount: reviews.length,
-      bestRating: 5,
-      worstRating: 1,
-    },
-    review: reviews.map((review) => ({
-      "@type": "Review",
-      author: { "@type": "Person", name: review.author },
-      datePublished: review.date,
-      reviewBody: review.text,
-      reviewRating: { "@type": "Rating", ratingValue: review.rating, bestRating: 5, worstRating: 1 },
-      publisher: { "@type": "Organization", name: review.source === "google" ? "Google" : "Facebook" },
-      itemReviewed: { "@id": `${SITE_URL}/#business` },
-    })),
-  };
-}

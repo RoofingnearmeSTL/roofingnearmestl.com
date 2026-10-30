@@ -526,10 +526,6 @@ export const GOOGLE_BUSINESS_URL = process.env.NEXT_PUBLIC_GOOGLE_BUSINESS_URL |
 export const GOOGLE_REVIEWS_URL = process.env.NEXT_PUBLIC_GOOGLE_REVIEWS_URL || "https://g.page/r/Cf-m5C88747KEAI/review";
 // Short link to print, text or email: /review shows both review buttons. QR codes point here.
 export const REVIEW_PAGE_URL = `${SITE_URL}/review`;
-// Elfsight "Google Reviews" widget shown in the homepage reviews section (dash.elfsight.com).
-// Only a well-formed widget ID is used, so a typo can never inject markup.
-const elfsightId = process.env.NEXT_PUBLIC_ELFSIGHT_REVIEWS_WIDGET_ID || "6bf35e3e-1fb6-40a4-9085-4bcd335ec3b8";
-export const ELFSIGHT_REVIEWS_WIDGET_ID = /^[a-f0-9-]{36}$/.test(elfsightId) ? elfsightId : "";
 
 export const businessSchema = {
   "@type": "RoofingContractor",
