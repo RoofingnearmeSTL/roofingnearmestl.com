@@ -6,7 +6,6 @@ import ProcessSteps from "@/components/process-steps";
 import Certifications from "@/components/certifications";
 import Link from "next/link";
 import { GOOGLE_REVIEWS_URL, businessSchema, faqSchema, homeFaqs, jsonLd, sitePages, websiteSchema } from "@/lib/site-pages";
-import { reviewSchema } from "@/lib/reviews";
 import ReviewsSection from "@/components/reviews-section";
 import ServiceAreaDirectory from "@/components/service-area-directory";
 import CostFallback from "@/components/cost-fallback";
@@ -17,7 +16,7 @@ export default function Home() {
   // Server page: only the estimator and lead form (HomeEstimateProvider) run in the browser.
   return (
     <div className="min-h-screen bg-white text-zinc-900">
-      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", "@graph": [websiteSchema, { ...businessSchema, ...reviewSchema() }, faqSchema(homeFaqs)] })} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", "@graph": [websiteSchema, businessSchema, faqSchema(homeFaqs)] })} />
       <EmergencyBar />
       <BrandHeader />
 
@@ -31,6 +30,7 @@ export default function Home() {
         </div>
       </div>
 
+      <main id="main">
       <HomeEstimateProvider>
       <section className="relative isolate bg-black">
         <HeroBackground />
@@ -47,7 +47,6 @@ export default function Home() {
 
         <div id="estimate" className="lg:col-start-2 lg:row-start-1 lg:row-span-2 bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
           <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Honest Evaluation in 30 Seconds</h2>
-          <p className="text-zinc-600 text-sm mt-2">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options."}</p>
           <p className="text-zinc-600 text-sm mt-2 mb-6"><span className="text-[#28AADC] font-bold">★★★★★ 5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
           
           <HomeLeadForm footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
@@ -58,7 +57,7 @@ export default function Home() {
           <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">5.0★</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide"><a href={GOOGLE_REVIEWS_URL} target="_blank" rel="noopener noreferrer" className="underline">Google Rating</a></div></div>
             <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">10-Yr</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Workmanship Warranty</div></div>
-            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">Same Day</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Free Honest Evaluation</div></div>
+            <div className="bg-brand border border-brand rounded-xl px-2 sm:px-5 py-4 text-center shadow-sm"><div className="text-white font-extrabold text-xl sm:text-2xl">Same Day</div><div className="text-white/90 text-[10px] sm:text-xs font-semibold uppercase tracking-wide">Free Honest Evaluation</div><div className="text-white/80 text-[9px] sm:text-[11px] mt-1">When our schedule allows</div></div>
           </div>
 
           <div className="mt-10">
@@ -121,6 +120,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      </main>
 
       <BrandFooter />
     </div>

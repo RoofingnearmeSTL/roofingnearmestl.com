@@ -24,7 +24,7 @@ Secret (server only, never `NEXT_PUBLIC_`):
 `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `LEAD_ALERT_PHONE`.
 
 Public (safe in the browser): `NEXT_PUBLIC_SUPABASE_URL` and the optional `NEXT_PUBLIC_*` overrides
-for Google, Meta and Elfsight IDs (each has a built-in default in `src/lib`).
+for Google and Meta IDs (each has a built-in default in `src/lib`).
 
 The service-role key is only read in `src/lib/supabase.ts` (marked `server-only`) and
 `src/app/api/lead/route.ts`. Never import either from a `"use client"` file.
