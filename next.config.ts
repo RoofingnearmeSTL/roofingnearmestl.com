@@ -35,6 +35,9 @@ const nextConfig: NextConfig = {
       ...Object.entries(serviceHubs).map(([key, hub]) => ({ source: `/services/${key}`, destination: hub, permanent: true })),
       // There is no contact page: send /contact (old links, guesses) to the homepage quote form.
       { source: "/contact", destination: "/#estimate", permanent: true },
+      // One page per search (Brain-Data docs/playbooks/local-pages.md): the Missouri cost question repeated
+      // the cost guide and split cost searches three ways, so it now lives in the guide's FAQ.
+      { source: "/questions/how-much-does-a-new-roof-cost-in-missouri", destination: "/blog/roof-replacement-cost-st-louis-mo", permanent: true },
     ];
   },
 };
