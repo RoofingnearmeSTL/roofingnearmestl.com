@@ -1,8 +1,6 @@
-"use client";
 import BrandHeader from "@/components/brand-header";
 import BrandFooter from "@/components/brand-footer";
 import EmergencyBar from "@/components/emergency-bar";
-import LeadForm, { useLandingUtm } from "@/components/lead-form";
 import HeroBackground from "@/components/hero-background";
 import ProcessSteps from "@/components/process-steps";
 import Certifications from "@/components/certifications";
@@ -11,34 +9,12 @@ import { GOOGLE_REVIEWS_URL, businessSchema, faqSchema, homeFaqs, jsonLd, sitePa
 import { reviewSchema } from "@/lib/reviews";
 import ReviewsSection from "@/components/reviews-section";
 import ServiceAreaDirectory from "@/components/service-area-directory";
-import { useState, useEffect } from "react";
-import RoofEstimator from "@/components/roof-estimator";
 import CostFallback from "@/components/cost-fallback";
-import type { LeadExtras } from "@/components/lead-form";
+import { HomeEstimateProvider, HomeEstimator, HomeLeadForm } from "@/components/home-estimate";
 import { INSURANCE_SHORT } from "@/lib/business";
 
 export default function Home() {
-  const { landing } = useLandingUtm();
-  // The estimator's selections ride along with the lead form (roof size, pitch, shingle, estimate).
-  const [estimateExtras, setEstimateExtras] = useState<LeadExtras>({});
-
-  useEffect(() => {
-    const params = new URLSearchParams(landing ? new URL(landing).search : "");
-    const data: Record<string, string> = {
-      source: params.get("utm_source") || params.get("source") || "",
-      medium: params.get("utm_medium") || "",
-      campaign: params.get("utm_campaign") || "",
-      content: params.get("utm_content") || "",
-      term: params.get("utm_term") || "",
-      gclid: params.get("gclid") || "",
-      fbclid: params.get("fbclid") || "",
-      landing,
-    };
-    Object.entries(data).forEach(([key, value]) => {
-      if (value) localStorage.setItem(`utm_${key}`, value);
-    });
-  }, [landing]);
-
+  // Server page: only the estimator and lead form (HomeEstimateProvider) run in the browser.
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", "@graph": [websiteSchema, { ...businessSchema, ...reviewSchema() }, faqSchema(homeFaqs)] })} />
@@ -55,6 +31,7 @@ export default function Home() {
         </div>
       </div>
 
+      <HomeEstimateProvider>
       <section className="relative isolate bg-black">
         <HeroBackground />
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
@@ -73,7 +50,7 @@ export default function Home() {
           <p className="text-zinc-600 text-sm mt-2">{"During business hours, we call as soon as we receive your request — with the right information to help you take the next step. Fill out what's needed below and we look forward to talking soon and sharing your free photo-documented options."}</p>
           <p className="text-zinc-600 text-sm mt-2 mb-6"><span className="text-[#28AADC] font-bold">★★★★★ 5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
           
-          <LeadForm extras={estimateExtras} footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
+          <HomeLeadForm footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
         </div>
 
         <div className="lg:col-start-1 lg:row-start-2">
@@ -85,11 +62,12 @@ export default function Home() {
           </div>
 
           <div className="mt-10">
-            <RoofEstimator onChange={setEstimateExtras} />
+            <HomeEstimator />
           </div>
         </div>
         </div>
       </section>
+      </HomeEstimateProvider>
 
       <section aria-label="Roof replacement cost" className="bg-white px-6 pt-4">
         <div className="max-w-4xl mx-auto">
