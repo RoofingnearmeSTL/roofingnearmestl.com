@@ -10,6 +10,7 @@ import ProcessSteps from "@/components/process-steps";
 import Certifications from "@/components/certifications";
 import RoofEstimator from "@/components/roof-estimator";
 import CostFallback from "@/components/cost-fallback";
+import CityReviews from "@/components/city-reviews";
 import { IL_LEAD_SERVICES, INSURANCE_SHORT, PHONES } from "@/lib/business";
 import { jsonLd, type Scope, type SitePage } from "@/lib/site-pages";
 
@@ -29,6 +30,8 @@ export type LandingModel = {
   linkGroups: { heading: string; links: { href: string; label: string }[] }[];
   /** Show the roof cost estimator (Missouri roofing pages only). */
   estimatorPlace?: string;
+  /** City pages: show real Google reviews for this town ("Why Your Neighbors Chose Us"). */
+  reviewsFor?: { city: string; state: "MO" | "IL" };
   schema: object;
 };
 
@@ -118,6 +121,7 @@ export default function LandingPage({ model }: { model: LandingModel }) {
         </div>
       </section>
 
+      {model.reviewsFor && <CityReviews city={model.reviewsFor.city} state={model.reviewsFor.state} />}
       <ProcessSteps variant={roofing ? "roofing" : "exterior"} />
       {roofing && <Certifications />}
 

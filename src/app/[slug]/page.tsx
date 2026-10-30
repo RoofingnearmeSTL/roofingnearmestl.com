@@ -105,6 +105,7 @@ export default async function SitePageView({ params }: PageProps<"/[slug]">) {
     linkGroups: linkGroups(page),
     // The roof cost estimator lives on the roof replacement page (Missouri pricing).
     estimatorPlace: page.slug === "roof-replacement" ? "St. Louis, MO" : undefined,
+    reviewsFor: page.kind === "city" && page.city && page.state ? { city: page.city, state: page.state } : undefined,
     schema: structuredData(page),
   };
   return <LandingPage model={model} />;
