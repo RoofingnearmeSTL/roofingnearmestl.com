@@ -534,9 +534,9 @@ const checkSource = ts.transpileModule(fs.readFileSync('src/app/api/lead-check/r
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
 
-function checker({ leads = [], sent = [], secret = 'cron-test-secret' } = {}) {
-  const calls = { emails: [], logs: [] }
-  const environment = { NEXT_PUBLIC_SUPABASE_URL: 'https://example.invalid', SUPABASE_SERVICE_ROLE_KEY: 'k', RESEND_API_KEY: 'r', LEAD_TO_EMAIL: 'recipient@example.invalid', ...(secret ? { CRON_SECRET: secret } : {}) }
+function checker({ leads = [], sent = [], secret = 'cron-test-secret', listKey, listError = null, sendKey = 'r', sendResult = null, listThrows = null } = {}) {
+  const calls = { emails: [], logs: [], listKeys: [], sendKeys: [] }
+  const environment = { NEXT_PUBLIC_SUPABASE_URL: 'https://example.invalid', SUPABASE_SERVICE_ROLE_KEY: 'k', LEAD_TO_EMAIL: 'recipient@example.invalid', ...(sendKey ? { RESEND_API_KEY: sendKey } : {}), ...(listKey ? { RESEND_LEAD_CHECK_KEY: listKey } : {}), ...(secret ? { CRON_SECRET: secret } : {}) }
   const exports = {}
   vm.runInNewContext(checkSource, {
     exports, process: { env: environment }, Date, Set,
@@ -547,10 +547,14 @@ function checker({ leads = [], sent = [], secret = 'cron-test-secret' } = {}) {
         const q = { select: () => q, gte: () => q, neq: () => q, order: async () => ({ data: leads, error: null }) }
         return q
       } }) }
-      if (name === 'resend') return { Resend: class { emails = {
-        list: async () => ({ data: { data: sent }, error: null }),
-        send: async (payload) => { calls.emails.push(payload); return { data: { id: 'a' }, error: null } },
-      } } }
+      if (name === 'resend') return { Resend: class {
+        constructor(apiKey) {
+          this.emails = {
+            list: async () => { calls.listKeys.push(apiKey); if (listThrows) throw listThrows; return listError ? { data: null, error: listError } : { data: { data: sent }, error: null } },
+            send: async (payload) => { calls.sendKeys.push(apiKey); calls.emails.push(payload); if (sendResult === 'throw') throw new Error('network down'); return sendResult ?? { data: { id: 'a' }, error: null } },
+          }
+        }
+      } }
       throw new Error('Unexpected import: ' + name)
     },
   })
@@ -583,4 +587,57 @@ test('lead check emails Mike when a saved lead has no delivered team email', asy
   assert.equal(calls.emails[0].to, 'recipient@example.invalid')
   assert.match(calls.emails[0].subject, /^LEAD CHECK: /)
   assert.match(calls.emails[0].text, /Arnold \| Roof Repair/)
+})
+
+test('lead check reads the email list with its own key and sends alerts with the sending key', async () => {
+  const { calls, get } = checker({ listKey: 'full-access-test', leads: [{ created_at: now(), status: 'new' }], sent: [] })
+  const res = await get('Bearer cron-test-secret')
+  assert.equal(res.data.missing, 1)
+  assert.deepEqual(calls.listKeys, ['full-access-test'])
+  assert.deepEqual(calls.sendKeys, ['r'])
+})
+
+test('lead check falls back to the sending key for the list when no separate key is set', async () => {
+  const { calls, get } = checker({ leads: [], sent: [] })
+  await get('Bearer cron-test-secret')
+  assert.deepEqual(calls.listKeys, ['r'])
+})
+
+test('lead check emails Mike when it cannot run, with the fix, and never includes a key', async () => {
+  const { calls, get } = checker({ sendKey: 'send-secret-value', listError: { name: 'restricted_api_key', message: 'This API key is restricted to only send emails' } })
+  const res = await get('Bearer cron-test-secret')
+  assert.equal(res.status, 500)
+  assert.equal(res.data.alerted, true)
+  assert.equal(calls.emails.length, 1)
+  assert.match(calls.emails[0].subject, /^LEAD CHECK FAILED/)
+  assert.match(calls.emails[0].text, /restricted_api_key/)
+  assert.match(calls.emails[0].text, /RESEND_LEAD_CHECK_KEY/)
+  assert.match(calls.emails[0].text, /could not confirm/)
+  assert.doesNotMatch(JSON.stringify(calls.emails[0]), /send-secret-value|cron-test-secret/)
+})
+
+test('lead check failure never throws when the alert email also fails', async () => {
+  const { get } = checker({ sendKey: '', listError: { name: 'restricted_api_key' } })
+  const res = await get('Bearer cron-test-secret')
+  assert.equal(res.status, 500)
+  assert.equal(res.data.alerted, false)
+})
+
+test('lead check reports alerted false when the alert send returns an error or throws', async () => {
+  for (const sendResult of [{ data: null, error: { name: 'rate_limit_exceeded' } }, 'throw']) {
+    const { calls, get } = checker({ sendResult, listError: { name: 'restricted_api_key' } })
+    const res = await get('Bearer cron-test-secret')
+    assert.equal(res.status, 500)
+    assert.equal(res.data.alerted, false)
+    assert.equal(calls.sendKeys.length, 1)
+  }
+})
+
+test('lead check never logs or emails a raw error message', async () => {
+  const leak = new Error('request failed with key send-secret-value and k and cron-test-secret')
+  const { calls, get } = checker({ sendKey: 'send-secret-value', listThrows: leak })
+  const res = await get('Bearer cron-test-secret')
+  assert.equal(res.status, 500)
+  assert.match(calls.emails[0].text, /Unexpected error \(Error\)/)
+  assert.doesNotMatch(JSON.stringify([calls.emails, calls.logs]), /send-secret-value|cron-test-secret|request failed/)
 })

@@ -20,7 +20,8 @@ Last full check: 2026-10-23.
 ## Settings the site needs (Vercel → Settings → Environment Variables)
 
 Secret (server only, never `NEXT_PUBLIC_`):
-`SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `LEAD_TO_EMAIL`, `LEAD_WEBHOOK_URL`,
+`SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY` (Resend "Sending access"), `RESEND_LEAD_CHECK_KEY` (Resend
+"Full access", read only by `/api/lead-check` to list sent emails), `CRON_SECRET`, `LEAD_TO_EMAIL`, `LEAD_WEBHOOK_URL`,
 `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `LEAD_ALERT_PHONE`.
 
 Public (safe in the browser): `NEXT_PUBLIC_SUPABASE_URL` and the optional `NEXT_PUBLIC_*` overrides
@@ -64,7 +65,8 @@ Make the new key first, update every place it is used, redeploy, then delete the
 | Key | Make a new one at | Then update |
 |---|---|---|
 | Supabase service role | Supabase → Project Settings → API keys | Vercel `SUPABASE_SERVICE_ROLE_KEY` → redeploy |
-| Resend | Resend → API Keys | Vercel `RESEND_API_KEY` → redeploy |
+| Resend (sending) | Resend → API Keys, permission "Sending access" | Vercel `RESEND_API_KEY` → redeploy |
+| Resend (lead check) | Resend → API Keys, permission "Full access" | Vercel `RESEND_LEAD_CHECK_KEY` → redeploy |
 | Twilio auth token | Twilio Console → Account → API keys & tokens | Vercel `TWILIO_AUTH_TOKEN` → redeploy |
 | Make webhook link | Make → Webhooks → the website webhook (create a new one) | Vercel `LEAD_WEBHOOK_URL` → redeploy |
 | RoofLink API key | RoofLink → Company Settings → API Keys | Make → HTTP module → Connection |

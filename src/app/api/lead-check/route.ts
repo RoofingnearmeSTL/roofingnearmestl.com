@@ -7,9 +7,28 @@ import { Resend } from 'resend'
 // team lead emails Resend delivered in the same window. If any saved lead has no delivered team email, it
 // emails Mike a short alert so no lead is ever silently lost. It changes no data and sends nothing to customers.
 // Off until CRON_SECRET is set in Vercel (answers 503 without it, so it cannot be triggered by strangers).
+//
+// Two Resend keys, so the lead form never holds a powerful one:
+// - RESEND_API_KEY: "Sending access" key. Sends the alert (and every lead email in /api/lead).
+// - RESEND_LEAD_CHECK_KEY: "Full access" key, read only here, to list sent emails. Resend has no read-only key
+//   type, and a sending-access key gets `restricted_api_key` when it tries to list (Oct 30-31, 2026).
+// If the check itself can't run, it emails Mike that it failed instead of failing silently.
 
 const WINDOW_MS = 24 * 60 * 60 * 1000
 const DELIVERED = new Set(['sent', 'delivered', 'opened', 'clicked', 'delivery_delayed'])
+const FROM = 'RoofingnearmeSTL <leads@roofingnearmestl.com>'
+
+// Only these fixed messages ever reach a log or an email; raw SDK errors could carry request details.
+class CheckError extends Error {}
+const code = (value: unknown) => (typeof value === 'string' && /^[A-Za-z0-9_]{1,60}$/.test(value) ? value : 'unknown')
+
+function fixHint(message: string) {
+  if (/restricted_api_key/.test(message)) {
+    return 'Fix: in Resend, create an API key with "Full access" and save it in Vercel as RESEND_LEAD_CHECK_KEY (Production), then redeploy. Keep RESEND_API_KEY as the sending-access key.'
+  }
+  if (/Missing/.test(message)) return 'Fix: a Vercel setting the check needs is missing (see the message above).'
+  return 'Fix: check the Vercel runtime log for /api/lead-check.'
+}
 
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET
@@ -17,9 +36,9 @@ export async function GET(req: Request) {
   if (req.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
+  const { NEXT_PUBLIC_SUPABASE_URL: url, SUPABASE_SERVICE_ROLE_KEY: key, RESEND_API_KEY: resendKey, RESEND_LEAD_CHECK_KEY: listKey, LEAD_TO_EMAIL: owner } = process.env
   try {
-    const { NEXT_PUBLIC_SUPABASE_URL: url, SUPABASE_SERVICE_ROLE_KEY: key, RESEND_API_KEY: resendKey, LEAD_TO_EMAIL: owner } = process.env
-    if (!url || !key || !resendKey || !owner) throw new Error('Missing Supabase or Resend settings')
+    if (!url || !key || !resendKey || !owner) throw new CheckError('Missing Supabase or Resend settings')
     const since = new Date(Date.now() - WINDOW_MS)
 
     const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } })
@@ -29,13 +48,14 @@ export async function GET(req: Request) {
       .gte('created_at', since.toISOString())
       .neq('status', 'test')
       .order('created_at', { ascending: true })
-    if (leadError) throw new Error(`Supabase read failed: ${leadError.code}`)
+    if (leadError) throw new CheckError(`Supabase read failed: ${code(leadError.code)}`)
     const saved = leads ?? []
 
     // Team lead emails in the window (newest first; 100 per page is far above a day's leads).
     const resend = new Resend(resendKey)
-    const { data: list, error: listError } = await resend.emails.list({ limit: 100 })
-    if (listError) throw new Error(`Resend list failed: ${listError.name}`)
+    const reader = listKey ? new Resend(listKey) : resend
+    const { data: list, error: listError } = await reader.emails.list({ limit: 100 })
+    if (listError) throw new CheckError(`Resend list failed: ${code(listError.name)}`)
     const teamEmails = (list?.data ?? []).filter((email) =>
       Date.parse(email.created_at) >= since.getTime() &&
       email.to.some((to) => to.toLowerCase() === owner.toLowerCase()) &&
@@ -61,7 +81,7 @@ export async function GET(req: Request) {
       'Sent by the daily lead check at roofingnearmestl.com/api/lead-check.',
     ]
     const { error: alertError } = await resend.emails.send({
-      from: 'RoofingnearmeSTL <leads@roofingnearmestl.com>',
+      from: FROM,
       to: owner,
       subject: `LEAD CHECK: ${missing || failed} lead email(s) need a look`,
       text: lines.join('\n'),
@@ -69,7 +89,31 @@ export async function GET(req: Request) {
     if (alertError) console.error('LEAD CHECK ALERT FAILED', { name: alertError.name })
     return NextResponse.json({ ok: false, alerted: !alertError, ...summary })
   } catch (error) {
-    console.error('LEAD CHECK FAILED', { message: error instanceof Error ? error.message : 'UnknownError' })
-    return NextResponse.json({ error: 'lead check failed' }, { status: 500 })
+    const message = error instanceof CheckError ? error.message : `Unexpected error (${code((error as { name?: unknown } | null)?.name)})`
+    console.error('LEAD CHECK FAILED', { message })
+    // Best effort: tell Mike the safety net didn't run. Never throws; the 500 below is what Vercel records.
+    let alerted = false
+    if (resendKey && owner) {
+      try {
+        const { error: alertError } = await new Resend(resendKey).emails.send({
+          from: FROM,
+          to: owner,
+          subject: 'LEAD CHECK FAILED: the daily lead check could not run',
+          text: [
+            `The daily check that compares saved leads with delivered lead emails could not run: ${message}`,
+            '',
+            fixHint(message),
+            '',
+            'The lead form sends its own emails, but this check could not confirm any were saved or delivered today. Look at the Supabase "leads" table and your inbox until the check runs again.',
+            'Sent by the daily lead check at roofingnearmestl.com/api/lead-check.',
+          ].join('\n'),
+        })
+        alerted = !alertError
+        if (alertError) console.error('LEAD CHECK ALERT FAILED', { name: alertError.name })
+      } catch {
+        console.error('LEAD CHECK ALERT FAILED', { name: 'SendThrew' })
+      }
+    }
+    return NextResponse.json({ error: 'lead check failed', alerted }, { status: 500 })
   }
 }
