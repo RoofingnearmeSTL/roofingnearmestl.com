@@ -98,3 +98,10 @@ The project memory lives in the private Brain-Data repo (a folder next to this o
    instead of guessing or adding a to-do. Review-only work needs no production access.
 
 No access to Brain-Data? Say so and ask Mike before acting, rather than working from memory alone.
+
+## Verification of lead alerts and GA4
+
+Agents cannot see Vercel, Supabase, Resend or GA4 dashboards. Read `docs/verification.md` for what is
+built and for the owner's recorded test results. Slack is not part of this project; do not flag it as
+unverified or propose it unless asked. Do not report email or GA4 delivery as unverified when that file
+shows PASS; if rows are blank, ask the owner to run the test there instead of guessing.
