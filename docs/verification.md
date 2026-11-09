@@ -15,6 +15,9 @@ as "unverified" once a row below is marked PASS with a date.
 | Text alert through Twilio | Built, optional, off unless all four Twilio settings are set |
 | CRM hook (`LEAD_WEBHOOK_URL`, Make.com to RoofLink) | Built, optional, not used |
 | Phone and email checks on leads (owner email "Phone check" / "Email check" lines, webhook `phone_check` / `email_check`) | Built, not yet owner-tested |
+| Combined customer follow-up email (thanks, next steps, visit tips, "help us get ready" asks; video link only when `INTRO_VIDEO_URL` is set) | Built, not yet owner-tested |
+| Email required on the lead form (browser only; the server still saves leads without one) | Built, not yet owner-tested |
+| Lead-source fields `gbraid`, `wbraid`, `referrer` (saved once the README migration has run; until then leads save without them) | Built, not yet owner-tested |
 | Daily lead check email (`/api/lead-check`) | Built |
 | **Slack** | **Not built and not used. Nothing sends to Slack. Do not flag it.** |
 | GA4 `generate_lead` and `click_to_call` | Built, runs only if `NEXT_PUBLIC_GA4_ID` is set in Vercel |
@@ -39,6 +42,8 @@ Fill in the date, then PASS or FAIL. Add a short note if FAIL.
 | Owner email sent | Resend → Emails | Status "Delivered" to `LEAD_TO_EMAIL` | | | |
 | Owner email received | Inbox for `LEAD_TO_EMAIL` | Lead email present (check spam) | | | |
 | Customer confirmation | Inbox of the test email | Confirmation email present | | | |
+| Customer follow-up email | Inbox of the test email | Thanks, next steps, visit tips and "help us get ready" asks; video button only if `INTRO_VIDEO_URL` is set | | | |
+| Lead-source fields | Supabase `leads` row, after the migration | `gbraid` filled when the test link had `?gbraid=TEST` | | | |
 | GA4 `generate_lead` | GA4 DebugView or Realtime | Event shows, with `lead_id` and `lead_status` | | | |
 | GA4 `click_to_call` | Same, after tapping a phone link | Event shows | | | |
 | GA4 page views | GA4 Realtime | Active user on the page | | | |

@@ -47,7 +47,8 @@ export const PHONE_REASON: Record<PhoneProblem, string> = {
 export const CONTACT_MESSAGES = {
   nameRequired: 'Please enter your name so we know who to ask for.',
   phoneRequired: 'Please enter your phone number so we can call you back.',
-  emailIncomplete: 'This email address looks incomplete (it needs an @ and a domain like gmail.com). Fix it or leave it blank. Email is optional.',
+  emailRequired: 'Please enter your email so we can send you the details of your free inspection or estimate.',
+  emailIncomplete: 'This email address looks incomplete (it needs an @ and a domain like gmail.com). Please check it.',
 }
 
 export const EMAIL_PATTERN = /^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]+$/
@@ -64,7 +65,8 @@ export function contactFieldError(field: ContactField, value: string): string | 
     const check = checkPhone(text)
     return check.ok ? undefined : PHONE_HELP[check.problem]
   }
-  return !text || isEmailSyntax(text) ? undefined : CONTACT_MESSAGES.emailIncomplete
+  if (!text) return CONTACT_MESSAGES.emailRequired
+  return isEmailSyntax(text) ? undefined : CONTACT_MESSAGES.emailIncomplete
 }
 
 const COMMON_DOMAINS = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com', 'att.net', 'sbcglobal.net', 'charter.net', 'comcast.net']

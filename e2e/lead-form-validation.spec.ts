@@ -47,6 +47,9 @@ test("an empty submit shows plain errors, focuses the name field and sends nothi
   await expect(await errorFor(name)).toHaveText(/Please enter your name/);
   await expect(phone).toHaveAttribute("aria-invalid", "true");
   await expect(await errorFor(phone)).toHaveText(/Please enter your phone number/);
+  const email = form.locator('input[name="email"]');
+  await expect(email).toHaveAttribute("aria-invalid", "true");
+  await expect(await errorFor(email)).toHaveText(/Please enter your email/);
   expect(captured.body).toBeNull();
   await expect(page).not.toHaveURL(/thank-you/);
 });
@@ -78,6 +81,7 @@ test("a made-up phone number blocks the send and focuses the phone field", async
   const form = await openForm(page);
   const phone = form.locator('input[name="phone"]');
   await form.locator('input[name="name"]').fill("Test Homeowner");
+  await form.locator('input[name="email"]').fill("pat@example.com");
   await phone.fill("314-555-0150");
   // Enter, not a click: leaving the field shows its error, which can move the button out from under a click.
   await phone.press("Enter");
@@ -89,21 +93,32 @@ test("a made-up phone number blocks the send and focuses the phone field", async
   expect(captured.body?.phone).toBe("314-555-2368");
 });
 
-test("an invalid email inside the closed details is opened and focused", async ({ page }) => {
+test("an incomplete email blocks the send and focuses the email field", async ({ page }) => {
   const captured = await mockLead(page);
   const form = await openForm(page);
   await form.locator('input[name="name"]').fill("Test Homeowner");
   await form.locator('input[name="phone"]').fill("314-555-2368");
-  const summary = form.getByText("Add more details");
-  await summary.click();
   const email = form.locator('input[name="email"]');
   await email.fill("pat@");
-  await summary.click(); // close it again
-  await submit(form).click();
-  await expect(email).toBeVisible();
+  // Enter, not a click: leaving the field shows its error, which can move the button out from under a click.
+  await email.press("Enter");
   await expect(email).toBeFocused();
   await expect(await errorFor(email)).toHaveText(/looks incomplete/);
   expect(captured.body).toBeNull();
+});
+
+test("email is required: a missing email blocks the send with a plain message", async ({ page }) => {
+  const captured = await mockLead(page);
+  const form = await openForm(page);
+  await form.locator('input[name="name"]').fill("Test Homeowner");
+  await form.locator('input[name="phone"]').fill("314-555-2368");
+  await submit(form).click();
+  const email = form.locator('input[name="email"]');
+  await expect(email).toBeFocused();
+  await expect(email).toHaveAttribute("aria-invalid", "true");
+  await expect(await errorFor(email)).toHaveText(/Please enter your email/);
+  expect(captured.body).toBeNull();
+  await expect(page).not.toHaveURL(/thank-you/);
 });
 
 test("an email typo gets a suggestion that is applied only when tapped", async ({ page }) => {
@@ -111,7 +126,6 @@ test("an email typo gets a suggestion that is applied only when tapped", async (
   const form = await openForm(page);
   await form.locator('input[name="name"]').fill("Test Homeowner");
   await form.locator('input[name="phone"]').fill("314-555-2368");
-  await form.getByText("Add more details").click();
   const email = form.locator('input[name="email"]');
   await email.fill("pat@gmial.com");
   await email.blur();
@@ -130,7 +144,6 @@ test("ignoring the suggestion sends the email exactly as typed", async ({ page }
   const form = await openForm(page);
   await form.locator('input[name="name"]').fill("Test Homeowner");
   await form.locator('input[name="phone"]').fill("314-555-2368");
-  await form.getByText("Add more details").click();
   const email = form.locator('input[name="email"]');
   await email.fill("pat@yahoo.con");
   await email.blur();
@@ -148,4 +161,39 @@ test("the Illinois exterior form has the same inline errors", async ({ page }) =
   await expect(name).toBeFocused();
   await expect(name).toHaveAttribute("aria-invalid", "true");
   expect(captured.body).toBeNull();
+});
+
+async function fillAndSubmit(form: Locator) {
+  await form.locator('input[name="name"]').fill("Test Homeowner");
+  await form.locator('input[name="phone"]').fill("314-555-2368");
+  await form.locator('input[name="email"]').fill("pat@example.com");
+  await submit(form).click();
+}
+
+test("gbraid on the landing URL reaches the payload", async ({ page }) => {
+  const captured = await mockLead(page);
+  const form = await openForm(page, "/?gbraid=test-gbraid-1");
+  await fillAndSubmit(form);
+  await expect(page).toHaveURL(/\/thank-you$/);
+  expect(captured.body?.gbraid).toBe("test-gbraid-1");
+  expect(captured.body?.wbraid).toBe("");
+});
+
+test("a remembered wbraid survives a later page", async ({ page }) => {
+  const captured = await mockLead(page, { ok: true, area: "il" });
+  await openForm(page, "/?wbraid=test-wbraid-1");
+  const form = await openForm(page, "/siding-gutters-waterloo-il");
+  await fillAndSubmit(form);
+  await expect(page).toHaveURL(/\/thank-you/);
+  expect(captured.body?.wbraid).toBe("test-wbraid-1");
+});
+
+test("the referring website reaches the payload", async ({ page }) => {
+  const captured = await mockLead(page);
+  await page.goto("/", { referer: "https://www.google.com/" });
+  const form = leadForm(page);
+  await expect(form).toHaveAttribute("novalidate", "");
+  await fillAndSubmit(form);
+  await expect(page).toHaveURL(/\/thank-you$/);
+  expect(String(captured.body?.referrer)).toMatch(/^https:\/\/www\.google\.com/);
 });

@@ -43,7 +43,9 @@ test("field errors", () => {
   assert.match(contactFieldError("phone", ""), /Please enter your phone number/);
   assert.equal(contactFieldError("phone", "314-555-0150"), PHONE_HELP.fictional);
   assert.equal(contactFieldError("phone", "314-555-2368"), undefined);
-  assert.equal(contactFieldError("email", ""), undefined);
+  assert.equal(contactFieldError("email", ""), CONTACT_MESSAGES.emailRequired);
+  assert.equal(contactFieldError("email", "   "), CONTACT_MESSAGES.emailRequired);
+  assert.match(contactFieldError("email", ""), /Please enter your email/);
   assert.match(contactFieldError("email", "pat@"), /looks incomplete/);
   assert.match(contactFieldError("email", "not-an-email"), /looks incomplete/);
   assert.equal(contactFieldError("email", "pat@gmail.com"), undefined);
@@ -72,4 +74,10 @@ test("the shared module ships to the browser: no imports, no environment", () =>
   const source = fs.readFileSync("src/lib/contact-check.ts", "utf8");
   assert.doesNotMatch(source, /^\s*import\s/m);
   assert.doesNotMatch(source, /process\.env/);
+});
+
+test("email is required and the messages say why", () => {
+  assert.match(CONTACT_MESSAGES.emailRequired, /send you the details/);
+  assert.doesNotMatch(CONTACT_MESSAGES.emailIncomplete, /optional|leave it blank/i);
+  assert.equal(contactFieldError("email", "pat@gmail.com"), undefined);
 });

@@ -22,14 +22,32 @@ const getServerLocationSnapshot = () => "";
 // The campaign tags a visitor arrived with are remembered (30 days) so a lead submitted
 // on a later page, or a later visit, is still credited to the ad/post that brought them in.
 const SOURCE_KEY = "roofing-lead-source";
-const SOURCE_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid"] as const;
-type LeadSource = Partial<Record<(typeof SOURCE_PARAMS)[number] | "landing_page", string>> & { saved_at?: number };
+const SOURCE_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "gbraid", "wbraid", "fbclid"] as const;
+type LeadSource = Partial<Record<(typeof SOURCE_PARAMS)[number] | "landing_page" | "referrer", string>> & { saved_at?: number };
+
+// The site that sent the visitor (other websites only), capped at 500 characters.
+function externalReferrer(): string {
+  try {
+    const ref = document.referrer;
+    if (!ref) return "";
+    const url = new URL(ref);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+    const bare = (host: string) => host.replace(/^www\./, "");
+    if (bare(url.hostname) === bare(window.location.hostname)) return "";
+    return ref.slice(0, 500);
+  } catch {
+    return "";
+  }
+}
 
 export function rememberLandingSource() {
   try {
     const params = new URLSearchParams(window.location.search);
-    if (!SOURCE_PARAMS.some((key) => params.get(key))) return;
-    const source: LeadSource = { landing_page: window.location.href.slice(0, 500), saved_at: Date.now() };
+    const referrer = externalReferrer();
+    const tagged = SOURCE_PARAMS.some((key) => params.get(key));
+    // An untagged visit is saved only when another site sent it and nothing is remembered yet (first touch).
+    if (!tagged && (!referrer || rememberedSource().saved_at)) return;
+    const source: LeadSource = { landing_page: window.location.href.slice(0, 500), saved_at: Date.now(), ...(referrer ? { referrer } : {}) };
     for (const key of SOURCE_PARAMS) {
       const value = params.get(key);
       if (value) source[key] = value.slice(0, 300);
@@ -63,6 +81,9 @@ export function useLandingUtm() {
     content: p.get("utm_content") || saved.utm_content || "",
     term: p.get("utm_term") || saved.utm_term || "",
     gclid: p.get("gclid") || saved.gclid || "",
+    gbraid: p.get("gbraid") || saved.gbraid || "",
+    wbraid: p.get("wbraid") || saved.wbraid || "",
+    referrer: (current ? "" : saved.referrer) || (landing ? externalReferrer() : ""),
     fbclid: p.get("fbclid") || saved.fbclid || "",
     landing: saved.landing_page || landing,
   };
@@ -155,8 +176,6 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       flushSync(() => setErrors(found));
       const input = form.elements.namedItem(first);
       if (input instanceof HTMLInputElement) {
-        const details = input.closest("details");
-        if (details && !details.open) details.open = true;
         input.focus();
       }
       return;
@@ -185,6 +204,9 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       utm_content: utm.content,
       utm_term: utm.term,
       gclid: utm.gclid,
+      gbraid: utm.gbraid,
+      wbraid: utm.wbraid,
+      referrer: utm.referrer,
       fbclid: utm.fbclid,
       landing_page: utm.landing,
       page: typeof window !== 'undefined' ? window.location.href : '',
@@ -235,6 +257,19 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
           onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.phone ? invalidInput : "")} />
         {errors.phone && <p id={errorId("phone")} className={errorClass}>{errors.phone}</p>}
       </div>
+      <div className="space-y-1">
+        <input name="email" required type="email" maxLength={254} autoComplete="email" placeholder="Email *" aria-label="Email"
+          aria-invalid={errors.email ? true : undefined}
+          aria-describedby={[errors.email && errorId("email"), emailSuggestion && hintId].filter(Boolean).join(" ") || undefined}
+          onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.email ? invalidInput : "")} />
+        {errors.email && <p id={errorId("email")} className={errorClass}>{errors.email}</p>}
+        {emailSuggestion && (
+          <p id={hintId} className="px-1 text-sm text-zinc-700">
+            Did you mean <strong>{emailSuggestion}</strong>?{" "}
+            <button type="button" onClick={applyEmailSuggestion} className="font-semibold text-brand-ink underline">Use {emailSuggestion}</button>
+          </p>
+        )}
+      </div>
       <input name="city" defaultValue={defaultCity} maxLength={80} autoComplete="address-level2" placeholder="City" aria-label="City" className={inputClass} />
       <select name="service" defaultValue={defaultService} aria-label="Service needed" className={inputClass}>
         {services.map((service) => <option key={service}>{service}</option>)}
@@ -256,19 +291,6 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       <details className="group rounded-xl border border-zinc-200 bg-white/70 px-4 py-3 text-sm text-black">
         <summary className="cursor-pointer list-none font-semibold text-zinc-700 [&::-webkit-details-marker]:hidden"><span className="group-open:hidden">+</span><span className="hidden group-open:inline">−</span> Add more details (optional)</summary>
         <div className="mt-3 space-y-3">
-          <div className="space-y-1">
-            <input name="email" type="email" maxLength={254} autoComplete="email" placeholder="Email" aria-label="Email"
-              aria-invalid={errors.email ? true : undefined}
-              aria-describedby={[errors.email && errorId("email"), emailSuggestion && hintId].filter(Boolean).join(" ") || undefined}
-              onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.email ? invalidInput : "")} />
-            {errors.email && <p id={errorId("email")} className={errorClass}>{errors.email}</p>}
-            {emailSuggestion && (
-              <p id={hintId} className="px-1 text-sm text-zinc-700">
-                Did you mean <strong>{emailSuggestion}</strong>?{" "}
-                <button type="button" onClick={applyEmailSuggestion} className="font-semibold text-brand-ink underline">Use {emailSuggestion}</button>
-              </p>
-            )}
-          </div>
           <input name="address" maxLength={200} autoComplete="street-address" placeholder="Street address" aria-label="Street address" className={inputClass} />
           <label className="block font-semibold">
             Issue
