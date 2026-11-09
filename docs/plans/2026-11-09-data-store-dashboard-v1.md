@@ -1,11 +1,11 @@
 # Data store and owner dashboard v1 (DATA-03, DATA-04, DASH-01, DASH-02, FUP-02 extra)
 
-Branch: `feature/dashboard-v1` (builds on `feature/phase1-lead-quality`)
+Branch: `feature/dashboard-v1` (builds on `feature/phase1-lead-quality`); merged as PR #73 on Nov 9, 2026
 
-Status: **Proposed: waiting for Mike's confirmation.** Moving a copy of the Brain notes into a database replaces
-Mike's Oct 31 "no database" decision in Brain-Data (`docs/memory/decisions.md`). Nothing is merged, promoted or
-recorded in decisions.md until Mike confirms. GitHub Brain-Data stays where notes are written and reviewed; the
-Supabase tables are a read-only daily copy.
+Status: **Approved by Mike on Nov 9, 2026 and merged (PR #73); not live until Promote and the owner setup below.**
+The read-only copy of the Brain notes narrows Mike's Oct 31 "no database" decision; both are recorded in Brain-Data
+`docs/memory/decisions.md`. GitHub Brain-Data stays where notes are written and reviewed; the Supabase tables are a
+read-only daily copy.
 
 ## Goal
 
@@ -64,11 +64,11 @@ table, recording the decision in Brain-Data, and running the migration or creati
 
 ## Owner setup
 
-1. Mike confirms the move (replaces the Oct 31 decision). Only then merge.
+1. Mike's OK (narrows the Oct 31 decision) and the merge: done Nov 9, 2026 (PR #73).
 2. Run `supabase/migrations/20261109120000_data_store_dashboard_v1.sql` once in the Supabase SQL Editor.
 3. Create a fine-grained GitHub token for Brain-Data only, Contents read-only, with an expiry reminder.
 4. Add `BRAIN_GITHUB_TOKEN` (and, in stage 2, `DASHBOARD_PASSWORD`) in Vercel, Production, Sensitive; confirm
-   `CRON_SECRET` exists. Redeploy.
+   `CRON_SECRET` exists. Redeploy, then Promote the new deployment (auto-assign is off).
 5. Run the first copy: Vercel, Settings, Cron Jobs, `/api/sync/brain`, Run.
 
 ## Status checklist

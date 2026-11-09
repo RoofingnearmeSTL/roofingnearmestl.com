@@ -168,7 +168,8 @@ image for link previews is `public/og-image.jpg`.
 
 ## Data store and owner dashboard (DATA-03, DATA-04, DASH-01, DASH-02)
 
-Status: proposed, waiting for Mike's confirmation (it replaces the Oct 31 "no database" decision for the Brain notes).
+Status: approved by Mike on Nov 9, 2026 and merged in PR #73. It narrows his Oct 31 "no database" decision for the
+Brain notes; both are recorded in Brain-Data `docs/memory/decisions.md`. Live after Promote and the setup below.
 GitHub Brain-Data stays where notes are written and reviewed; Supabase holds a read-only daily copy.
 
 - **Tables** (Supabase, server-only, RLS on with no policies): `brain_notes`, `brain_links`, `competitor_changes`,
@@ -181,11 +182,11 @@ GitHub Brain-Data stays where notes are written and reviewed; Supabase holds a r
 
 ### Data store setup
 
-1. Mike confirms the move. Only then merge.
+1. Mike's OK and the merge: done Nov 9, 2026 (PR #73).
 2. Supabase, SQL Editor, New query: paste the migration file, Run.
 3. GitHub, Settings, Developer settings, Fine-grained tokens: new token for Brain-Data only, Contents read-only.
 4. Vercel, Environment Variables (Production, Sensitive): add `BRAIN_GITHUB_TOKEN` and `DASHBOARD_PASSWORD`; check
-   `CRON_SECRET` exists. Redeploy.
+   `CRON_SECRET` exists. Redeploy, then Promote the new deployment (auto-assign is off).
 5. Run the first copy: Vercel, Settings, Cron Jobs, `/api/sync/brain`, Run. It then runs daily at 11:00 UTC.
 
 By hand: `GET /api/sync/brain` with the header `Authorization: Bearer <CRON_SECRET>`; optional `?full=1` refetches every
