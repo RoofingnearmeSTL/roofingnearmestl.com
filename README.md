@@ -165,3 +165,46 @@ All optional; each feature turns on once its value is set (Production + Preview)
 
 The Facebook page link is in `src/lib/site-pages.ts` (`FACEBOOK_URL`). The share
 image for link previews is `public/og-image.jpg`.
+
+## Data store and owner dashboard (DATA-03, DATA-04, DASH-01, DASH-02)
+
+Status: proposed, waiting for Mike's confirmation (it replaces the Oct 31 "no database" decision for the Brain notes).
+GitHub Brain-Data stays where notes are written and reviewed; Supabase holds a read-only daily copy.
+
+- **Tables** (Supabase, server-only, RLS on with no policies): `brain_notes`, `brain_links`, `competitor_changes`,
+  `recommendations`, `metrics_daily`, `sync_runs`. `leads` is not touched.
+- **Migration:** `supabase/migrations/20261109120000_data_store_dashboard_v1.sql`. The app never runs it; the owner
+  runs it once in the Supabase SQL Editor.
+- **New settings** (Vercel, server-only, never `NEXT_PUBLIC_`): `DASHBOARD_PASSWORD` (12 or more characters; any
+  username), `BRAIN_GITHUB_TOKEN` (fine-grained, Contents read-only, Brain-Data only), optional `BRAIN_GITHUB_REPO`
+  (`owner/name`, default `RoofingnearmeSTL/Brain-Data`, branch `main`). `CRON_SECRET` is reused.
+
+### Data store setup
+
+1. Mike confirms the move. Only then merge.
+2. Supabase, SQL Editor, New query: paste the migration file, Run.
+3. GitHub, Settings, Developer settings, Fine-grained tokens: new token for Brain-Data only, Contents read-only.
+4. Vercel, Environment Variables (Production, Sensitive): add `BRAIN_GITHUB_TOKEN` and `DASHBOARD_PASSWORD`; check
+   `CRON_SECRET` exists. Redeploy.
+5. Run the first copy: Vercel, Settings, Cron Jobs, `/api/sync/brain`, Run. It then runs daily at 11:00 UTC.
+
+By hand: `GET /api/sync/brain` with the header `Authorization: Bearer <CRON_SECRET>`; optional `?full=1` refetches every
+file and `?allow_large_delete=1` lifts the safety stop on large deletions.
+
+The copy skips raw scan output (`market/companies/*/scans/**`) except each `changes.json`, and copies every
+`recommendations.md` table. Caps: 2,000 notes, 1 MB per file, 400 fetches per run. A failed copy keeps the previous
+copy and the failure shows on the dashboard.
+
+### Dashboard
+
+`/dashboard` (password box) and `/dashboard/brain` (search, note view, note map). It shows lead counts, dates,
+sources and statuses, competitor scans, open recommendations, the Brain copy status and a system map. It never shows
+names, phones, emails, addresses or messages. It is hidden from search engines and loads no ad or analytics tags.
+Without `DASHBOARD_PASSWORD` it answers 404.
+
+### Thank-you video link
+
+When `INTRO_VIDEO_URL` is a valid https link, the thank-you page also shows "Meet Mike, the owner: watch a short
+hello" as a plain link (no embed), for Missouri and Illinois alike.
+
+Tests: `CI=1 npm run check`. The Playwright servers blank every secret, so no test reaches a real service.
