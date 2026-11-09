@@ -310,7 +310,10 @@ export async function POST(req: Request) {
             message: [
               'Website lead from roofingnearmestl.com',
               ilLicensePending ? 'ILLINOIS LICENSE PENDING - do not quote or schedule roofing' : '',
-              lead.emergency === true ? 'EMERGENCY - needs a tarp now' : '',
+              // Same wording as the owner email: Illinois never gets a roof tarp promise.
+              body.emergency === true
+                ? ilLicensePending ? 'EMERGENCY - Illinois: no roof tarp; call back fast' : 'EMERGENCY - needs a tarp now'
+                : urgentExterior ? 'URGENT - storm damage to siding, gutters or trim (call back fast)' : '',
               service && `Service: ${service}`,
               leadValue(lead.issue_type) && `Issue: ${leadValue(lead.issue_type)}`,
               !leadValue(lead.address) && 'No street address given - call to confirm',

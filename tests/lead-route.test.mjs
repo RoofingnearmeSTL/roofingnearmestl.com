@@ -405,6 +405,16 @@ test('an Illinois emergency roof request gets a fast call back, never a tarp pro
   assert.doesNotMatch(email.text, /24\/7|tarp/i)
 })
 
+test('the CRM note never promises an Illinois roof tarp', async () => {
+  const { calls, post } = handler({ env: hook })
+  await post({ ...lead, city: 'Waterloo', service_type: 'Siding', emergency: true })
+  await post({ ...lead, city: 'Belleville', service_type: 'Siding Repair', emergency: false, urgent: true })
+  const [pending, urgent] = calls.sms.map((call) => JSON.parse(JSON.parse(call.body).rooflink_job_json).note.message)
+  assert.match(pending, /EMERGENCY - Illinois: no roof tarp; call back fast/)
+  assert.match(urgent, /URGENT - storm damage to siding, gutters or trim \(call back fast\)/)
+  for (const note of [pending, urgent]) assert.doesNotMatch(note, /needs a tarp/)
+})
+
 test('urgent Illinois siding damage is flagged without counting as a roof request', async () => {
   const { calls, post } = handler()
   const response = await post({ ...lead, city: 'Belleville', service_type: 'Siding Repair', emergency: false, urgent: true })
