@@ -13,14 +13,21 @@ async function mockLead(page: Page, reply: Record<string, unknown> = { ok: true 
   return captured;
 }
 
+// Backstop: a test that forgets its own mock can never reach the real endpoint.
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/lead", (route) => route.abort());
+});
+
 const leadForm = (page: Page) => page.locator("form").filter({ has: page.locator('input[name="phone"]') }).first();
 
 test("a Missouri roofing lead is sent with its details and lands on the thank-you page", async ({ page }) => {
   const captured = await mockLead(page);
   await page.goto("/");
   const form = leadForm(page);
+  await expect(form).toHaveAttribute("novalidate", ""); // hydrated
   await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="phone"]').fill("314-555-0100");
+  await form.locator('input[name="phone"]').fill("314-555-2368");
+  await form.locator('input[name="email"]').fill("test@example.com");
   await form.locator('input[name="city"]').fill("Kirkwood");
   await form.locator('select[name="service"]').selectOption("Roof Replacement");
   await form.getByRole("button", { name: /free photo report/i }).click();
@@ -28,7 +35,7 @@ test("a Missouri roofing lead is sent with its details and lands on the thank-yo
   await expect(page).toHaveURL(/\/thank-you$/);
   await expect(page.getByRole("heading", { name: /You're All Set!/i })).toBeVisible();
   await expect(page.getByText("We'll call within 30 mins")).toBeVisible();
-  expect(captured.body).toMatchObject({ name: "Test Homeowner", phone: "314-555-0100", city: "Kirkwood", service_type: "Roof Replacement", emergency: false });
+  expect(captured.body).toMatchObject({ name: "Test Homeowner", phone: "314-555-2368", email: "test@example.com", city: "Kirkwood", service_type: "Roof Replacement", emergency: false });
   expect(typeof captured.body?.form_ms).toBe("number");
 });
 
@@ -36,8 +43,10 @@ test("an Illinois roofing request shows the small license note, is still sent, a
   const captured = await mockLead(page, { ok: true, area: "il-pending" });
   await page.goto("/");
   const form = leadForm(page);
+  await expect(form).toHaveAttribute("novalidate", ""); // hydrated
   await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="phone"]').fill("618-555-0100");
+  await form.locator('input[name="phone"]').fill("618-555-2368");
+  await form.locator('input[name="email"]').fill("test@example.com");
   await form.locator('input[name="city"]').fill("Waterloo");
   await form.locator('select[name="service"]').selectOption("Roof Repair");
   await expect(form.getByRole("status")).toContainText("pending our IL license");
@@ -63,8 +72,10 @@ test("if saving fails, the homeowner is told to call and stays on the page", asy
   await mockLead(page, { error: "Unable to submit lead" }, 500);
   await page.goto("/");
   const form = leadForm(page);
+  await expect(form).toHaveAttribute("novalidate", ""); // hydrated
   await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="phone"]').fill("314-555-0100");
+  await form.locator('input[name="phone"]').fill("314-555-2368");
+  await form.locator('input[name="email"]').fill("test@example.com");
   const dialog = page.waitForEvent("dialog");
   await form.getByRole("button", { name: /free photo report/i }).click();
   const message = await dialog;

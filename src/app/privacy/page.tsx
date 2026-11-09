@@ -3,7 +3,7 @@ import BrandHeader from "@/components/brand-header";
 import BrandFooter from "@/components/brand-footer";
 
 // Keep this page in step with what the site actually collects: the lead form (src/components/lead-form.tsx),
-// lead source tracking, the API route (Supabase, Resend, Twilio, the LEAD_WEBHOOK_URL Make.com hook to RoofLink) and the tags in src/components/google-ads.tsx.
+// lead source tracking, the API route (Supabase, Resend, Twilio, the LEAD_WEBHOOK_URL n8n hook to RoofLink) and the tags in src/components/google-ads.tsx.
 export const metadata: Metadata = {
   title: "Privacy Policy | RoofingnearmeSTL",
   description: "How RoofingnearmeSTL collects, uses and protects the information you share on roofingnearmestl.com.",
@@ -15,7 +15,7 @@ const sections: { heading: string; body: React.ReactNode }[] = [
     heading: "Information you give us",
     body: (
       <>
-        <p>When you request an estimate, we collect what you type into the form: your name and phone number, and, if you choose to add them, your city, email, street address, the service you need, whether it&apos;s an emergency, your roof&apos;s age and details about the problem.</p>
+        <p>When you request an estimate, we collect what you type into the form: your name, phone number and email, and, if you choose to add them, your city, street address, the service you need, whether it&apos;s an emergency, your roof&apos;s age and details about the problem.</p>
         <p>If you call or text us, we receive your phone number and whatever you tell us.</p>
       </>
     ),
@@ -24,7 +24,7 @@ const sections: { heading: string; body: React.ReactNode }[] = [
     heading: "Information collected automatically",
     body: (
       <>
-        <p><b>How you found us.</b> If you arrive from an ad or a link with campaign tags (for example from Google, Facebook or a printed QR code), your browser stores that source and the page you landed on for up to 30 days. If you then send a request, it is sent along with it so we know which ads and listings are working.</p>
+        <p><b>How you found us.</b> If you arrive from an ad, a link with campaign tags (for example from Google, Facebook or a printed QR code) or another website, your browser stores that source, the address of the website that sent you (if any) and the page you landed on for up to 30 days. If you then send a request, it is sent along with it so we know which ads, websites and listings are working.</p>
         <p><b>Analytics and advertising tags.</b> We may use Google Analytics, Google Ads and the Meta (Facebook) Pixel. These tools use cookies and similar technology to record pages you view, buttons you tap (such as call or review buttons) and whether a request was sent, so we can measure and improve our advertising. Google and Meta handle that data under their own privacy policies.</p>
       </>
     ),
@@ -44,7 +44,7 @@ const sections: { heading: string; body: React.ReactNode }[] = [
     heading: "Who we share it with",
     body: (
       <>
-        <p>We do not sell your personal information. We share it only with service providers that help us run the website and respond to you: Vercel (website hosting), Supabase (secure storage of requests), Resend (emails your request to our team, and sends you one confirmation email when you give us your email address), Twilio (text alerts to our team), Make and RoofLink (pass your request into the customer management system we use to schedule and follow up on jobs), and Google and Meta (analytics and advertising, as described above).</p>
+        <p>We do not sell your personal information. We share it only with service providers that help us run the website and respond to you: Vercel (website hosting), Supabase (secure storage of requests), Resend (emails your request to our team, and sends you one follow-up email about your request when you give us your email address), Twilio (text alerts to our team), n8n and RoofLink (pass your request into the customer management system we use to schedule and follow up on jobs), and Google and Meta (analytics and advertising, as described above).</p>
         <p>We may also share information if the law requires it.</p>
       </>
     ),
@@ -82,7 +82,7 @@ export default function PrivacyPage() {
       <main className="px-6 py-14">
         <article className="mx-auto max-w-3xl">
           <h1 className="text-4xl font-black tracking-tight">Privacy Policy</h1>
-          <p className="mt-3 text-sm text-zinc-500">Last updated October 29, 2026</p>
+          <p className="mt-3 text-sm text-zinc-500">Last updated November 9, 2026</p>
           <p className="mt-6 leading-relaxed text-zinc-700">This policy explains what information RoofingnearmeSTL collects through roofingnearmestl.com, how we use it and the choices you have.</p>
           {sections.map((section) => (
             <section key={section.heading} className="mt-9">

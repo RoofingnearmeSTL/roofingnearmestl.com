@@ -10,12 +10,29 @@ const guardSource = ts.transpileModule(fs.readFileSync('src/lib/illinois-guard.t
 const guard = {}
 vm.runInNewContext(guardSource, { exports: guard })
 
+const contactCheck = {}
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/contact-check.ts', 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText, { exports: contactCheck })
+
+const business = {}
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/business.ts', 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText, { exports: business })
+
+const customerEmail = {}
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/customer-email.ts', 'utf8'), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText, { exports: customerEmail })
+
 const source = ts.transpileModule(fs.readFileSync('src/app/api/lead/route.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
 
-function handler({ insertError = null, emailError = null, emailErrorsFirst = 0, env = {}, smsStatus = 201, bot = { isBot: false }, botThrows = false } = {}) {
-  const calls = { inserts: [], emails: [], logs: [], sms: [] }
+function handler({ insertError = null, insertErrors = [], emailError = null, emailErrorsFirst = 0, env = {}, smsStatus = 201, bot = { isBot: false }, botThrows = false,
+  emailCheck = 'ok', emailCheckThrows = false, emailCheckDelayMs = 0 } = {}) {
+  const calls = { inserts: [], emails: [], logs: [], sms: [], emailChecks: [], insertSawPendingCheck: false }
+  let checkSettled = true
   const environment = {
     NEXT_PUBLIC_SUPABASE_URL: 'https://example.invalid',
     SUPABASE_SERVICE_ROLE_KEY: 'test-server-key',
@@ -34,11 +51,26 @@ function handler({ insertError = null, emailError = null, emailErrorsFirst = 0, 
         calls.client = { url, key, options }
         return { from(table) { calls.table = table; return { insert(rows) {
           calls.inserts.push(rows)
-          const result = { data: null, error: insertError }
+          if (!checkSettled) calls.insertSawPendingCheck = true
+          const n = calls.inserts.length - 1
+          const result = { data: null, error: n < insertErrors.length ? insertErrors[n] : insertError }
           return Object.assign(Promise.resolve(result), { select: async () => result })
         } } } }
       } }
       if (name.endsWith('illinois-guard')) return guard
+      if (name.endsWith('contact-check')) return contactCheck
+      if (name.endsWith('/business')) return business
+      if (name.endsWith('customer-email')) return customerEmail
+      if (name.endsWith('email-domain-check')) return { checkEmailDomain: async (email) => {
+        calls.emailChecks.push(email)
+        if (emailCheckDelayMs) {
+          checkSettled = false
+          await new Promise((resolve) => setTimeout(resolve, emailCheckDelayMs))
+          checkSettled = true
+        }
+        if (emailCheckThrows) throw new Error('dns down')
+        return emailCheck
+      } }
       if (name === 'botid/server') return { checkBotId: async () => { if (botThrows) throw new Error('botid down'); return bot } }
       if (name === 'resend') return { Resend: class {
         constructor(key) { calls.emailKey = key }
@@ -99,6 +131,7 @@ test('schema failure returns 500 without sending email or leaking database detai
   const { calls, post } = handler({ insertError: { code: 'PGRST204', message: 'private schema details' } })
   const response = await post(lead)
   assert.equal(response.status, 500)
+  assert.equal(calls.inserts.length, 1)
   assert.equal(calls.emails.length, 0)
   assert.doesNotMatch(JSON.stringify([response, calls.logs]), /private schema details/)
 })
@@ -386,6 +419,16 @@ test('an Illinois emergency roof request gets a fast call back, never a tarp pro
   assert.doesNotMatch(email.text, /24\/7|tarp/i)
 })
 
+test('the CRM note never promises an Illinois roof tarp', async () => {
+  const { calls, post } = handler({ env: hook })
+  await post({ ...lead, city: 'Waterloo', service_type: 'Siding', emergency: true })
+  await post({ ...lead, city: 'Belleville', service_type: 'Siding Repair', emergency: false, urgent: true })
+  const [pending, urgent] = calls.sms.map((call) => JSON.parse(JSON.parse(call.body).rooflink_job_json).note.message)
+  assert.match(pending, /EMERGENCY - Illinois: no roof tarp; call back fast/)
+  assert.match(urgent, /URGENT - storm damage to siding, gutters or trim \(call back fast\)/)
+  for (const note of [pending, urgent]) assert.doesNotMatch(note, /needs a tarp/)
+})
+
 test('urgent Illinois siding damage is flagged without counting as a roof request', async () => {
   const { calls, post } = handler()
   const response = await post({ ...lead, city: 'Belleville', service_type: 'Siding Repair', emergency: false, urgent: true })
@@ -640,4 +683,285 @@ test('lead check never logs or emails a raw error message', async () => {
   assert.equal(res.status, 500)
   assert.match(calls.emails[0].text, /Unexpected error \(Error\)/)
   assert.doesNotMatch(JSON.stringify([calls.emails, calls.logs]), /send-secret-value|cron-test-secret|request failed/)
+})
+
+// --- Phase 1 lead quality: phone check, email check, webhook secret ---
+
+const ownerText = (calls) => calls.emails.find((e) => e.to === 'recipient@example.invalid').text
+const hookBody = (calls) => JSON.parse(calls.sms[0].body)
+
+test('a valid phone number is not flagged anywhere', async () => {
+  const { calls, post } = handler({ env: hook })
+  assert.equal((await post({ ...lead, phone: '314-555-2368' })).status, 200)
+  assert.doesNotMatch(ownerText(calls), /Phone check/)
+  const sent = hookBody(calls)
+  assert.equal(sent.phone_check, 'ok')
+  assert.doesNotMatch(JSON.parse(sent.rooflink_job_json).note.message, /Phone check/)
+})
+
+test('a phone number that breaks a rule is saved and flagged, never rejected', async () => {
+  const cases = [['3145550150', 'fictional'], ['9115552368', 'n11'], ['1115552368', 'area_code'],
+    ['3140552368', 'exchange'], ['2222222222', 'repeated'], ['23145552368', 'too_long']]
+  for (const [phone, problem] of cases) {
+    const { calls, post } = handler({ env: hook })
+    const response = await post({ ...lead, phone })
+    assert.equal(response.status, 200, problem)
+    assert.equal(calls.inserts.length, 1, problem)
+    assert.equal(calls.inserts[0][0].phone, phone, problem)
+    const reason = contactCheck.PHONE_REASON[problem]
+    assert.ok(ownerText(calls).includes(`Phone check: Looks invalid (${reason})`), problem)
+    assert.match(calls.emails.find((e) => e.to === 'recipient@example.invalid').subject, /^New Roofing Lead/)
+    const sent = hookBody(calls)
+    assert.equal(sent.phone_check, 'invalid', problem)
+    assert.ok(JSON.parse(sent.rooflink_job_json).note.message.includes(`Phone check: looks invalid (${reason})`), problem)
+    assert.ok(!JSON.stringify(calls.logs).includes(phone), problem)
+  }
+})
+
+test('email domain check result reaches the webhook; ok sends the confirmation', async () => {
+  const { calls, post } = handler({ env: hook })
+  assert.equal((await post(lead)).status, 200)
+  assert.deepEqual(calls.emailChecks, ['customer@example.invalid'])
+  assert.doesNotMatch(ownerText(calls), /Email check/)
+  assert.equal(calls.emails.filter((e) => e.to === lead.email).length, 1)
+  assert.equal(hookBody(calls).email_check, 'ok')
+})
+
+test('no mail server: the email is kept, the owner is told, the customer email is skipped', async () => {
+  const { calls, post } = handler({ env: hook, emailCheck: 'no_mail_server' })
+  assert.equal((await post(lead)).status, 200)
+  assert.equal(calls.inserts[0][0].email, lead.email)
+  assert.ok(ownerText(calls).includes('Email check: No mail server found for example.invalid'))
+  assert.equal(calls.emails.filter((e) => e.to === lead.email).length, 0)
+  const sent = hookBody(calls)
+  assert.equal(sent.email_check, 'no_mail_server')
+  assert.ok(JSON.parse(sent.rooflink_job_json).note.message.includes('Email check: no mail server found for example.invalid'))
+  assert.ok(calls.logs.some(([message]) => message === 'CUSTOMER CONFIRMATION SKIPPED'))
+  assert.doesNotMatch(JSON.stringify(calls.logs), /customer@example/)
+})
+
+test('an unknown or failed email check behaves like ok', async () => {
+  for (const options of [{ emailCheck: 'unknown' }, { emailCheckThrows: true }]) {
+    const { calls, post } = handler({ env: hook, ...options })
+    assert.equal((await post(lead)).status, 200)
+    assert.equal(calls.emails.filter((e) => e.to === lead.email).length, 1)
+    assert.doesNotMatch(ownerText(calls), /Email check/)
+    assert.equal(hookBody(calls).email_check, 'unknown')
+  }
+})
+
+test('no email or a malformed email means email_check none and no DNS lookup', async () => {
+  for (const email of ['', 'not-an-email']) {
+    const { calls, post } = handler({ env: hook })
+    assert.equal((await post({ ...lead, email })).status, 200)
+    assert.equal(calls.emailChecks.length, 0)
+    assert.equal(hookBody(calls).email_check, 'none')
+  }
+})
+
+test('the email check runs alongside the save', async () => {
+  const ok = handler({ emailCheckDelayMs: 30 })
+  assert.equal((await ok.post(lead)).status, 200)
+  assert.equal(ok.calls.insertSawPendingCheck, true)
+  const failed = handler({ emailCheckDelayMs: 30, insertError: { code: 'X' } })
+  assert.equal((await failed.post(lead)).status, 500)
+  assert.equal(failed.calls.emails.length, 0)
+})
+
+test('X-Webhook-Secret is sent only when LEAD_WEBHOOK_SECRET is set and is never logged', async () => {
+  const withSecret = handler({ env: { ...hook, LEAD_WEBHOOK_SECRET: 'test-hook-secret' } })
+  const response = await withSecret.post(lead)
+  assert.equal(withSecret.calls.sms[0].headers['X-Webhook-Secret'], 'test-hook-secret')
+  assert.equal(withSecret.calls.sms[0].headers['Content-Type'], 'application/json')
+  assert.doesNotMatch(JSON.stringify([withSecret.calls.logs, response, withSecret.calls.sms[0].body]), /test-hook-secret/)
+  const trimmed = handler({ env: { ...hook, LEAD_WEBHOOK_SECRET: '  test-hook-secret\n' } })
+  await trimmed.post(lead)
+  assert.equal(trimmed.calls.sms[0].headers['X-Webhook-Secret'], 'test-hook-secret')
+  for (const env of [{ ...hook, LEAD_WEBHOOK_SECRET: '' }, hook]) {
+    const none = handler({ env })
+    await none.post(lead)
+    assert.ok(!('X-Webhook-Secret' in none.calls.sms[0].headers))
+  }
+})
+
+test('the lead route runs on the Node.js runtime and starts the email check before the save', () => {
+  const route = fs.readFileSync('src/app/api/lead/route.ts', 'utf8')
+  assert.match(route, /export const runtime = 'nodejs'/)
+  assert.ok(route.indexOf('checkEmailDomain(') < route.indexOf(".from('leads').insert"))
+  assert.ok(route.indexOf(".from('leads').insert") < route.indexOf('await emailCheckPending'))
+})
+
+test('the browser form keeps native checks for no-JS and links inline errors', () => {
+  const form = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
+  for (const piece of ['name="name" required', 'name="phone" required', 'name="email" required type="email"', '(?:\\D*\\d){10,}\\D*', 'noValidate={hydrated}',
+    'aria-invalid=', 'aria-describedby=', 'from "@/lib/contact-check"', 'name="company" tabIndex={-1}', 'form_ms: shownAt.current']) {
+    assert.ok(form.includes(piece), piece)
+  }
+})
+
+// --- Owner decisions Nov 9 2026: combined follow-up email (FUP-01), lead-source fields (ATT-01), email required in the browser ---
+const VIDEO = 'https://video.example.invalid/hello'
+const mo = { name: 'Pat Q', phone: '3145552368', email: 'pat@example.invalid', city: 'Kirkwood', service_type: 'Roof Replacement', issue_type: 'leak' }
+const toCustomer = (calls) => calls.emails.filter((e) => e.to === 'pat@example.invalid')
+const toOwner = (calls) => calls.emails.filter((e) => e.to === 'recipient@example.invalid')
+
+test('combined follow-up email through the route: all sections, no video, owner email unchanged', async () => {
+  const { calls, post } = handler()
+  assert.equal((await post(mo)).status, 200)
+  const [customer] = toCustomer(calls)
+  assert.equal(customer.subject, 'We got your request - RoofingnearmeSTL')
+  assert.equal(customer.replyTo, 'recipient@example.invalid')
+  for (const piece of [/Hi Pat,/, /during business hours, we call as soon as your request comes in/, /whoever makes decisions about the home/,
+    /Free Photo-Documented Roof Report/, /Photos of the problem area/, /gate code, pets/, /Need us sooner\? Call 314-202-7663/]) assert.match(customer.text, piece)
+  assert.doesNotMatch(customer.text + customer.html, /video/i)
+  const [owner] = toOwner(calls)
+  assert.equal(owner.subject, 'New Roofing Lead: Kirkwood - Roof Replacement - leak')
+  assert.doesNotMatch(owner.text, /video|gate code|Help us get ready/i)
+})
+
+test('INTRO_VIDEO_URL adds a link and button for the customer only', async () => {
+  const { calls, post } = handler({ env: { INTRO_VIDEO_URL: VIDEO } })
+  await post(mo)
+  const [customer] = toCustomer(calls)
+  assert.match(customer.text, /https:\/\/video\.example\.invalid\/hello/)
+  assert.match(customer.html, /href="https:\/\/video\.example\.invalid\/hello"/)
+  assert.doesNotMatch(toOwner(calls)[0].text + toOwner(calls)[0].html, /video/i)
+})
+
+for (const bad of ['http://video.example.invalid/hello', 'javascript:alert(1)']) {
+  test(`a non-https INTRO_VIDEO_URL (${bad.slice(0, 10)}) is ignored and logged without its value`, async () => {
+    const { calls, post } = handler({ env: { INTRO_VIDEO_URL: bad } })
+    assert.equal((await post(mo)).status, 200)
+    const [customer] = toCustomer(calls)
+    assert.doesNotMatch(customer.text + customer.html, /video|alert/i)
+    assert.match(JSON.stringify(calls.logs), /INTRO_VIDEO_URL IGNORED: must be an https:\/\/ link/)
+    assert.doesNotMatch(JSON.stringify(calls.logs), /video\.example|alert\(1\)/)
+  })
+}
+
+test('with INTRO_VIDEO_URL set, bots, undeliverable emails and a missing owner inbox still get no customer email', async () => {
+  const env = { INTRO_VIDEO_URL: VIDEO }
+  const bot = handler({ env, bot: { isBot: true, isVerifiedBot: false } })
+  await bot.post(mo)
+  assert.equal(toCustomer(bot.calls).length, 0)
+  const noMail = handler({ env, emailCheck: 'no_mail_server' })
+  await noMail.post(mo)
+  assert.equal(toCustomer(noMail.calls).length, 0)
+  const noOwner = handler({ env: { ...env, LEAD_TO_EMAIL: '' } })
+  await noOwner.post(mo)
+  assert.equal(noOwner.calls.emails.length, 0)
+})
+
+test('Illinois emails with a video keep the Illinois rules', async () => {
+  const env = { INTRO_VIDEO_URL: VIDEO }
+  const ext = handler({ env })
+  await ext.post({ ...mo, city: 'Waterloo, IL', service_type: 'Siding' })
+  const body = toCustomer(ext.calls)[0].text.split('\n\n').slice(0, -1).join('\n\n').replace(/RoofingnearmeSTL|Roofing Near Me STL LLC/g, '')
+  assert.doesNotMatch(body, /roof/i)
+  assert.match(toCustomer(ext.calls)[0].text, /hello video/)
+  const pending = handler({ env })
+  await pending.post({ ...mo, city: 'Waterloo, IL', service_type: 'Roof Repair' })
+  const text = toCustomer(pending.calls)[0].text
+  assert.match(text, /Roofing in Illinois is pending our Illinois roofing license/)
+  assert.doesNotMatch(text, /Roof Report|24\/7|tarp/i)
+})
+
+test('the customer html escapes the name', async () => {
+  const { calls, post } = handler()
+  await post({ ...mo, name: '<Customer>' })
+  assert.match(toCustomer(calls)[0].html, /Hi &lt;Customer&gt;,/)
+})
+
+test('a lead with no email (old cached page or no JavaScript) is still saved', async () => {
+  const { calls, post } = handler({ env: hook })
+  const noEmail = { ...mo }
+  delete noEmail.email
+  const response = await post(noEmail)
+  assert.equal(response.status, 200)
+  assert.equal(calls.inserts.length, 1)
+  assert.equal(calls.inserts[0][0].email, null)
+  assert.equal(calls.emailChecks.length, 0)
+  assert.equal(JSON.parse(calls.sms[0].body).email_check, 'none')
+  assert.equal(toOwner(calls).length, 1)
+  assert.equal(calls.emails.length, 1)
+})
+
+test('gbraid, wbraid and referrer are stored, clipped and labelled', async () => {
+  const { calls, post } = handler({ env: hook })
+  await post({ ...mo, gbraid: 'g'.repeat(400), wbraid: 'w'.repeat(400), referrer: 'r'.repeat(600) })
+  const row = calls.inserts[0][0]
+  assert.equal(row.gbraid.length, 300)
+  assert.equal(row.wbraid.length, 300)
+  assert.equal(row.referrer.length, 500)
+  assert.match(toOwner(calls)[0].text, /Source: Google Ads click/)
+  assert.equal(JSON.parse(calls.sms[0].body).gbraid.length, 300)
+})
+
+test('the new tracking keys are absent from the row when not sent', async () => {
+  const { calls, post } = handler()
+  await post({ ...mo, gbraid: '', wbraid: '  ' })
+  const row = calls.inserts[0][0]
+  for (const key of ['gbraid', 'wbraid', 'referrer']) assert.equal(key in row, false)
+})
+
+for (const key of ['gbraid', 'wbraid']) {
+  test(`only a ${key} counts as a Google Ads click, and UTM tags still win`, async () => {
+    const one = handler()
+    await one.post({ ...mo, [key]: 'abc' })
+    assert.match(toOwner(one.calls)[0].text, /Source: Google Ads click/)
+    const tagged = handler()
+    await tagged.post({ ...mo, [key]: 'abc', utm_source: 'google', utm_medium: 'cpc' })
+    assert.match(toOwner(tagged.calls)[0].text, /Source: google \/ cpc/)
+  })
+}
+
+test('PGRST204 with tracking fields retries once without them and still emails everyone', async () => {
+  const { calls, post } = handler({ insertErrors: [{ code: 'PGRST204', message: 'private schema details' }] })
+  const response = await post({ ...mo, gbraid: 'gb-1', referrer: 'https://www.google.com/' })
+  assert.equal(response.status, 200)
+  assert.equal(calls.inserts.length, 2)
+  const second = calls.inserts[1][0]
+  for (const key of ['gbraid', 'wbraid', 'referrer']) assert.equal(key in second, false)
+  assert.equal(second.name, 'Pat Q')
+  assert.equal(second.phone, '3145552368')
+  assert.equal(second.email, 'pat@example.invalid')
+  assert.equal(toOwner(calls).length, 1)
+  assert.equal(toCustomer(calls).length, 1)
+  assert.match(JSON.stringify(calls.logs), /SUPABASE INSERT RETRY WITHOUT gbraid\/wbraid\/referrer/)
+  assert.doesNotMatch(JSON.stringify(calls.logs), /private schema details/)
+})
+
+test('PGRST204 on both tries returns 500 and sends nothing', async () => {
+  const { calls, post } = handler({ insertError: { code: 'PGRST204', message: 'x' } })
+  assert.equal((await post({ ...mo, gbraid: 'gb-1' })).status, 500)
+  assert.equal(calls.inserts.length, 2)
+  assert.equal(calls.emails.length, 0)
+})
+
+test('another insert error is not retried', async () => {
+  const { calls, post } = handler({ insertError: { code: '23502', message: 'x' } })
+  assert.equal((await post({ ...mo, gbraid: 'gb-1' })).status, 500)
+  assert.equal(calls.inserts.length, 1)
+  assert.equal(calls.emails.length, 0)
+})
+
+test('the form payload carries gbraid, wbraid and referrer', () => {
+  const leadForm = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
+  const start = leadForm.indexOf('    const payload = {')
+  const payloadSource = leadForm.slice(start, leadForm.indexOf('\n    try {', start))
+  const compiled = ts.transpileModule(`${payloadSource}\nexports.payload = payload`, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText
+  const exports = {}
+  vm.runInNewContext(compiled, { exports, fd: new Map(Object.entries({ name: 'Pat', phone: '3145552368', email: 'pat@example.invalid' })),
+    extras: {}, utm: { gbraid: 'gb-1', wbraid: 'wb-1', referrer: 'https://www.google.com/' }, shownAt: { current: 0 }, Date })
+  assert.equal(exports.payload.gbraid, 'gb-1')
+  assert.equal(exports.payload.wbraid, 'wb-1')
+  assert.equal(exports.payload.referrer, 'https://www.google.com/')
+  assert.match(leadForm, /SOURCE_PARAMS = \[[^\]]*"gbraid", "wbraid"/)
+  assert.match(leadForm, /slice\(0, 500\)/)
+})
+
+test('the email field sits in the main fields, not the closed details panel', () => {
+  const leadForm = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
+  assert.ok(leadForm.indexOf('name="email"') > 0 && leadForm.indexOf('name="email"') < leadForm.indexOf('<details'))
+  assert.doesNotMatch(leadForm, /details\.open = true/)
 })

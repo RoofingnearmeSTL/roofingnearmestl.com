@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { checkBotId } from 'botid/server'
-import { IL_LICENSE_PENDING, isIllinoisRoofingRequest, looksIllinois } from '../../../lib/illinois-guard'
+import { IL_LICENSE_PENDING, isIllinoisRoofingRequest, isRoofingRequest, looksIllinois } from '../../../lib/illinois-guard'
+import { checkPhone, isEmailSyntax, emailDomain, PHONE_REASON } from '../../../lib/contact-check'
+import { checkEmailDomain, type EmailCheckField } from '../../../lib/email-domain-check'
+import { PHONES } from '../../../lib/business'
+import { buildCustomerEmail, escapeHtml, introVideoUrl } from '../../../lib/customer-email'
 
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  })[character]!)
-}
+// node:dns (email domain check) needs the Node.js runtime, which is also the Next 16 default.
+export const runtime = 'nodejs'
 
 function leadValue(value: unknown): string {
   return typeof value === 'string' ? value.trim() : typeof value === 'number' ? String(value) : ''
@@ -21,7 +22,6 @@ function field(value: unknown, max = 200): string | number | null {
   return null
 }
 
-const EMAIL = /^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]+$/
 /** leads.status for a request that looks automated (BotID or sent too fast). It is still saved and emailed. */
 const SUSPECTED_BOT = 'suspected_bot'
 /** A person needs at least this long to fill in the form; faster submissions are flagged, never dropped. */
@@ -41,6 +41,9 @@ async function looksAutomated(formMs: unknown): Promise<{ suspected: boolean; re
   return { suspected: false, reason: '' }
 }
 const MAX_BODY_BYTES = 20_000
+// Lead-source columns added by the README migration. Until it has run, an insert that carries them fails with
+// PGRST204 and is retried once without them, so a lead is never lost whichever happens first (migration or deploy).
+const TRACKING_COLUMNS = new Set(['gbraid', 'wbraid', 'referrer'])
 
 export async function POST(req: Request) {
   try {
@@ -61,6 +64,10 @@ export async function POST(req: Request) {
     if (body.phone.replace(/\D/g, '').length < 10) {
       return NextResponse.json({ error: 'valid phone required' }, { status: 400 })
     }
+    // Any other failed phone rule only flags the lead (owner email, CRM note, webhook); it is never rejected.
+    const phoneCheck = checkPhone(body.phone)
+    const phoneProblem = phoneCheck.ok ? null : phoneCheck.problem
+    if (phoneProblem) console.log('LEAD PHONE CHECK', { result: phoneProblem })
     // Illinois rule: no roof work on Illinois homes until the IL roofing license (225 ILCS 335/9). The request is
     // still saved, tagged il_license_pending, and the team email says not to quote or schedule roofing.
     const homeLocation = { city: body.city, address: body.address, estLocation: body.est_location, page: body.page }
@@ -80,10 +87,13 @@ export async function POST(req: Request) {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     })
     const email = field(body.email, 254)
+    const gbraid = field(body.gbraid, 300)
+    const wbraid = field(body.wbraid, 300)
+    const referrer = field(body.referrer, 500)
     const lead = {
       name: field(body.name, 100),
       phone: field(body.phone, 30),
-      email: typeof email === 'string' && EMAIL.test(email) ? email : null,
+      email: typeof email === 'string' && isEmailSyntax(email) ? email : null,
       address: field(body.address),
       city: field(body.city, 80),
       service_type: field(body.service_type ?? body.service, 80),
@@ -106,14 +116,29 @@ export async function POST(req: Request) {
       fbclid: field(body.fbclid, 300),
       landing_page: field(body.landing_page, 500),
       page_url: field(body.page, 500),
+      // Only present when sent, so a lead without them never touches the new columns.
+      ...(gbraid !== null ? { gbraid } : {}),
+      ...(wbraid !== null ? { wbraid } : {}),
+      ...(referrer !== null ? { referrer } : {}),
     }
     const sourceLabel = [leadValue(lead.utm_source), leadValue(lead.utm_medium), leadValue(lead.utm_campaign)].filter(Boolean).join(' / ')
-      || (lead.gclid ? 'Google Ads click' : lead.fbclid ? 'Facebook / Instagram click' : 'Direct or unknown')
-    const { error } = await supabase.from('leads').insert([lead])
+      || (lead.gclid || lead.gbraid || lead.wbraid ? 'Google Ads click' : lead.fbclid ? 'Facebook / Instagram click' : 'Direct or unknown')
+    // The email domain check runs alongside the save, never rejects and gives up after 1.5 s.
+    const emailCheckPending: Promise<EmailCheckField> = lead.email ? checkEmailDomain(lead.email).catch(() => 'unknown' as const) : Promise.resolve('none' as const)
+    const firstTry = await supabase.from('leads').insert([lead])
+    let error = firstTry.error
+    if (error?.code === 'PGRST204' && Object.keys(lead).some((key) => TRACKING_COLUMNS.has(key))) {
+      console.error('SUPABASE INSERT RETRY WITHOUT gbraid/wbraid/referrer (run the README lead-source migration)', { code: error.code })
+      const retry = await supabase.from('leads').insert([Object.fromEntries(Object.entries(lead).filter(([key]) => !TRACKING_COLUMNS.has(key)))])
+      error = retry.error
+    }
     if (error) {
       console.error('SUPABASE INSERT FAILED', { code: error.code })
       return NextResponse.json({ error: 'Unable to save lead' }, { status: 500 })
     }
+    const emailCheck = await emailCheckPending.catch(() => 'unknown' as const)
+    const mailDomain = lead.email ? emailDomain(lead.email) : ''
+    if (emailCheck === 'no_mail_server') console.log('LEAD EMAIL CHECK', { result: emailCheck })
     // A notification failure must not fail an already-saved lead.
     try {
       if (!process.env.RESEND_API_KEY || !process.env.LEAD_TO_EMAIL) {
@@ -124,7 +149,9 @@ export async function POST(req: Request) {
           ...(ilLicensePending ? [['Illinois License Pending', 'YES - roofing request for an Illinois home. Do NOT quote, schedule or do any roof work. Call back fast, help with exterior work, and point roof needs to a licensed Illinois roofer.']] : []),
           ['Name', leadValue(lead.name)],
           ['Phone', leadValue(lead.phone)],
+          ...(phoneProblem ? [['Phone check', `Looks invalid (${PHONE_REASON[phoneProblem]}). Saved anyway; double-check the number before calling.`]] : []),
           ['Email', leadValue(lead.email)],
+          ...(emailCheck === 'no_mail_server' ? [['Email check', `No mail server found for ${mailDomain}. Saved anyway; no confirmation email was sent. Confirm the address when you call.`]] : []),
           ['Address', [leadValue(lead.address), leadValue(lead.city)].filter(Boolean).join(', ')],
           ['Service', leadValue(lead.service_type)],
           ['Issue', leadValue(lead.issue_type)],
@@ -176,60 +203,33 @@ export async function POST(req: Request) {
     } catch (emailError) {
       console.error('RESEND EMAIL CRASH', { name: emailError instanceof Error ? emailError.name : 'UnknownError' })
     }
-    // Instant confirmation to the customer, sent the moment the lead is saved (only when they gave an email).
-    // Transactional: it answers their own request, with no marketing. Replies go to the owner's inbox.
+    // One combined follow-up email to the customer (FUP-01); RoofLink sends none. Sent the moment the lead is saved
+    // (only when they gave an email). Transactional: it answers their own request. Replies go to the owner's inbox.
     // Must not fail a saved lead.
     try {
       // Only when the owner inbox is set: the owner must get the lead, and replies need somewhere to go.
       // Never to a suspected bot: the form must not be usable to send our email to strangers.
-      if (lead.email && !bot.suspected && process.env.RESEND_API_KEY && process.env.LEAD_TO_EMAIL) {
+      if (lead.email && emailCheck === 'no_mail_server') console.log('CUSTOMER CONFIRMATION SKIPPED', { reason: 'no_mail_server' })
+      if (lead.email && !bot.suspected && emailCheck !== 'no_mail_server' && process.env.RESEND_API_KEY && process.env.LEAD_TO_EMAIL) {
         const firstName = leadValue(lead.name).split(/\s+/)[0] || 'there'
         const service = leadValue(lead.service_type)
         const place = leadValue(lead.city)
-        const phone = illinois ? '618-612-5192' : '314-202-7663'
-        const visit = illinois ? 'a free siding, gutter or soffit & fascia estimate' : 'your Free Photo-Documented Roof Report'
-        const received = `Thanks for contacting RoofingnearmeSTL. We received your request${service ? ` for ${service}` : ''}${place ? ` in ${place}` : ''}.`
-        const paragraphs = ilLicensePending
-          ? [
-              `Hi ${firstName},`,
-              received,
-              body.emergency === true
-                ? `We're local and we'll call you at ${leadValue(lead.phone)} as soon as we can. If water is coming in, call us at 618-612-5192 and we'll point you to a licensed Illinois roofer right away.`
-                : `What happens next: someone from our local team will call you at ${leadValue(lead.phone)}. If your roof needs work now, we'll point you to a licensed Illinois roofer, and we can help right away with siding, gutters, soffit, fascia and other exterior work.`,
-              'You can reply to this email with photos or questions about your home.',
-              'Thank you,\nRoofingnearmeSTL (Roofing Near Me STL LLC)',
-            ]
-          : [
-              `Hi ${firstName},`,
-              received,
-              `What happens next: someone from our local team will call you at ${leadValue(lead.phone)} to set up ${visit}.`,
-              lead.emergency === true && !illinois
-                ? 'If water is coming in right now, call our 24/7 emergency line: 314-202-7663.'
-                : urgentExterior
-                  ? `You marked this as urgent storm damage, so we'll call you back as fast as we can. Need us sooner? Call ${phone}.`
-                  : `Need us sooner? Call ${phone}.`,
-              `You can reply to this email with photos or questions about your ${illinois ? 'project' : 'roof'}.`,
-              'Thank you,\nRoofingnearmeSTL (Roofing Near Me STL LLC)',
-            ]
-        // Illinois license note: small print, like a disclaimer (Mike, Oct 29).
-        const licenseNote = ilLicensePending
-          ? "Roofing in Illinois is pending our Illinois roofing license, which we expect soon. Until then we don't quote, schedule or do roof work on Illinois homes. We've saved your request and will reach out when roofing opens for Illinois."
-          : ''
-        const footer = 'RoofingnearmeSTL · 421 Janice Dr, Waterloo, IL 62298 · Illinois 618-612-5192 · Missouri 314-202-7663 · roofingnearmestl.com\n' +
-          "You're getting this one email because you asked for an estimate at roofingnearmestl.com. If that wasn't you, reply and let us know."
+        const videoUrl = introVideoUrl(process.env.INTRO_VIDEO_URL)
+        if (process.env.INTRO_VIDEO_URL?.trim() && !videoUrl) console.error('INTRO_VIDEO_URL IGNORED: must be an https:// link')
+        const customerEmail = buildCustomerEmail({
+          firstName, service, place, customerPhone: leadValue(lead.phone),
+          illinois, ilLicensePending, emergencyTarp: body.emergency === true, leadEmergency: lead.emergency === true, urgentExterior,
+          roofing: !illinois && isRoofingRequest(lead.service_type, body.emergency === true),
+          videoUrl, phones: { IL: PHONES.IL.display, MO: PHONES.MO.display },
+        })
         const resend = new Resend(process.env.RESEND_API_KEY)
         const { data: confirmData, error: confirmError } = await resend.emails.send({
           from: 'RoofingnearmeSTL <leads@roofingnearmestl.com>',
           to: lead.email,
           replyTo: process.env.LEAD_TO_EMAIL,
-          subject: 'We got your request - RoofingnearmeSTL',
-          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#111">
-            <img src="https://www.roofingnearmestl.com/logo.png" alt="RoofingnearmeSTL" width="180" />
-            ${paragraphs.map((p) => `<p style="font-size:16px;line-height:1.5">${escapeHtml(p).replace(/\n/g, '<br>')}</p>`).join('')}
-            ${licenseNote ? `<p style="font-size:12px;color:#666;line-height:1.5">${escapeHtml(licenseNote)}</p>` : ''}
-            <p style="font-size:12px;color:#666;line-height:1.5;border-top:1px solid #ddd;padding-top:12px">${escapeHtml(footer).replace(/\n/g, '<br>')}</p>
-          </div>`,
-          text: [...paragraphs, ...(licenseNote ? [licenseNote] : []), '', footer].join('\n\n'),
+          subject: customerEmail.subject,
+          html: customerEmail.html,
+          text: customerEmail.text,
         })
         if (confirmError) {
           console.error('CUSTOMER CONFIRMATION FAILED', { name: confirmError.name })
@@ -260,8 +260,8 @@ export async function POST(req: Request) {
     } catch (smsError) {
       console.error('LEAD SMS CRASH', { name: smsError instanceof Error ? smsError.name : 'UnknownError' })
     }
-    // Optional: send the saved lead to the CRM. LEAD_WEBHOOK_URL is a Make.com custom webhook whose
-    // scenario posts rooflink_job_json to RoofLink's "Create a new job" API (POST /light/public/jobs/).
+    // Optional: send the saved lead to the CRM. LEAD_WEBHOOK_URL is the n8n CRM webhook that
+    // posts rooflink_job_json to RoofLink's "Create a new job" API (POST /light/public/jobs/).
     // Skipped until the variable is set. Must not fail or slow down a saved lead for long.
     try {
       const hook = process.env.LEAD_WEBHOOK_URL
@@ -294,10 +294,15 @@ export async function POST(req: Request) {
             message: [
               'Website lead from roofingnearmestl.com',
               ilLicensePending ? 'ILLINOIS LICENSE PENDING - do not quote or schedule roofing' : '',
-              lead.emergency === true ? 'EMERGENCY - needs a tarp now' : '',
+              // Same wording as the owner email: Illinois never gets a roof tarp promise.
+              body.emergency === true
+                ? ilLicensePending ? 'EMERGENCY - Illinois: no roof tarp; call back fast' : 'EMERGENCY - needs a tarp now'
+                : urgentExterior ? 'URGENT - storm damage to siding, gutters or trim (call back fast)' : '',
               service && `Service: ${service}`,
               leadValue(lead.issue_type) && `Issue: ${leadValue(lead.issue_type)}`,
               !leadValue(lead.address) && 'No street address given - call to confirm',
+              phoneProblem ? `Phone check: looks invalid (${PHONE_REASON[phoneProblem]}) - double-check before calling` : '',
+              emailCheck === 'no_mail_server' ? `Email check: no mail server found for ${mailDomain} - confirm the address` : '',
               leadValue(lead.roof_age) && `Age of roof: ${leadValue(lead.roof_age)}`,
               leadValue(lead.roof_size) && `Estimator: ${[leadValue(lead.roof_size), leadValue(lead.roof_pitch), leadValue(lead.roof_material)].filter(Boolean).join(', ')}`,
               estimate && `Estimate shown: ${Number(estimate).toLocaleString('en-US')}`,
@@ -307,9 +312,11 @@ export async function POST(req: Request) {
             ].filter(Boolean).join('\n'),
           },
         }
+        // Shared secret for the receiver; server-only, never logged. No header when unset.
+        const hookSecret = process.env.LEAD_WEBHOOK_SECRET?.trim()
         const res = await fetch(hook, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(hookSecret ? { 'X-Webhook-Secret': hookSecret } : {}) },
           body: JSON.stringify({
             ...lead,
             first_name: firstName,
@@ -322,6 +329,8 @@ export async function POST(req: Request) {
             lead_source: sourceLabel,
             website: 'roofingnearmestl.com',
             submitted_at: new Date().toISOString(),
+            phone_check: phoneProblem ? 'invalid' : 'ok',
+            email_check: emailCheck,
             rooflink_job_json: JSON.stringify(rooflinkJob),
           }),
           signal: AbortSignal.timeout(5000),
