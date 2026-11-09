@@ -16,6 +16,9 @@ Last full check: 2026-10-23.
 | Lead text alerts | Twilio (optional, off until set) | Text alerts only |
 | Leads into RoofLink | Make scenario "Website leads to RoofLink" + RoofLink API key | RoofLink sync only (leads are still saved and emailed) |
 | Ads and tracking | Google Ads, Search Console, Business Profile, Meta Pixel | Tracking only |
+| Owner dashboard | Vercel (same project), `/dashboard`, password in `DASHBOARD_PASSWORD` | Dashboard only (leads still save) |
+| Data store | Supabase (same project), tables `brain_notes`, `brain_links`, `competitor_changes`, `recommendations`, `metrics_daily`, `sync_runs` | Dashboard numbers only; notes stay in GitHub |
+| Brain notes copy | GitHub `Brain-Data` (private), read with `BRAIN_GITHUB_TOKEN` | Dashboard Brain section goes stale |
 
 ## Settings the site needs (Vercel → Settings → Environment Variables)
 
@@ -23,7 +26,9 @@ Secret (server only, never `NEXT_PUBLIC_`):
 `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY` (Resend "Sending access"), `RESEND_LEAD_CHECK_KEY` (Resend
 "Full access", read only by `/api/lead-check` to list sent emails), `CRON_SECRET`, `LEAD_TO_EMAIL`, `LEAD_WEBHOOK_URL`,
 `LEAD_WEBHOOK_SECRET` (webhook shared secret, sent as the `X-Webhook-Secret` header),
-`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `LEAD_ALERT_PHONE`.
+`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `LEAD_ALERT_PHONE`,
+`DASHBOARD_PASSWORD` (at least 12 characters; any username), `BRAIN_GITHUB_TOKEN` (fine-grained, Brain-Data only,
+Contents read-only). `BRAIN_GITHUB_REPO` (optional, `owner/name`) is not secret.
 
 Public (safe in the browser): `NEXT_PUBLIC_SUPABASE_URL` and the optional `NEXT_PUBLIC_*` overrides
 for Google and Meta IDs (each has a built-in default in `src/lib`).
@@ -71,9 +76,14 @@ Make the new key first, update every place it is used, redeploy, then delete the
 | Twilio auth token | Twilio Console → Account → API keys & tokens | Vercel `TWILIO_AUTH_TOKEN` → redeploy |
 | Make webhook link | Make → Webhooks → the website webhook (create a new one) | Vercel `LEAD_WEBHOOK_URL` → redeploy |
 | Webhook shared secret | make a new long random value | Vercel `LEAD_WEBHOOK_SECRET` and the webhook receiver's check, same value in both → redeploy |
+| Dashboard password | make a new long random passphrase | Vercel `DASHBOARD_PASSWORD` → redeploy → close the browser so it forgets the old one |
+| Brain GitHub token | github.com → Settings → Developer settings → Fine-grained tokens → new token, Brain-Data only, Contents read-only (note the expiry date) | Vercel `BRAIN_GITHUB_TOKEN` → redeploy → delete the old token |
 | RoofLink API key | RoofLink → Company Settings → API Keys | Make → HTTP module → Connection |
 | Browserbase | browserbase.com/settings | Windows user variable `BROWSERBASE_API_KEY`, the Claude Code MCP header, `.codex/config.toml` |
 | GitHub sign-in | github.com/settings/tokens (or sign out/in of Git Credential Manager) | Local Git only |
+
+The data store tables are a copy: rebuild them from GitHub by running `/api/sync/brain?full=1` by hand.
+`metrics_daily` will need the monthly export once importers fill it.
 
 ## Monthly 10-minute check
 
@@ -82,3 +92,4 @@ Make the new key first, update every place it is used, redeploy, then delete the
 - [ ] GitHub → Settings → Applications: remove apps you no longer use
 - [ ] Supabase: export `leads` to CSV
 - [ ] Vercel: last Production deployment is green
+- [ ] Dashboard: Brain copy shows OK in the last 24 hours

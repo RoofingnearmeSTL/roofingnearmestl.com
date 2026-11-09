@@ -36,6 +36,7 @@ let pages = 0, ilPages = 0;
 for (const f of files) {
   const r = route(f);
   if (r.startsWith("/_")) continue;
+  if (r.startsWith("/dashboard")) continue; // private owner dashboard: not a public page (it is dynamic, so normally never built as HTML)
   pages++;
   const h = fs.readFileSync(f, "utf8");
   const all = text(h);

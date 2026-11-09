@@ -4,6 +4,8 @@ import BrandHeader from "@/components/brand-header";
 import BrandFooter from "@/components/brand-footer";
 import EmergencyBar from "@/components/emergency-bar";
 import { PHONES } from "@/lib/business";
+import { introVideoUrl } from "@/lib/customer-email";
+import IntroVideoLink from "@/components/intro-video-link";
 import Conversion from "./conversion";
 
 export const metadata: Metadata = {
@@ -23,6 +25,7 @@ export default async function ThankYou({ searchParams }: { searchParams: Promise
   const pending = area === "il-pending";
   const urgent = pending && query.urgent === "1";
   const phone = illinois ? PHONES.IL : PHONES.MO;
+  const videoUrl = introVideoUrl(process.env.INTRO_VIDEO_URL);
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
@@ -59,6 +62,7 @@ export default async function ThankYou({ searchParams }: { searchParams: Promise
             <div className="border rounded-xl p-4">✓ 10-Yr Workmanship Warranty</div>
           </div>
           {illinois && <p className="mt-6 text-sm text-zinc-600">Illinois line: <a href={phone.href} className="font-bold text-brand-ink">{phone.display}</a></p>}
+          {videoUrl && <IntroVideoLink url={videoUrl} />}
           <Link href="/" className="inline-block mt-8 bg-brand-ink text-white px-7 py-3 rounded-full font-bold shadow-md shadow-brand/20 hover:bg-brand-ink-dark">Back to Home</Link>
           {/* Small print, like a disclaimer (Mike, Oct 29). */}
           {pending && (

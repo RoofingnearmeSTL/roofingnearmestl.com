@@ -19,6 +19,10 @@ as "unverified" once a row below is marked PASS with a date.
 | Email required on the lead form (browser only; the server still saves leads without one) | Built, not yet owner-tested |
 | Lead-source fields `gbraid`, `wbraid`, `referrer` (saved once the README migration has run; until then leads save without them) | Built, not yet owner-tested |
 | Daily lead check email (`/api/lead-check`) | Built |
+| Owner dashboard `/dashboard` (password, counts only) | Built, off until `DASHBOARD_PASSWORD` is set; not yet owner-tested |
+| Data store tables (migration file) | Built, waiting for the owner to run the SQL |
+| Daily Brain notes copy (`/api/sync/brain`, Vercel Cron 11:00 UTC) | Built, off until `BRAIN_GITHUB_TOKEN` is set; not yet owner-tested |
+| Thank-you page intro video link | Built, shows only when `INTRO_VIDEO_URL` is an https link |
 | **Slack** | **Not built and not used. Nothing sends to Slack. Do not flag it.** |
 | GA4 `generate_lead` and `click_to_call` | Built, runs only if `NEXT_PUBLIC_GA4_ID` is set in Vercel |
 
@@ -48,6 +52,10 @@ Fill in the date, then PASS or FAIL. Add a short note if FAIL.
 | GA4 `click_to_call` | Same, after tapping a phone link | Event shows | | | |
 | GA4 page views | GA4 Realtime | Active user on the page | | | |
 | Daily lead check | Inbox the morning after | Email with the lead count | | | |
+| Dashboard asks for a password | www.roofingnearmestl.com/dashboard in a private window | Password box; wrong password refused | | | |
+| Dashboard lead counts match Supabase | `/dashboard` Leads vs Supabase `leads` | Same totals (test leads left out) | | | |
+| Brain copy ran | `/dashboard` Brain section | "Last copy: OK" | | | |
+| Thank-you video link opens the video | `/thank-you` after setting `INTRO_VIDEO_URL` | "Meet Mike, the owner" link opens the video | | | |
 
 ## If something fails
 

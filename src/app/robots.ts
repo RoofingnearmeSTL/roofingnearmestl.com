@@ -11,8 +11,8 @@ const AI_BOTS = [
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      { userAgent: '*', allow: '/', disallow: ['/api/'] },
-      { userAgent: AI_BOTS, allow: '/', disallow: ['/api/'] },
+      { userAgent: '*', allow: '/', disallow: ['/api/', '/dashboard'] },
+      { userAgent: AI_BOTS, allow: '/', disallow: ['/api/', '/dashboard'] },
     ],
     sitemap: 'https://www.roofingnearmestl.com/sitemap.xml',
   };

@@ -50,7 +50,11 @@ function useMetaPageViews() {
 export default function GoogleAds() {
   useCallTracking();
   useMetaPageViews();
-  useEffect(() => { rememberLandingSource(); }, []);
+  const pathname = usePathname();
+  const isDashboard = pathname?.startsWith("/dashboard") ?? false;
+  useEffect(() => { if (!isDashboard) rememberLandingSource(); }, [isDashboard]);
+  // The private owner dashboard loads no ad or analytics tags (its URLs hold note names and searches).
+  if (isDashboard) return null;
   return <>
     {googleTagIds.length > 0 && <>
       <Script src={`https://www.googletagmanager.com/gtag/js?id=${googleTagIds[0]}`} strategy="afterInteractive" />
