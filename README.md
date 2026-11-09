@@ -45,6 +45,13 @@ service-role or email API keys in client code or `NEXT_PUBLIC_*` variables.
 The sender is `leads@roofingnearmestl.com` and must be verified in Resend.
 An email failure is logged without failing an already-saved lead.
 
+Phone and email checks (`src/lib/contact-check.ts`, `src/lib/email-domain-check.ts`): the browser form blocks
+clearly invalid phone numbers and suggests fixes for common email typos (never applied without a tap). The server
+never rejects a number with 10 or more digits; it flags it ("Phone check" in the owner email, the CRM note and
+`phone_check` in the webhook). The server also looks up the email domain's mail records (1.5 s cap, run alongside the
+save); when the domain has no mail server it keeps the email, adds an "Email check" line for the team and skips the
+customer confirmation. The webhook carries `email_check` (`ok`, `no_mail_server`, `unknown` or `none`).
+
 The database must expose these columns with types compatible with the submitted
 values: `name`, `phone`, `email`, `address`, `city`, `service_type`, `issue_type`,
 `roof_age`, `roof_size`, `roof_pitch`, `roof_material`, `emergency`, `message`.
@@ -107,6 +114,10 @@ The isolated tests do not establish live persistence or inbox delivery.
   `LEAD_ALERT_PHONE` (the cell phone to text). Nothing is sent until all four are
   set. US numbers need an approved A2P 10DLC registration before carriers deliver
   reliably. A failed text is logged and never fails a saved lead.
+
+- CRM webhook: `LEAD_WEBHOOK_URL` (https only) sends each saved lead to the CRM automation.
+  `LEAD_WEBHOOK_SECRET` is an optional server-only secret (never `NEXT_PUBLIC_`); when set, each webhook call carries
+  the header `X-Webhook-Secret` with that value (surrounding spaces trimmed), and the receiver should check it.
 
 ## Marketing and social settings (Vercel → Settings → Environment Variables)
 

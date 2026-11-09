@@ -22,6 +22,7 @@ Last full check: 2026-10-23.
 Secret (server only, never `NEXT_PUBLIC_`):
 `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY` (Resend "Sending access"), `RESEND_LEAD_CHECK_KEY` (Resend
 "Full access", read only by `/api/lead-check` to list sent emails), `CRON_SECRET`, `LEAD_TO_EMAIL`, `LEAD_WEBHOOK_URL`,
+`LEAD_WEBHOOK_SECRET` (webhook shared secret, sent as the `X-Webhook-Secret` header),
 `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `LEAD_ALERT_PHONE`.
 
 Public (safe in the browser): `NEXT_PUBLIC_SUPABASE_URL` and the optional `NEXT_PUBLIC_*` overrides
@@ -69,6 +70,7 @@ Make the new key first, update every place it is used, redeploy, then delete the
 | Resend (lead check) | Resend → API Keys, permission "Full access" | Vercel `RESEND_LEAD_CHECK_KEY` → redeploy |
 | Twilio auth token | Twilio Console → Account → API keys & tokens | Vercel `TWILIO_AUTH_TOKEN` → redeploy |
 | Make webhook link | Make → Webhooks → the website webhook (create a new one) | Vercel `LEAD_WEBHOOK_URL` → redeploy |
+| Webhook shared secret | make a new long random value | Vercel `LEAD_WEBHOOK_SECRET` and the webhook receiver's check, same value in both → redeploy |
 | RoofLink API key | RoofLink → Company Settings → API Keys | Make → HTTP module → Connection |
 | Browserbase | browserbase.com/settings | Windows user variable `BROWSERBASE_API_KEY`, the Claude Code MCP header, `.codex/config.toml` |
 | GitHub sign-in | github.com/settings/tokens (or sign out/in of Git Credential Manager) | Local Git only |

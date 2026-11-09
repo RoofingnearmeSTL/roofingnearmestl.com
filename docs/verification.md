@@ -14,6 +14,7 @@ as "unverified" once a row below is marked PASS with a date.
 | Owner email through Resend (`RESEND_API_KEY`, `LEAD_TO_EMAIL`) | Built |
 | Text alert through Twilio | Built, optional, off unless all four Twilio settings are set |
 | CRM hook (`LEAD_WEBHOOK_URL`, Make.com to RoofLink) | Built, optional, not used |
+| Phone and email checks on leads (owner email "Phone check" / "Email check" lines, webhook `phone_check` / `email_check`) | Built, not yet owner-tested |
 | Daily lead check email (`/api/lead-check`) | Built |
 | **Slack** | **Not built and not used. Nothing sends to Slack. Do not flag it.** |
 | GA4 `generate_lead` and `click_to_call` | Built, runs only if `NEXT_PUBLIC_GA4_ID` is set in Vercel |

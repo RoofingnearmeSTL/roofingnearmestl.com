@@ -3,6 +3,11 @@ import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { checkBotId } from 'botid/server'
 import { IL_LICENSE_PENDING, isIllinoisRoofingRequest, looksIllinois } from '../../../lib/illinois-guard'
+import { checkPhone, isEmailSyntax, emailDomain, PHONE_REASON } from '../../../lib/contact-check'
+import { checkEmailDomain, type EmailCheckField } from '../../../lib/email-domain-check'
+
+// node:dns (email domain check) needs the Node.js runtime, which is also the Next 16 default.
+export const runtime = 'nodejs'
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => ({
@@ -21,7 +26,6 @@ function field(value: unknown, max = 200): string | number | null {
   return null
 }
 
-const EMAIL = /^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]+$/
 /** leads.status for a request that looks automated (BotID or sent too fast). It is still saved and emailed. */
 const SUSPECTED_BOT = 'suspected_bot'
 /** A person needs at least this long to fill in the form; faster submissions are flagged, never dropped. */
@@ -61,6 +65,10 @@ export async function POST(req: Request) {
     if (body.phone.replace(/\D/g, '').length < 10) {
       return NextResponse.json({ error: 'valid phone required' }, { status: 400 })
     }
+    // Any other failed phone rule only flags the lead (owner email, CRM note, webhook); it is never rejected.
+    const phoneCheck = checkPhone(body.phone)
+    const phoneProblem = phoneCheck.ok ? null : phoneCheck.problem
+    if (phoneProblem) console.log('LEAD PHONE CHECK', { result: phoneProblem })
     // Illinois rule: no roof work on Illinois homes until the IL roofing license (225 ILCS 335/9). The request is
     // still saved, tagged il_license_pending, and the team email says not to quote or schedule roofing.
     const homeLocation = { city: body.city, address: body.address, estLocation: body.est_location, page: body.page }
@@ -83,7 +91,7 @@ export async function POST(req: Request) {
     const lead = {
       name: field(body.name, 100),
       phone: field(body.phone, 30),
-      email: typeof email === 'string' && EMAIL.test(email) ? email : null,
+      email: typeof email === 'string' && isEmailSyntax(email) ? email : null,
       address: field(body.address),
       city: field(body.city, 80),
       service_type: field(body.service_type ?? body.service, 80),
@@ -109,11 +117,16 @@ export async function POST(req: Request) {
     }
     const sourceLabel = [leadValue(lead.utm_source), leadValue(lead.utm_medium), leadValue(lead.utm_campaign)].filter(Boolean).join(' / ')
       || (lead.gclid ? 'Google Ads click' : lead.fbclid ? 'Facebook / Instagram click' : 'Direct or unknown')
+    // The email domain check runs alongside the save, never rejects and gives up after 1.5 s.
+    const emailCheckPending: Promise<EmailCheckField> = lead.email ? checkEmailDomain(lead.email).catch(() => 'unknown' as const) : Promise.resolve('none' as const)
     const { error } = await supabase.from('leads').insert([lead])
     if (error) {
       console.error('SUPABASE INSERT FAILED', { code: error.code })
       return NextResponse.json({ error: 'Unable to save lead' }, { status: 500 })
     }
+    const emailCheck = await emailCheckPending.catch(() => 'unknown' as const)
+    const mailDomain = lead.email ? emailDomain(lead.email) : ''
+    if (emailCheck === 'no_mail_server') console.log('LEAD EMAIL CHECK', { result: emailCheck })
     // A notification failure must not fail an already-saved lead.
     try {
       if (!process.env.RESEND_API_KEY || !process.env.LEAD_TO_EMAIL) {
@@ -124,7 +137,9 @@ export async function POST(req: Request) {
           ...(ilLicensePending ? [['Illinois License Pending', 'YES - roofing request for an Illinois home. Do NOT quote, schedule or do any roof work. Call back fast, help with exterior work, and point roof needs to a licensed Illinois roofer.']] : []),
           ['Name', leadValue(lead.name)],
           ['Phone', leadValue(lead.phone)],
+          ...(phoneProblem ? [['Phone check', `Looks invalid (${PHONE_REASON[phoneProblem]}). Saved anyway; double-check the number before calling.`]] : []),
           ['Email', leadValue(lead.email)],
+          ...(emailCheck === 'no_mail_server' ? [['Email check', `No mail server found for ${mailDomain}. Saved anyway; no confirmation email was sent. Confirm the address when you call.`]] : []),
           ['Address', [leadValue(lead.address), leadValue(lead.city)].filter(Boolean).join(', ')],
           ['Service', leadValue(lead.service_type)],
           ['Issue', leadValue(lead.issue_type)],
@@ -182,7 +197,8 @@ export async function POST(req: Request) {
     try {
       // Only when the owner inbox is set: the owner must get the lead, and replies need somewhere to go.
       // Never to a suspected bot: the form must not be usable to send our email to strangers.
-      if (lead.email && !bot.suspected && process.env.RESEND_API_KEY && process.env.LEAD_TO_EMAIL) {
+      if (lead.email && emailCheck === 'no_mail_server') console.log('CUSTOMER CONFIRMATION SKIPPED', { reason: 'no_mail_server' })
+      if (lead.email && !bot.suspected && emailCheck !== 'no_mail_server' && process.env.RESEND_API_KEY && process.env.LEAD_TO_EMAIL) {
         const firstName = leadValue(lead.name).split(/\s+/)[0] || 'there'
         const service = leadValue(lead.service_type)
         const place = leadValue(lead.city)
@@ -260,8 +276,8 @@ export async function POST(req: Request) {
     } catch (smsError) {
       console.error('LEAD SMS CRASH', { name: smsError instanceof Error ? smsError.name : 'UnknownError' })
     }
-    // Optional: send the saved lead to the CRM. LEAD_WEBHOOK_URL is a Make.com custom webhook whose
-    // scenario posts rooflink_job_json to RoofLink's "Create a new job" API (POST /light/public/jobs/).
+    // Optional: send the saved lead to the CRM. LEAD_WEBHOOK_URL is the n8n CRM webhook that
+    // posts rooflink_job_json to RoofLink's "Create a new job" API (POST /light/public/jobs/).
     // Skipped until the variable is set. Must not fail or slow down a saved lead for long.
     try {
       const hook = process.env.LEAD_WEBHOOK_URL
@@ -298,6 +314,8 @@ export async function POST(req: Request) {
               service && `Service: ${service}`,
               leadValue(lead.issue_type) && `Issue: ${leadValue(lead.issue_type)}`,
               !leadValue(lead.address) && 'No street address given - call to confirm',
+              phoneProblem ? `Phone check: looks invalid (${PHONE_REASON[phoneProblem]}) - double-check before calling` : '',
+              emailCheck === 'no_mail_server' ? `Email check: no mail server found for ${mailDomain} - confirm the address` : '',
               leadValue(lead.roof_age) && `Age of roof: ${leadValue(lead.roof_age)}`,
               leadValue(lead.roof_size) && `Estimator: ${[leadValue(lead.roof_size), leadValue(lead.roof_pitch), leadValue(lead.roof_material)].filter(Boolean).join(', ')}`,
               estimate && `Estimate shown: ${Number(estimate).toLocaleString('en-US')}`,
@@ -307,9 +325,11 @@ export async function POST(req: Request) {
             ].filter(Boolean).join('\n'),
           },
         }
+        // Shared secret for the receiver; server-only, never logged. No header when unset.
+        const hookSecret = process.env.LEAD_WEBHOOK_SECRET?.trim()
         const res = await fetch(hook, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(hookSecret ? { 'X-Webhook-Secret': hookSecret } : {}) },
           body: JSON.stringify({
             ...lead,
             first_name: firstName,
@@ -322,6 +342,8 @@ export async function POST(req: Request) {
             lead_source: sourceLabel,
             website: 'roofingnearmestl.com',
             submitted_at: new Date().toISOString(),
+            phone_check: phoneProblem ? 'invalid' : 'ok',
+            email_check: emailCheck,
             rooflink_job_json: JSON.stringify(rooflinkJob),
           }),
           signal: AbortSignal.timeout(5000),
