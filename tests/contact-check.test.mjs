@@ -81,3 +81,40 @@ test("email is required and the messages say why", () => {
   assert.doesNotMatch(CONTACT_MESSAGES.emailIncomplete, /optional|leave it blank/i);
   assert.equal(contactFieldError("email", "pat@gmail.com"), undefined);
 });
+
+import { checkZip, stateFromZip } from "../src/lib/contact-check.ts";
+import { looksIllinois } from "../src/lib/illinois-guard.ts";
+
+test("checkZip accepts 5 digits and ZIP+4, trims, and returns the 5-digit ZIP", () => {
+  assert.deepEqual(checkZip("63101"), { ok: true, zip5: "63101" });
+  assert.deepEqual(checkZip("  62298 "), { ok: true, zip5: "62298" });
+  assert.deepEqual(checkZip("12345-6789"), { ok: true, zip5: "12345" });
+  assert.deepEqual(checkZip("123456789"), { ok: true, zip5: "12345" });
+  for (const bad of ["", "6310", "631011", "abcde", "63101-12", "63 101", null, undefined, {}]) assert.deepEqual(checkZip(bad), { ok: false }, String(bad));
+});
+
+test("stateFromZip: 600-629 Illinois, 630-658 Missouri, else empty", () => {
+  assert.equal(stateFromZip("60000"), "IL");
+  assert.equal(stateFromZip("62298"), "IL");
+  assert.equal(stateFromZip("62999"), "IL");
+  assert.equal(stateFromZip("63000"), "MO");
+  assert.equal(stateFromZip("63101"), "MO");
+  assert.equal(stateFromZip("65899"), "MO");
+  assert.equal(stateFromZip("65900"), "");
+  assert.equal(stateFromZip("59999"), "");
+  assert.equal(stateFromZip("bad"), "");
+});
+
+test("the zip field has a plain error message", () => {
+  assert.equal(contactFieldError("zip", "63101"), undefined);
+  assert.equal(contactFieldError("zip", "6310"), CONTACT_MESSAGES.zipRequired);
+  assert.match(CONTACT_MESSAGES.zipRequired, /5-digit ZIP/);
+});
+
+test("looksIllinois uses an Illinois ZIP on its own; a Missouri ZIP does not", () => {
+  assert.equal(looksIllinois({ zip: "62298" }), true);
+  assert.equal(looksIllinois({ zip: "62298-1234" }), true);
+  assert.equal(looksIllinois({ zip: "60001" }), true);
+  assert.equal(looksIllinois({ zip: "63101" }), false);
+  assert.equal(looksIllinois({ zip: "" }), false);
+});

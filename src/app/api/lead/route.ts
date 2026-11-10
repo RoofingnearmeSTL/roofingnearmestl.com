@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { checkBotId } from 'botid/server'
 import { IL_LICENSE_PENDING, isIllinoisRoofingRequest, isRoofingRequest, looksIllinois } from '../../../lib/illinois-guard'
-import { checkPhone, isEmailSyntax, emailDomain, PHONE_REASON } from '../../../lib/contact-check'
+import { checkPhone, checkZip, stateFromZip, isEmailSyntax, emailDomain, PHONE_REASON } from '../../../lib/contact-check'
 import { checkEmailDomain, type EmailCheckField } from '../../../lib/email-domain-check'
 import { PHONES } from '../../../lib/business'
 import { buildCustomerEmail, escapeHtml, introVideoUrl } from '../../../lib/customer-email'
@@ -41,9 +41,9 @@ async function looksAutomated(formMs: unknown): Promise<{ suspected: boolean; re
   return { suspected: false, reason: '' }
 }
 const MAX_BODY_BYTES = 20_000
-// Lead-source columns added by the README migration. Until it has run, an insert that carries them fails with
+// Columns added by README migrations (lead source + ZIP). Until they exist, an insert that carries them fails with
 // PGRST204 and is retried once without them, so a lead is never lost whichever happens first (migration or deploy).
-const TRACKING_COLUMNS = new Set(['gbraid', 'wbraid', 'referrer'])
+const OPTIONAL_COLUMNS = new Set(['gbraid', 'wbraid', 'referrer', 'zip'])
 
 export async function POST(req: Request) {
   try {
@@ -68,9 +68,15 @@ export async function POST(req: Request) {
     const phoneCheck = checkPhone(body.phone)
     const phoneProblem = phoneCheck.ok ? null : phoneCheck.problem
     if (phoneProblem) console.log('LEAD PHONE CHECK', { result: phoneProblem })
+    // The ZIP never rejects a lead: a missing or invalid one is logged (result only, never the value) and flagged.
+    const zipCheck = checkZip(body.zip)
+    const zip5 = zipCheck.ok ? zipCheck.zip5 : ''
+    const zipGiven = String(body.zip ?? '').trim() !== ''
+    const zipResult = zipCheck.ok ? 'ok' : zipGiven ? 'invalid' : 'missing'
+    console.log('LEAD ZIP CHECK', { result: zipResult })
     // Illinois rule: no roof work on Illinois homes until the IL roofing license (225 ILCS 335/9). The request is
     // still saved, tagged il_license_pending, and the team email says not to quote or schedule roofing.
-    const homeLocation = { city: body.city, address: body.address, estLocation: body.est_location, page: body.page }
+    const homeLocation = { city: body.city, address: body.address, estLocation: body.est_location, page: body.page, zip: zip5 }
     const illinois = looksIllinois(homeLocation)
     const ilLicensePending = isIllinoisRoofingRequest({ ...homeLocation, service: body.service_type ?? body.service, emergency: body.emergency === true })
     // Illinois pages ask "storm damage to siding, gutters or trim?" instead of the roof tarp box.
@@ -96,6 +102,7 @@ export async function POST(req: Request) {
       email: typeof email === 'string' && isEmailSyntax(email) ? email : null,
       address: field(body.address),
       city: field(body.city, 80),
+      ...(zip5 ? { zip: zip5 } : {}),
       service_type: field(body.service_type ?? body.service, 80),
       issue_type: field(body.issue_type),
       roof_age: field(body.roof_age, 40),
@@ -127,9 +134,9 @@ export async function POST(req: Request) {
     const emailCheckPending: Promise<EmailCheckField> = lead.email ? checkEmailDomain(lead.email).catch(() => 'unknown' as const) : Promise.resolve('none' as const)
     const firstTry = await supabase.from('leads').insert([lead])
     let error = firstTry.error
-    if (error?.code === 'PGRST204' && Object.keys(lead).some((key) => TRACKING_COLUMNS.has(key))) {
-      console.error('SUPABASE INSERT RETRY WITHOUT gbraid/wbraid/referrer (run the README lead-source migration)', { code: error.code })
-      const retry = await supabase.from('leads').insert([Object.fromEntries(Object.entries(lead).filter(([key]) => !TRACKING_COLUMNS.has(key)))])
+    if (error?.code === 'PGRST204' && Object.keys(lead).some((key) => OPTIONAL_COLUMNS.has(key))) {
+      console.error('SUPABASE INSERT RETRY WITHOUT gbraid/wbraid/referrer/zip (run the README lead-source and ZIP migrations)', { code: error.code })
+      const retry = await supabase.from('leads').insert([Object.fromEntries(Object.entries(lead).filter(([key]) => !OPTIONAL_COLUMNS.has(key)))])
       error = retry.error
     }
     if (error) {
@@ -152,7 +159,8 @@ export async function POST(req: Request) {
           ...(phoneProblem ? [['Phone check', `Looks invalid (${PHONE_REASON[phoneProblem]}). Saved anyway; double-check the number before calling.`]] : []),
           ['Email', leadValue(lead.email)],
           ...(emailCheck === 'no_mail_server' ? [['Email check', `No mail server found for ${mailDomain}. Saved anyway; no confirmation email was sent. Confirm the address when you call.`]] : []),
-          ['Address', [leadValue(lead.address), leadValue(lead.city)].filter(Boolean).join(', ')],
+          ['Address', [leadValue(lead.address), leadValue(lead.city), zip5].filter(Boolean).join(', ')],
+          ...(zip5 ? [] : [['ZIP check', zipGiven ? 'The ZIP code given does not look valid. Saved anyway; ask for the ZIP when you call.' : 'No ZIP code given. Saved anyway; ask for the ZIP when you call.']]),
           ['Service', leadValue(lead.service_type)],
           ['Issue', leadValue(lead.issue_type)],
           ['Age of Roof', leadValue(lead.roof_age)],
@@ -261,7 +269,7 @@ export async function POST(req: Request) {
       console.error('LEAD SMS CRASH', { name: smsError instanceof Error ? smsError.name : 'UnknownError' })
     }
     // Optional: send the saved lead to the CRM. LEAD_WEBHOOK_URL is the n8n CRM webhook that
-    // posts rooflink_job_json to RoofLink's "Create a new job" API (POST /light/public/jobs/).
+    // posts rooflink_job_json to RoofLink's "Create a new job" API (POST /roof_link_endpoints/api/light/jobs/).
     // Skipped until the variable is set. Must not fail or slow down a saved lead for long.
     try {
       const hook = process.env.LEAD_WEBHOOK_URL
@@ -270,7 +278,9 @@ export async function POST(req: Request) {
       } else if (hook) {
         const [firstName, ...rest] = leadValue(lead.name).split(/\s+/)
         const location = leadValue(field(body.est_location, 80)) || leadValue(lead.city)
-        const state = /\bIL\b|illinois/i.test(location) ? 'IL' : /\bMO\b|missouri/i.test(location) ? 'MO' : ''
+        // The ZIP decides the state when it is in the metro (a "St. Louis, MO" city with an East St. Louis ZIP is IL);
+        // otherwise the typed location, then IL for a license-pending request.
+        const state = stateFromZip(zip5) || (/\bIL\b|illinois/i.test(location) ? 'IL' : /\bMO\b|missouri/i.test(location) ? 'MO' : '') || (ilLicensePending ? 'IL' : '')
         const cityName = leadValue(lead.city) || location.split(',')[0].trim()
         const service = leadValue(lead.service_type)
         const estimate = leadValue(field(body.est_price))
@@ -281,7 +291,14 @@ export async function POST(req: Request) {
           ...(/repair/i.test(service) ? { bid_type: 'r' } : {}),
           address: leadValue(lead.address) || [cityName, state].filter(Boolean).join(', ') || 'Address not given',
           ...(cityName ? { city: cityName } : {}),
-          ...(state ? { state } : {}),
+          // RoofLink requires these at the top level (a test job got HTTP 400 without them).
+          first_name: firstName || 'Website',
+          ...(rest.length ? { last_name: rest.join(' ') } : {}),
+          state,
+          ...(zip5 ? { zipcode: zip5 } : {}),
+          source: 'Website',
+          phone: leadValue(lead.phone),
+          ...(lead.email ? { email: lead.email } : {}),
           customer: {
             first_name: firstName || 'Website',
             ...(rest.length ? { last_name: rest.join(' ') } : {}),
@@ -301,6 +318,7 @@ export async function POST(req: Request) {
               service && `Service: ${service}`,
               leadValue(lead.issue_type) && `Issue: ${leadValue(lead.issue_type)}`,
               !leadValue(lead.address) && 'No street address given - call to confirm',
+              !zip5 && 'No ZIP code given - ask for it',
               phoneProblem ? `Phone check: looks invalid (${PHONE_REASON[phoneProblem]}) - double-check before calling` : '',
               emailCheck === 'no_mail_server' ? `Email check: no mail server found for ${mailDomain} - confirm the address` : '',
               leadValue(lead.roof_age) && `Age of roof: ${leadValue(lead.roof_age)}`,
@@ -322,6 +340,8 @@ export async function POST(req: Request) {
             first_name: firstName,
             last_name: rest.join(' '),
             state,
+            zip: zip5 || null,
+            zipcode: zip5 || null,
             estimator_location: field(body.est_location, 80),
             estimate_price: field(body.est_price),
             estimate_low: field(body.est_price_low),

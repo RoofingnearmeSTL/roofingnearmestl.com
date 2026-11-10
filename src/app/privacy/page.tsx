@@ -15,7 +15,7 @@ const sections: { heading: string; body: React.ReactNode }[] = [
     heading: "Information you give us",
     body: (
       <>
-        <p>When you request an estimate, we collect what you type into the form: your name, phone number and email, and, if you choose to add them, your city, street address, the service you need, whether it&apos;s an emergency, your roof&apos;s age and details about the problem.</p>
+        <p>When you request an estimate, we collect what you type into the form: your name, phone number, email and ZIP code, and, if you choose to add them, your city, street address, the service you need, whether it&apos;s an emergency, your roof&apos;s age and details about the problem.</p>
         <p>If you call or text us, we receive your phone number and whatever you tell us.</p>
       </>
     ),

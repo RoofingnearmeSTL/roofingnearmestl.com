@@ -965,3 +965,111 @@ test('the email field sits in the main fields, not the closed details panel', ()
   assert.ok(leadForm.indexOf('name="email"') > 0 && leadForm.indexOf('name="email"') < leadForm.indexOf('<details'))
   assert.doesNotMatch(leadForm, /details\.open = true/)
 })
+
+// ---- ZIP code ----
+const zipJob = (calls) => JSON.parse(hookBody(calls).rooflink_job_json)
+
+test('a valid ZIP is stored as 5 digits (ZIP+4 is trimmed) and shown in the team email', async () => {
+  const { calls, post } = handler()
+  assert.equal((await post({ ...mo, zip: ' 63122-1234 ' })).status, 200)
+  assert.equal(calls.inserts[0][0].zip, '63122')
+  assert.match(toOwner(calls)[0].text, /Address: Kirkwood, 63122/)
+  assert.doesNotMatch(toOwner(calls)[0].text, /ZIP check/)
+  assert.deepEqual(JSON.parse(JSON.stringify(calls.logs.filter((l) => l[0] === 'LEAD ZIP CHECK'))), [['LEAD ZIP CHECK', { result: 'ok' }]])
+})
+
+test('a missing or invalid ZIP never rejects: the lead is saved, flagged, and the value is not logged', async () => {
+  for (const zip of [undefined, '', '6310', 'abcde', 12]) {
+    const { calls, post } = handler({ env: hook })
+    const response = await post({ ...mo, ...(zip === undefined ? {} : { zip }) })
+    assert.equal(response.status, 200, String(zip))
+    assert.equal(response.data.ok, true)
+    assert.equal('zip' in calls.inserts[0][0], false)
+    assert.match(toOwner(calls)[0].text, /ZIP check: .*Saved anyway/)
+    assert.match(zipJob(calls).note.message, /No ZIP code given - ask for it/)
+    assert.equal('zipcode' in zipJob(calls), false)
+    assert.equal(hookBody(calls).zipcode, null)
+    const zipLogs = calls.logs.filter((l) => l[0] === 'LEAD ZIP CHECK')
+    assert.equal(zipLogs.length, 1)
+    assert.match(zipLogs[0][1].result, /^(missing|invalid)$/)
+    if (zip) assert.doesNotMatch(JSON.stringify(calls.logs), new RegExp(`"${zip}"`))
+  }
+})
+
+test('PGRST204 retry also drops zip, and the lead is still saved and emailed', async () => {
+  const { calls, post } = handler({ insertErrors: [{ code: 'PGRST204', message: 'x' }] })
+  assert.equal((await post({ ...mo, zip: '63122' })).status, 200)
+  assert.equal(calls.inserts.length, 2)
+  assert.equal(calls.inserts[0][0].zip, '63122')
+  assert.equal('zip' in calls.inserts[1][0], false)
+  assert.equal(toOwner(calls).length, 1)
+  assert.match(JSON.stringify(calls.logs), /gbraid\/wbraid\/referrer\/zip/)
+})
+
+test('RoofLink job has the top-level fields RoofLink requires', async () => {
+  const { calls, post } = handler({ env: hook })
+  await post({ ...mo, name: 'Pat Q Customer', zip: '63122', est_location: 'Kirkwood, MO' })
+  const job = zipJob(calls)
+  assert.equal(job.first_name, 'Pat')
+  assert.equal(job.last_name, 'Q Customer')
+  assert.equal(job.state, 'MO')
+  assert.equal(job.zipcode, '63122')
+  assert.equal(job.source, 'Website')
+  assert.equal(job.phone, '3145552368')
+  assert.equal(job.email, 'pat@example.invalid')
+  assert.equal(job.customer.first_name, 'Pat')
+  assert.equal(job.platform, 'Website')
+  assert.equal(hookBody(calls).zip, '63122')
+  assert.equal(hookBody(calls).zipcode, '63122')
+  assert.doesNotMatch(job.note.message, /No ZIP code/)
+})
+
+test('state comes from the ZIP when the estimator location is empty; first_name falls back to Website', async () => {
+  const mo1 = handler({ env: hook })
+  await mo1.post({ ...mo, city: '', zip: '63101' })
+  assert.equal(zipJob(mo1.calls).state, 'MO')
+  const il2 = handler({ env: hook })
+  await il2.post({ ...mo, city: '', service_type: 'Siding', zip: '62298' })
+  assert.equal(zipJob(il2.calls).state, 'IL')
+  const none = handler({ env: hook })
+  await none.post({ ...mo, city: '', service_type: 'Siding' })
+  assert.equal(zipJob(none.calls).state, '')
+})
+
+test('the ZIP beats a typed state: "St. Louis, MO" with an East St. Louis ZIP is sent as IL', async () => {
+  const { calls, post } = handler({ env: hook })
+  await post({ ...mo, city: 'St. Louis, MO', service_type: 'Siding', zip: '62201' })
+  assert.equal(zipJob(calls).state, 'IL')
+  assert.equal(zipJob(calls).zipcode, '62201')
+  assert.equal(hookBody(calls).state, 'IL')
+})
+
+test('a ZIP sent as a number counts as given, not missing', async () => {
+  const { calls, post } = handler()
+  assert.equal((await post({ ...mo, zip: 123 })).status, 200)
+  assert.match(JSON.stringify(calls.logs), /"result":"invalid"/)
+})
+
+test('an Illinois roofing request is caught from the ZIP alone', async () => {
+  const { calls, post } = handler({ env: hook })
+  const response = await post({ ...mo, city: '', service_type: 'Roof Repair', zip: '62298' })
+  assert.equal(response.status, 200)
+  assert.equal(response.data.area, 'il-pending')
+  assert.equal(calls.inserts[0][0].status, 'il_license_pending')
+  assert.equal(zipJob(calls).state, 'IL')
+  assert.match(toOwner(calls)[0].subject, /IL ROOFING - LICENSE PENDING/)
+})
+
+test('a Missouri ZIP does not trip the Illinois guard', async () => {
+  const { calls, post } = handler()
+  const response = await post({ ...mo, city: '', service_type: 'Roof Repair', zip: '63101' })
+  assert.equal(response.data.area, undefined)
+  assert.equal('status' in calls.inserts[0][0], false)
+})
+
+test('the browser form has a required ZIP field wired like phone and email', () => {
+  const form = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
+  assert.match(form, /name="zip" required inputMode="numeric" maxLength=\{10\} autoComplete="postal-code" placeholder="ZIP Code \*" aria-label="ZIP code"/)
+  assert.match(form, /CONTACT_FIELDS: ContactField\[\] = \["name", "phone", "email", "zip"\]/)
+  assert.match(form, /zip: fd\.get\("zip"\)/)
+})

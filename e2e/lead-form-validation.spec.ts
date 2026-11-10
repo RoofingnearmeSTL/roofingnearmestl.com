@@ -82,6 +82,7 @@ test("a made-up phone number blocks the send and focuses the phone field", async
   const phone = form.locator('input[name="phone"]');
   await form.locator('input[name="name"]').fill("Test Homeowner");
   await form.locator('input[name="email"]').fill("pat@example.com");
+  await form.locator('input[name="zip"]').fill("63101");
   await phone.fill("314-555-0150");
   // Enter, not a click: leaving the field shows its error, which can move the button out from under a click.
   await phone.press("Enter");
@@ -121,11 +122,50 @@ test("email is required: a missing email blocks the send with a plain message", 
   await expect(page).not.toHaveURL(/thank-you/);
 });
 
+test("a short ZIP shows a plain inline error, focuses the field and sends nothing", async ({ page }) => {
+  const captured = await mockLead(page);
+  const form = await openForm(page);
+  await form.locator('input[name="name"]').fill("Test Homeowner");
+  await form.locator('input[name="phone"]').fill("314-555-2368");
+  await form.locator('input[name="email"]').fill("pat@example.com");
+  const zip = form.locator('input[name="zip"]');
+  await zip.fill("6310");
+  await zip.press("Enter");
+  await expect(zip).toBeFocused();
+  await expect(zip).toHaveAttribute("aria-invalid", "true");
+  await expect(await errorFor(zip)).toHaveText(/5-digit ZIP/);
+  expect(captured.body).toBeNull();
+  await expect(page).not.toHaveURL(/thank-you/);
+  await zip.fill("63101");
+  await expect(zip).not.toHaveAttribute("aria-invalid", "true");
+  await submit(form).click();
+  await expect(page).toHaveURL(/\/thank-you$/);
+  expect(captured.body?.zip).toBe("63101");
+});
+
+test("an empty ZIP is required, and ZIP+4 is accepted", async ({ page }) => {
+  const captured = await mockLead(page);
+  const form = await openForm(page);
+  await form.locator('input[name="name"]').fill("Test Homeowner");
+  await form.locator('input[name="phone"]').fill("314-555-2368");
+  await form.locator('input[name="email"]').fill("pat@example.com");
+  await submit(form).click();
+  const zip = form.locator('input[name="zip"]');
+  await expect(zip).toBeFocused();
+  await expect(await errorFor(zip)).toHaveText(/Please enter your 5-digit ZIP/);
+  expect(captured.body).toBeNull();
+  await zip.fill("63101-1234");
+  await submit(form).click();
+  await expect(page).toHaveURL(/\/thank-you$/);
+  expect(captured.body?.zip).toBe("63101-1234");
+});
+
 test("an email typo gets a suggestion that is applied only when tapped", async ({ page }) => {
   const captured = await mockLead(page);
   const form = await openForm(page);
   await form.locator('input[name="name"]').fill("Test Homeowner");
   await form.locator('input[name="phone"]').fill("314-555-2368");
+  await form.locator('input[name="zip"]').fill("63101");
   const email = form.locator('input[name="email"]');
   await email.fill("pat@gmial.com");
   await email.blur();
@@ -144,6 +184,7 @@ test("ignoring the suggestion sends the email exactly as typed", async ({ page }
   const form = await openForm(page);
   await form.locator('input[name="name"]').fill("Test Homeowner");
   await form.locator('input[name="phone"]').fill("314-555-2368");
+  await form.locator('input[name="zip"]').fill("63101");
   const email = form.locator('input[name="email"]');
   await email.fill("pat@yahoo.con");
   await email.blur();
@@ -167,6 +208,7 @@ async function fillAndSubmit(form: Locator) {
   await form.locator('input[name="name"]').fill("Test Homeowner");
   await form.locator('input[name="phone"]').fill("314-555-2368");
   await form.locator('input[name="email"]').fill("pat@example.com");
+  await form.locator('input[name="zip"]').fill("63101");
   await submit(form).click();
 }
 

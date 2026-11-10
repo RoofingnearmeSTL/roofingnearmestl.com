@@ -63,7 +63,7 @@ own. The phone numbers come from `src/lib/business.ts`.
 The database must expose these columns with types compatible with the submitted
 values: `name`, `phone`, `email`, `address`, `city`, `service_type`, `issue_type`,
 `roof_age`, `roof_size`, `roof_pitch`, `roof_material`, `emergency`, `message`.
-Optional lead-source columns `gbraid`, `wbraid`, `referrer` (text).
+Optional lead-source columns `gbraid`, `wbraid`, `referrer` (text) and `zip` (text, 5 digits).
 The form sends canonical column names, including human-readable size, pitch,
 and material labels. The API also accepts legacy `service`, `details`, and
 `est_size`/`est_pitch`/`est_material` fields. Absent optional values are
@@ -96,6 +96,27 @@ NOTIFY pgrst, 'reload schema';
 Until it runs, an insert that carries any of these fields and fails with `PGRST204` is retried once without them
 (log line `SUPABASE INSERT RETRY WITHOUT gbraid/wbraid/referrer`), so either order (migration first or deploy first)
 is safe and no lead is lost. The app never runs the migration itself.
+
+### ZIP column
+
+The lead form now requires a ZIP code (RoofLink's job API rejects a job without `zipcode`, `state`, `first_name` and
+`source`). Run this once in Supabase SQL Editor:
+
+```sql
+alter table public.leads add column if not exists zip text;
+NOTIFY pgrst, 'reload schema';
+```
+
+Until it runs, a `PGRST204` on insert is retried once without `zip` (log line
+`SUPABASE INSERT RETRY WITHOUT gbraid/wbraid/referrer/zip`), so no lead is lost. The server never rejects a lead for a
+missing or invalid ZIP: it logs `LEAD ZIP CHECK` (result only), adds a "ZIP check" line to the team email and a
+"No ZIP code given - ask for it" line to the CRM note.
+
+Webhook / n8n contract additions: top-level `zip` and `zipcode` (the 5-digit ZIP or `null`) and a better `state`
+(estimator location, else from the ZIP: 600-629 is IL, 630-658 is MO, else IL for a license-pending lead, else empty).
+`rooflink_job_json` now carries top-level `first_name`, `last_name` (when given), `state`, `zipcode` (only when valid),
+`source: "Website"`, `phone` and `email` (when valid), alongside the existing `customer` object. With no valid ZIP,
+`zipcode` is omitted so n8n holds the job and alerts. The endpoint is `/roof_link_endpoints/api/light/jobs/`.
 
 Run isolated lead-handler regression tests (mocked Supabase and Resend, no
 credentials or live side effects) with:

@@ -29,10 +29,11 @@ export function isRoofingRequest(service: unknown, emergencyTarp: unknown): bool
 }
 
 /** True only when the location is clearly in Illinois (a town that exists only there, "IL"/"Illinois", or an IL ZIP). */
-export function looksIllinois(input: { city?: unknown; address?: unknown; estLocation?: unknown; page?: unknown }): boolean {
+export function looksIllinois(input: { city?: unknown; address?: unknown; estLocation?: unknown; page?: unknown; zip?: unknown }): boolean {
   const text = [input.city, input.address, input.estLocation].filter((value): value is string => typeof value === "string").join(" ");
   if (/\bil\b|\bill\.|illinois/i.test(text)) return true; // "IL", "il", "Ill." or "Illinois" written as the state
   if (/\b6[0-2]\d{3}\b/.test(text)) return true; // Illinois ZIP codes are 600xx-629xx
+  if (typeof input.zip === "string" && /^\s*6[0-2]\d{3}(?:-?\d{4})?\s*$/.test(input.zip)) return true; // the ZIP field alone says Illinois
   if (typeof input.city === "string" && ILLINOIS_ONLY_CITIES.has(normalize(input.city).replace(/,.*$/, ""))) return true;
   if (typeof input.page === "string" && /-il(?:[/?#]|$)/.test(input.page)) return true; // sent from an Illinois page
   return false;
@@ -40,7 +41,7 @@ export function looksIllinois(input: { city?: unknown; address?: unknown; estLoc
 
 /** A roofing request (or an emergency roof tarp) for a home that is clearly in Illinois. */
 export function isIllinoisRoofingRequest(input: {
-  service?: unknown; emergency?: unknown; city?: unknown; address?: unknown; estLocation?: unknown; page?: unknown;
+  service?: unknown; emergency?: unknown; city?: unknown; address?: unknown; estLocation?: unknown; page?: unknown; zip?: unknown;
 }): boolean {
   return isRoofingRequest(input.service, input.emergency) && looksIllinois(input);
 }
