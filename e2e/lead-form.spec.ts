@@ -29,13 +29,14 @@ test("a Missouri roofing lead is sent with its details and lands on the thank-yo
   await form.locator('input[name="phone"]').fill("314-555-2368");
   await form.locator('input[name="email"]').fill("test@example.com");
   await form.locator('input[name="city"]').fill("Kirkwood");
+  await form.locator('input[name="zip"]').fill("63101");
   await form.locator('select[name="service"]').selectOption("Roof Replacement");
   await form.getByRole("button", { name: /free photo report/i }).click();
 
   await expect(page).toHaveURL(/\/thank-you$/);
   await expect(page.getByRole("heading", { name: /You're All Set!/i })).toBeVisible();
   await expect(page.getByText("We'll call within 30 mins")).toBeVisible();
-  expect(captured.body).toMatchObject({ name: "Test Homeowner", phone: "314-555-2368", email: "test@example.com", city: "Kirkwood", service_type: "Roof Replacement", emergency: false });
+  expect(captured.body).toMatchObject({ name: "Test Homeowner", phone: "314-555-2368", email: "test@example.com", city: "Kirkwood", zip: "63101", service_type: "Roof Replacement", emergency: false });
   expect(typeof captured.body?.form_ms).toBe("number");
 });
 
@@ -48,6 +49,7 @@ test("an Illinois roofing request shows the small license note, is still sent, a
   await form.locator('input[name="phone"]').fill("618-555-2368");
   await form.locator('input[name="email"]').fill("test@example.com");
   await form.locator('input[name="city"]').fill("Waterloo");
+  await form.locator('input[name="zip"]').fill("62298");
   await form.locator('select[name="service"]').selectOption("Roof Repair");
   await expect(form.getByRole("status")).toContainText("pending our IL license");
   await form.getByRole("button", { name: /free photo report/i }).click();
@@ -55,7 +57,7 @@ test("an Illinois roofing request shows the small license note, is still sent, a
   await expect(page).toHaveURL(/\/thank-you\?area=il-pending$/);
   await expect(page.getByText(/Roofing in Illinois is pending our Illinois roofing license/)).toBeVisible();
   await expect(page.getByText("We'll call within 30 mins")).toHaveCount(0);
-  expect(captured.body).toMatchObject({ city: "Waterloo", service_type: "Roof Repair" });
+  expect(captured.body).toMatchObject({ city: "Waterloo", zip: "62298", service_type: "Roof Repair" });
 });
 
 test("an Illinois page offers exterior work only, with the storm-damage box instead of a roof tarp", async ({ page }) => {
@@ -76,6 +78,7 @@ test("if saving fails, the homeowner is told to call and stays on the page", asy
   await form.locator('input[name="name"]').fill("Test Homeowner");
   await form.locator('input[name="phone"]').fill("314-555-2368");
   await form.locator('input[name="email"]').fill("test@example.com");
+  await form.locator('input[name="zip"]').fill("63101");
   const dialog = page.waitForEvent("dialog");
   await form.getByRole("button", { name: /free photo report/i }).click();
   const message = await dialog;

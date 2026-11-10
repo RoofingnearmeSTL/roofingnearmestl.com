@@ -1,7 +1,7 @@
 // Contact checks shared by the lead form (browser) and /api/lead (server).
 // No imports and no secrets here: this file is bundled into the browser.
 
-export type ContactField = 'name' | 'phone' | 'email'
+export type ContactField = 'name' | 'phone' | 'email' | 'zip'
 
 export type PhoneProblem = 'too_short' | 'too_long' | 'repeated' | 'area_code' | 'n11' | 'exchange' | 'fictional'
 
@@ -44,7 +44,25 @@ export const PHONE_REASON: Record<PhoneProblem, string> = {
   fictional: '555-0100 to 555-0199 is a made-up range',
 }
 
+export type ZipCheck = { ok: true; zip5: string } | { ok: false }
+
+/** US ZIP: 5 digits, or ZIP+4 (12345-6789 or 123456789). Returns the 5-digit ZIP. */
+export function checkZip(input: unknown): ZipCheck {
+  const text = typeof input === 'string' ? input.trim() : typeof input === 'number' ? String(input) : ''
+  const match = /^(\d{5})(?:-?(\d{4}))?$/.exec(text)
+  return match ? { ok: true, zip5: match[1] } : { ok: false }
+}
+
+/** Metro-area states from the ZIP prefix: 600-629 is Illinois, 630-658 is Missouri, anything else is unknown (''). */
+export function stateFromZip(zip5: unknown): 'IL' | 'MO' | '' {
+  const check = checkZip(zip5)
+  if (!check.ok) return ''
+  const prefix = Number(check.zip5.slice(0, 3))
+  return prefix >= 600 && prefix <= 629 ? 'IL' : prefix >= 630 && prefix <= 658 ? 'MO' : ''
+}
+
 export const CONTACT_MESSAGES = {
+  zipRequired: 'Please enter your 5-digit ZIP code.',
   nameRequired: 'Please enter your name so we know who to ask for.',
   phoneRequired: 'Please enter your phone number so we can call you back.',
   emailRequired: 'Please enter your email so we can send you the details of your free inspection or estimate.',
@@ -59,6 +77,7 @@ export const emailDomain = (email: string) => email.slice(email.lastIndexOf('@')
 
 export function contactFieldError(field: ContactField, value: string): string | undefined {
   const text = String(value ?? '').trim()
+  if (field === 'zip') return checkZip(text).ok ? undefined : CONTACT_MESSAGES.zipRequired
   if (field === 'name') return text ? undefined : CONTACT_MESSAGES.nameRequired
   if (field === 'phone') {
     if (!text) return CONTACT_MESSAGES.phoneRequired

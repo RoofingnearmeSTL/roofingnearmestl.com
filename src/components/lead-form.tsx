@@ -93,7 +93,7 @@ const SERVICES = LEAD_SERVICES;
 const inputClass = "w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none";
 
 const subscribeNever = () => () => {};
-const CONTACT_FIELDS: ContactField[] = ["name", "phone", "email"]; // page order
+const CONTACT_FIELDS: ContactField[] = ["name", "phone", "email", "zip"]; // page order
 const errorClass = "px-1 text-sm font-medium text-red-700";
 const invalidInput = " border-red-600 ring-2 ring-red-600/20";
 
@@ -153,7 +153,7 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
   function checkIllinoisRoofing(e: React.FormEvent<HTMLFormElement>) {
     const fd = new FormData(e.currentTarget);
     setIlRoofing(isIllinoisRoofingRequest({ service: fd.get("service"), emergency: fd.get("emergency") === "on", city: fd.get("city"),
-      address: fd.get("address"), estLocation: extras?.est_location, page: window.location.pathname }));
+      address: fd.get("address"), zip: fd.get("zip"), estLocation: extras?.est_location, page: window.location.pathname }));
   }
 
   async function handleLeadSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -189,6 +189,7 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       phone: fd.get("phone"),
       email: fd.get("email") || extras?.est_email || null,
       city: fd.get("city") || null,
+      zip: fd.get("zip"),
       address: fd.get("address"),
       service_type: fd.get("service"),
       issue_type: fd.get("issue_type"),
@@ -270,7 +271,15 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
           </p>
         )}
       </div>
-      <input name="city" defaultValue={defaultCity} maxLength={80} autoComplete="address-level2" placeholder="City" aria-label="City" className={inputClass} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <input name="city" defaultValue={defaultCity} maxLength={80} autoComplete="address-level2" placeholder="City" aria-label="City" className={inputClass} />
+        <div className="space-y-1">
+          <input name="zip" required inputMode="numeric" maxLength={10} autoComplete="postal-code" placeholder="ZIP Code *" aria-label="ZIP code"
+            aria-invalid={errors.zip ? true : undefined} aria-describedby={errors.zip ? errorId("zip") : undefined}
+            onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.zip ? invalidInput : "")} />
+          {errors.zip && <p id={errorId("zip")} className={errorClass}>{errors.zip}</p>}
+        </div>
+      </div>
       <select name="service" defaultValue={defaultService} aria-label="Service needed" className={inputClass}>
         {services.map((service) => <option key={service}>{service}</option>)}
       </select>
