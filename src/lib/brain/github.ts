@@ -98,6 +98,26 @@ export function createGitHubReader({ token, repo, fetch: f, timeoutMs = 15000 }:
       }
       return body
     },
+    /** One file's text from main (e.g. market/companies.json). */
+    async fileText(path: string): Promise<string> {
+      const safe = path.split('/').map(encodeURIComponent).join('/')
+      const res = await get(`${root}/contents/${safe}?ref=main`, 'application/vnd.github.raw+json')
+      return text(res)
+    },
+    /** Branch names starting with `prefix` (e.g. "market-watch/"), from refs only; no file contents are read. */
+    async branchNames(prefix: string): Promise<string[]> {
+      const res = await get(`${root}/git/matching-refs/heads/${prefix.split('/').map(encodeURIComponent).join('/')}`, 'application/vnd.github+json')
+      let data: unknown
+      try {
+        data = JSON.parse(await text(res))
+      } catch {
+        throw new GitHubError(200, 'GitHub answered 200.')
+      }
+      if (!Array.isArray(data)) return []
+      return data
+        .map((r) => (r && typeof (r as { ref?: unknown }).ref === 'string' ? (r as { ref: string }).ref.replace(/^refs\/heads\//, '') : ''))
+        .filter((n) => n.startsWith(prefix))
+    },
   }
 }
 

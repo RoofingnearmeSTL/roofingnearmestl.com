@@ -41,7 +41,7 @@ test.describe("signed in", () => {
     const res = await page.goto("/dashboard");
     expect(res?.status()).toBe(200);
     await expect(page.getByRole("heading", { level: 1, name: "Owner dashboard" })).toBeVisible();
-    for (const name of ["Leads", "Competitors", "Brain", "How everything connects"]) {
+    for (const name of ["Leads", "n8n usage", "Website updates", "Scraping activity", "Competitors", "Brain", "How everything connects"]) {
       await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
     }
     await expect(page.getByText("Not set up yet").first()).toBeVisible();

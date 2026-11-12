@@ -28,7 +28,9 @@ Secret (server only, never `NEXT_PUBLIC_`):
 `LEAD_WEBHOOK_SECRET` (webhook shared secret, sent as the `X-Webhook-Secret` header),
 `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `LEAD_ALERT_PHONE`,
 `DASHBOARD_PASSWORD` (at least 12 characters; any username), `BRAIN_GITHUB_TOKEN` (fine-grained, Brain-Data only,
-Contents read-only). `BRAIN_GITHUB_REPO` (optional, `owner/name`) is not secret.
+Contents read-only), `N8N_API_KEY` (n8n, Settings, n8n API; read only by the dashboard and `/api/n8n-usage-check`).
+`BRAIN_GITHUB_REPO` (optional, `owner/name`), `N8N_API_URL`, `N8N_MONTHLY_EXECUTION_LIMIT` and `N8N_BILLING_DAY` are
+not secret.
 
 Public (safe in the browser): `NEXT_PUBLIC_SUPABASE_URL` and the optional `NEXT_PUBLIC_*` overrides
 for Google and Meta IDs (each has a built-in default in `src/lib`).
@@ -77,6 +79,7 @@ Make the new key first, update every place it is used, redeploy, then delete the
 | Make webhook link | Make → Webhooks → the website webhook (create a new one) | Vercel `LEAD_WEBHOOK_URL` → redeploy |
 | Webhook shared secret | make a new long random value | Vercel `LEAD_WEBHOOK_SECRET` and the webhook receiver's check, same value in both → redeploy |
 | Dashboard password | make a new long random passphrase | Vercel `DASHBOARD_PASSWORD` → redeploy → close the browser so it forgets the old one |
+| n8n API key | n8n → Settings → n8n API → create a new key, delete the old one | Vercel `N8N_API_KEY` → redeploy |
 | Brain GitHub token | github.com → Settings → Developer settings → Fine-grained tokens → new token, Brain-Data only, Contents read-only (note the expiry date) | Vercel `BRAIN_GITHUB_TOKEN` → redeploy → delete the old token |
 | RoofLink API key | RoofLink → Company Settings → API Keys | Make → HTTP module → Connection |
 | Browserbase | browserbase.com/settings | Windows user variable `BROWSERBASE_API_KEY`, the Claude Code MCP header, `.codex/config.toml` |

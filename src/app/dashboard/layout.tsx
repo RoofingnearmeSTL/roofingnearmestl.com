@@ -24,8 +24,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <Image src="/logo.png" alt="RoofingnearmeSTL" width={380} height={295} className="h-16 w-auto" priority />
             <span className="text-sm font-bold text-zinc-600">Owner dashboard</span>
           </div>
-          <nav aria-label="Dashboard" className="flex gap-2 text-sm font-bold">
+          <nav aria-label="Dashboard" className="flex flex-wrap gap-2 text-sm font-bold">
             <Link href="/dashboard" className="inline-flex min-h-11 items-center rounded-full px-4 text-brand-ink hover:bg-brand-light">Overview</Link>
+            <Link href="/dashboard/proof-package" className="inline-flex min-h-11 items-center rounded-full px-4 text-brand-ink hover:bg-brand-light">Proof package</Link>
             <Link href="/dashboard/brain" className="inline-flex min-h-11 items-center rounded-full px-4 text-brand-ink hover:bg-brand-light">Brain notes</Link>
           </nav>
         </div>

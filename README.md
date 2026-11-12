@@ -224,6 +224,31 @@ sources and statuses, competitor scans, open recommendations, the Brain copy sta
 names, phones, emails, addresses or messages. It is hidden from search engines and loads no ad or analytics tags.
 Without `DASHBOARD_PASSWORD` it answers 404.
 
+### Dashboard v2 (Nov 11, 2026): proof packages, n8n usage, website updates, scraping activity
+
+From the Nov 10 meeting with Mike. Plan and status: `docs/plans/2026-11-11-dashboard-v2.md`.
+
+- **Evidence package builder** (`/dashboard/proof-package`), laid out like Mike's own roof system evidence package
+  (cover and construction opinion, damage summary, weather / hail, code and manufacturer requirements with the ice &
+  water shield courses and ventilation, scope and cost, photo report, attachments incl. his BEI certificates). It builds
+  one printable report for a claim from
+  NOAA storm reports for the date of loss (found with the free U.S. Census address lookup and the Storm Prediction
+  Center's daily reports, no keys), test squares, photos (shrunk and dated from the camera data in the browser),
+  attic ventilation (IRC R806.2 minimums), building code items Mike ticks, and attached PDFs (turned into page images).
+  Print it to PDF or download one self-contained `.html` file. Photos and documents never leave the computer; drafts
+  save in that browser (IndexedDB). The storm lookup route (`/dashboard/proof-package/storms`) sends only the address
+  and date of loss, and checks the dashboard password itself.
+- **n8n usage**: runs used this billing cycle against the plan limit, with a daily check (`/api/n8n-usage-check`, 14:00
+  UTC, `CRON_SECRET`) that emails `LEAD_TO_EMAIL` only when usage passes 75%, 90% or 100%, or the pace first points
+  past the limit. Daily counts are kept in `metrics_daily` (source `n8n`) so they can't shrink when n8n deletes old run
+  history. Settings (server-only): `N8N_API_URL` (e.g. `https://yourname.app.n8n.cloud`), `N8N_API_KEY` (n8n,
+  Settings, n8n API; not available on the free trial), `N8N_MONTHLY_EXECUTION_LIMIT` (the plan's runs per month), and
+  optional `N8N_BILLING_DAY` (1-31, the day the plan renews; default 1).
+- **Website updates**: the latest merged pull requests, marked "Live" or "Waiting for Promote" against the running
+  production commit (public GitHub API, cached 10 minutes).
+- **Scraping activity**: the 14 sites in Brain-Data `market/companies.json`, each site's last weekly scan and status,
+  and weekly scans still waiting on their own branch to be merged (read with `BRAIN_GITHUB_TOKEN`).
+
 ### Thank-you video link
 
 When `INTRO_VIDEO_URL` is a valid https link, the thank-you page also shows "Meet Mike, the owner: watch a short
