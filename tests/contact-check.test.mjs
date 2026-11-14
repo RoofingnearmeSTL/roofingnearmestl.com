@@ -40,14 +40,21 @@ test("field errors", () => {
   assert.match(contactFieldError("name", ""), /Please enter your name/);
   assert.match(contactFieldError("name", "   "), /Please enter your name/);
   assert.equal(contactFieldError("name", "Pat"), undefined);
-  assert.match(contactFieldError("phone", ""), /Please enter your phone number/);
+  assert.equal(contactFieldError("phone", ""), "Please enter a valid 10-digit phone number");
+  assert.equal(contactFieldError("phone", "314-555-23"), CONTACT_MESSAGES.phoneInvalid);
+  assert.equal(contactFieldError("phone", "314-555-23681"), CONTACT_MESSAGES.phoneInvalid);
   assert.equal(contactFieldError("phone", "314-555-0150"), PHONE_HELP.fictional);
   assert.equal(contactFieldError("phone", "314-555-2368"), undefined);
-  assert.equal(contactFieldError("email", ""), CONTACT_MESSAGES.emailRequired);
-  assert.equal(contactFieldError("email", "   "), CONTACT_MESSAGES.emailRequired);
-  assert.match(contactFieldError("email", ""), /Please enter your email/);
-  assert.match(contactFieldError("email", "pat@"), /looks incomplete/);
-  assert.match(contactFieldError("email", "not-an-email"), /looks incomplete/);
+  assert.equal(contactFieldError("email", ""), "Please enter a valid email address");
+  assert.equal(contactFieldError("email", "   "), CONTACT_MESSAGES.emailInvalid);
+  assert.equal(contactFieldError("email", "pat@"), CONTACT_MESSAGES.emailInvalid);
+  assert.equal(contactFieldError("email", "not-an-email"), CONTACT_MESSAGES.emailInvalid);
+  for (const field of ["address", "city"]) {
+    assert.equal(contactFieldError(field, ""), "This field is required", field);
+    assert.equal(contactFieldError(field, "   "), "This field is required", field);
+  }
+  assert.equal(contactFieldError("address", "123 Example St"), undefined);
+  assert.equal(contactFieldError("city", "Kirkwood"), undefined);
   assert.equal(contactFieldError("email", "pat@gmail.com"), undefined);
   assert.equal(isEmailSyntax("a@b.co"), true);
   assert.equal(isEmailSyntax("a@b"), false);
@@ -76,9 +83,9 @@ test("the shared module ships to the browser: no imports, no environment", () =>
   assert.doesNotMatch(source, /process\.env/);
 });
 
-test("email is required and the messages say why", () => {
-  assert.match(CONTACT_MESSAGES.emailRequired, /send you the details/);
-  assert.doesNotMatch(CONTACT_MESSAGES.emailIncomplete, /optional|leave it blank/i);
+test("email is required, with Mike's wording", () => {
+  assert.equal(CONTACT_MESSAGES.emailInvalid, "Please enter a valid email address");
+  assert.doesNotMatch(CONTACT_MESSAGES.emailInvalid, /optional|leave it blank/i);
   assert.equal(contactFieldError("email", "pat@gmail.com"), undefined);
 });
 
@@ -108,6 +115,8 @@ test("stateFromZip: 600-629 Illinois, 630-658 Missouri, else empty", () => {
 test("the zip field has a plain error message", () => {
   assert.equal(contactFieldError("zip", "63101"), undefined);
   assert.equal(contactFieldError("zip", "6310"), CONTACT_MESSAGES.zipRequired);
+  assert.equal(contactFieldError("zip", "63101-1234"), CONTACT_MESSAGES.zipRequired);
+  assert.equal(contactFieldError("zip", "  "), CONTACT_MESSAGES.required);
   assert.match(CONTACT_MESSAGES.zipRequired, /5-digit ZIP/);
 });
 

@@ -1,7 +1,7 @@
 // Contact checks shared by the lead form (browser) and /api/lead (server).
 // No imports and no secrets here: this file is bundled into the browser.
 
-export type ContactField = 'name' | 'phone' | 'email' | 'zip'
+export type ContactField = 'name' | 'phone' | 'email' | 'address' | 'city' | 'zip'
 
 export type PhoneProblem = 'too_short' | 'too_long' | 'repeated' | 'area_code' | 'n11' | 'exchange' | 'fictional'
 
@@ -61,12 +61,13 @@ export function stateFromZip(zip5: unknown): 'IL' | 'MO' | '' {
   return prefix >= 600 && prefix <= 629 ? 'IL' : prefix >= 630 && prefix <= 658 ? 'MO' : ''
 }
 
+// Phone, email and "required" wording chosen by Mike, Nov 14 2026.
 export const CONTACT_MESSAGES = {
+  required: 'This field is required',
   zipRequired: 'Please enter your 5-digit ZIP code.',
   nameRequired: 'Please enter your name so we know who to ask for.',
-  phoneRequired: 'Please enter your phone number so we can call you back.',
-  emailRequired: 'Please enter your email so we can send you the details of your free inspection or estimate.',
-  emailIncomplete: 'This email address looks incomplete (it needs an @ and a domain like gmail.com). Please check it.',
+  phoneInvalid: 'Please enter a valid 10-digit phone number',
+  emailInvalid: 'Please enter a valid email address',
 }
 
 export const EMAIL_PATTERN = /^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]+$/
@@ -77,15 +78,17 @@ export const emailDomain = (email: string) => email.slice(email.lastIndexOf('@')
 
 export function contactFieldError(field: ContactField, value: string): string | undefined {
   const text = String(value ?? '').trim()
-  if (field === 'zip') return checkZip(text).ok ? undefined : CONTACT_MESSAGES.zipRequired
+  if (field === 'address' || field === 'city') return text ? undefined : CONTACT_MESSAGES.required
+  // The form asks for exactly 5 digits (the server still accepts ZIP+4 from older pages).
+  if (field === 'zip') return !text ? CONTACT_MESSAGES.required : /^\d{5}$/.test(text) ? undefined : CONTACT_MESSAGES.zipRequired
   if (field === 'name') return text ? undefined : CONTACT_MESSAGES.nameRequired
   if (field === 'phone') {
-    if (!text) return CONTACT_MESSAGES.phoneRequired
     const check = checkPhone(text)
-    return check.ok ? undefined : PHONE_HELP[check.problem]
+    if (check.ok) return undefined
+    // Wrong digit count gets Mike's wording; a 10-digit number that can't be real keeps its specific reason.
+    return check.problem === 'too_short' || check.problem === 'too_long' ? CONTACT_MESSAGES.phoneInvalid : PHONE_HELP[check.problem]
   }
-  if (!text) return CONTACT_MESSAGES.emailRequired
-  return isEmailSyntax(text) ? undefined : CONTACT_MESSAGES.emailIncomplete
+  return isEmailSyntax(text) ? undefined : CONTACT_MESSAGES.emailInvalid
 }
 
 const COMMON_DOMAINS = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com', 'att.net', 'sbcglobal.net', 'charter.net', 'comcast.net']

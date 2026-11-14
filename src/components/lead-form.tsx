@@ -93,9 +93,11 @@ const SERVICES = LEAD_SERVICES;
 const inputClass = "w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none";
 
 const subscribeNever = () => () => {};
-const CONTACT_FIELDS: ContactField[] = ["name", "phone", "email", "zip"]; // page order
+const CONTACT_FIELDS: ContactField[] = ["name", "phone", "email", "city", "zip", "address"]; // page order
 const errorClass = "px-1 text-sm font-medium text-red-700";
 const invalidInput = " border-red-600 ring-2 ring-red-600/20";
+// Red required-field star in the corner of the box (screen readers get the field's `required` instead).
+const RequiredMark = () => <span aria-hidden="true" className="pointer-events-none absolute right-3 top-1.5 text-base font-bold leading-none text-red-600">*</span>;
 
 // Extra fields merged into the lead payload, e.g. the homepage cost estimator selections.
 export type LeadExtras = Record<string, string | number | null | undefined>;
@@ -247,22 +249,31 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
   return (
     <form noValidate={hydrated} className="space-y-3" onSubmit={handleLeadSubmit} onChange={checkIllinoisRoofing}>
       <div className="space-y-1">
-        <input name="name" required maxLength={100} autoComplete="name" placeholder="Your Name *" aria-label="Your name"
-          aria-invalid={errors.name ? true : undefined} aria-describedby={errors.name ? errorId("name") : undefined}
-          onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.name ? invalidInput : "")} />
+        <div className="relative">
+          <input name="name" required maxLength={100} autoComplete="name" placeholder="Your Name" aria-label="Your name"
+            aria-invalid={errors.name ? true : undefined} aria-describedby={errors.name ? errorId("name") : undefined}
+            onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.name ? invalidInput : "")} />
+          <RequiredMark />
+        </div>
         {errors.name && <p id={errorId("name")} className={errorClass}>{errors.name}</p>}
       </div>
       <div className="space-y-1">
-        <input name="phone" required type="tel" inputMode="tel" maxLength={30} pattern="(?:\D*\d){10,}\D*" title="Please enter a 10-digit phone number" autoComplete="tel" placeholder="Phone Number *" aria-label="Phone number"
-          aria-invalid={errors.phone ? true : undefined} aria-describedby={errors.phone ? errorId("phone") : undefined}
-          onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.phone ? invalidInput : "")} />
+        <div className="relative">
+          <input name="phone" required type="tel" inputMode="tel" maxLength={30} pattern="(?:\D*\d){10,}\D*" title="Please enter a valid 10-digit phone number" autoComplete="tel" placeholder="Phone Number" aria-label="Phone number"
+            aria-invalid={errors.phone ? true : undefined} aria-describedby={errors.phone ? errorId("phone") : undefined}
+            onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.phone ? invalidInput : "")} />
+          <RequiredMark />
+        </div>
         {errors.phone && <p id={errorId("phone")} className={errorClass}>{errors.phone}</p>}
       </div>
       <div className="space-y-1">
-        <input name="email" required type="email" maxLength={254} autoComplete="email" placeholder="Email *" aria-label="Email"
-          aria-invalid={errors.email ? true : undefined}
-          aria-describedby={[errors.email && errorId("email"), emailSuggestion && hintId].filter(Boolean).join(" ") || undefined}
-          onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.email ? invalidInput : "")} />
+        <div className="relative">
+          <input name="email" required type="email" maxLength={254} autoComplete="email" placeholder="Email" aria-label="Email"
+            aria-invalid={errors.email ? true : undefined}
+            aria-describedby={[errors.email && errorId("email"), emailSuggestion && hintId].filter(Boolean).join(" ") || undefined}
+            onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.email ? invalidInput : "")} />
+          <RequiredMark />
+        </div>
         {errors.email && <p id={errorId("email")} className={errorClass}>{errors.email}</p>}
         {emailSuggestion && (
           <p id={hintId} className="px-1 text-sm text-zinc-700">
@@ -272,13 +283,33 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
         )}
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <input name="city" defaultValue={defaultCity} maxLength={80} autoComplete="address-level2" placeholder="City" aria-label="City" className={inputClass} />
         <div className="space-y-1">
-          <input name="zip" required inputMode="numeric" maxLength={10} autoComplete="postal-code" placeholder="ZIP Code *" aria-label="ZIP code"
-            aria-invalid={errors.zip ? true : undefined} aria-describedby={errors.zip ? errorId("zip") : undefined}
-            onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.zip ? invalidInput : "")} />
+          <div className="relative">
+            <input name="city" required defaultValue={defaultCity} maxLength={80} autoComplete="address-level2" placeholder="City" aria-label="City"
+              aria-invalid={errors.city ? true : undefined} aria-describedby={errors.city ? errorId("city") : undefined}
+              onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.city ? invalidInput : "")} />
+            <RequiredMark />
+          </div>
+          {errors.city && <p id={errorId("city")} className={errorClass}>{errors.city}</p>}
+        </div>
+        <div className="space-y-1">
+          <div className="relative">
+            <input name="zip" required inputMode="numeric" maxLength={5} pattern="\d{5}" autoComplete="postal-code" placeholder="ZIP Code" aria-label="ZIP code"
+              aria-invalid={errors.zip ? true : undefined} aria-describedby={errors.zip ? errorId("zip") : undefined}
+              onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.zip ? invalidInput : "")} />
+            <RequiredMark />
+          </div>
           {errors.zip && <p id={errorId("zip")} className={errorClass}>{errors.zip}</p>}
         </div>
+      </div>
+      <div className="space-y-1">
+        <div className="relative">
+          <input name="address" required maxLength={200} autoComplete="street-address" placeholder="Street Address" aria-label="Street address"
+            aria-invalid={errors.address ? true : undefined} aria-describedby={errors.address ? errorId("address") : undefined}
+            onBlur={onFieldBlur} onChange={onFieldChange} className={inputClass + (errors.address ? invalidInput : "")} />
+          <RequiredMark />
+        </div>
+        {errors.address && <p id={errorId("address")} className={errorClass}>{errors.address}</p>}
       </div>
       <select name="service" defaultValue={defaultService} aria-label="Service needed" className={inputClass}>
         {services.map((service) => <option key={service}>{service}</option>)}
@@ -300,7 +331,6 @@ export default function LeadForm({ extras, defaultService = "Roof Repair", defau
       <details className="group rounded-xl border border-zinc-200 bg-white/70 px-4 py-3 text-sm text-black">
         <summary className="cursor-pointer list-none font-semibold text-zinc-700 [&::-webkit-details-marker]:hidden"><span className="group-open:hidden">+</span><span className="hidden group-open:inline">−</span> Add more details (optional)</summary>
         <div className="mt-3 space-y-3">
-          <input name="address" maxLength={200} autoComplete="street-address" placeholder="Street address" aria-label="Street address" className={inputClass} />
           <label className="block font-semibold">
             Issue
             <input name="issue_type" maxLength={200} placeholder={exteriorOnly ? "Siding damage, overflowing gutters, rotted fascia, or other issue" : "Leak, storm damage, aging roof, or other issue"} className="mt-1 w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black" />

@@ -1069,7 +1069,11 @@ test('a Missouri ZIP does not trip the Illinois guard', async () => {
 
 test('the browser form has a required ZIP field wired like phone and email', () => {
   const form = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
-  assert.match(form, /name="zip" required inputMode="numeric" maxLength=\{10\} autoComplete="postal-code" placeholder="ZIP Code \*" aria-label="ZIP code"/)
-  assert.match(form, /CONTACT_FIELDS: ContactField\[\] = \["name", "phone", "email", "zip"\]/)
+  assert.match(form, /name="zip" required inputMode="numeric" maxLength=\{5\} pattern="\\d\{5\}" autoComplete="postal-code" placeholder="ZIP Code" aria-label="ZIP code"/)
+  assert.match(form, /name="city" required /)
+  assert.match(form, /name="address" required /)
+  assert.match(form, /CONTACT_FIELDS: ContactField\[\] = \["name", "phone", "email", "city", "zip", "address"\]/)
+  // Street address sits in the main form, not inside the optional "Add more details" section.
+  assert.ok(form.indexOf('name="address"') < form.indexOf('<details'))
   assert.match(form, /zip: fd\.get\("zip"\)/)
 })

@@ -36,22 +36,83 @@ async function errorFor(input: Locator) {
 
 const submit = (form: Locator) => form.getByRole("button", { name: /free (photo report|exterior quote)/i });
 
-test("an empty submit shows plain errors, focuses the name field and sends nothing", async ({ page }) => {
+const VALID = { name: "Test Homeowner", phone: "314-555-2368", email: "pat@example.com", city: "Kirkwood", zip: "63101", address: "123 Example St" };
+type Field = keyof typeof VALID;
+
+// Fills every required field with a valid value, except the ones listed in `skip`.
+async function fillRequired(form: Locator, skip: Field[] = []) {
+  for (const [field, value] of Object.entries(VALID) as [Field, string][]) {
+    if (!skip.includes(field)) await form.locator(`input[name="${field}"]`).fill(value);
+  }
+}
+
+test("an empty submit shows an inline error under every required field and sends nothing", async ({ page }) => {
   const captured = await mockLead(page);
   const form = await openForm(page);
   await submit(form).click();
   const name = form.locator('input[name="name"]');
-  const phone = form.locator('input[name="phone"]');
   await expect(name).toBeFocused();
   await expect(name).toHaveAttribute("aria-invalid", "true");
   await expect(await errorFor(name)).toHaveText(/Please enter your name/);
-  await expect(phone).toHaveAttribute("aria-invalid", "true");
-  await expect(await errorFor(phone)).toHaveText(/Please enter your phone number/);
-  const email = form.locator('input[name="email"]');
-  await expect(email).toHaveAttribute("aria-invalid", "true");
-  await expect(await errorFor(email)).toHaveText(/Please enter your email/);
+  const expected: [Field, string][] = [
+    ["phone", "Please enter a valid 10-digit phone number"],
+    ["email", "Please enter a valid email address"],
+    ["city", "This field is required"],
+    ["zip", "This field is required"],
+    ["address", "This field is required"],
+  ];
+  for (const [field, message] of expected) {
+    const input = form.locator(`input[name="${field}"]`);
+    await expect(input).toHaveAttribute("aria-invalid", "true");
+    await expect(await errorFor(input)).toHaveText(message);
+  }
   expect(captured.body).toBeNull();
   await expect(page).not.toHaveURL(/thank-you/);
+});
+
+test("every required field shows a red star", async ({ page }) => {
+  const form = await openForm(page);
+  for (const field of Object.keys(VALID)) {
+    const box = form.locator(`input[name="${field}"]`).locator("xpath=..");
+    const star = box.locator('span[aria-hidden="true"]', { hasText: "*" });
+    await expect(star).toBeVisible();
+    await expect(star).toHaveClass(/\btext-red-600\b/);
+  }
+});
+
+for (const field of ["address", "email", "phone"] as Field[]) {
+  test(`a blank ${field} blocks the send`, async ({ page }) => {
+    const captured = await mockLead(page);
+    const form = await openForm(page);
+    await fillRequired(form, [field]);
+    await submit(form).click();
+    const input = form.locator(`input[name="${field}"]`);
+    await expect(input).toBeFocused();
+    await expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(captured.body).toBeNull();
+    await expect(page).not.toHaveURL(/thank-you/);
+  });
+}
+
+test("a street address or city of only spaces is treated as blank", async ({ page }) => {
+  const captured = await mockLead(page);
+  const form = await openForm(page);
+  await fillRequired(form);
+  await form.locator('input[name="city"]').fill("   ");
+  await form.locator('input[name="address"]').fill("   ");
+  await submit(form).click();
+  const city = form.locator('input[name="city"]');
+  await expect(city).toBeFocused();
+  await expect(await errorFor(city)).toHaveText("This field is required");
+  await expect(await errorFor(form.locator('input[name="address"]'))).toHaveText("This field is required");
+  expect(captured.body).toBeNull();
+});
+
+test("Street address is in the main form, outside the optional details", async ({ page }) => {
+  const form = await openForm(page);
+  await expect(form.locator('input[name="address"]')).toBeVisible();
+  await expect(form.locator('details input[name="address"]')).toHaveCount(0);
+  await expect(form.locator("details summary")).toContainText("Add more details (optional)");
 });
 
 test("errors appear on blur and clear once fixed", async ({ page }) => {
@@ -65,6 +126,9 @@ test("errors appear on blur and clear once fixed", async ({ page }) => {
   await name.fill("Test Homeowner");
   await expect(name).not.toHaveAttribute("aria-invalid", "true");
 
+  await phone.fill("314-555-23");
+  await phone.blur();
+  await expect(await errorFor(phone)).toHaveText("Please enter a valid 10-digit phone number");
   await phone.fill("314-555-0150");
   await phone.blur();
   await expect(await errorFor(phone)).toContainText("555-0100 to 555-0199");
@@ -79,10 +143,8 @@ test("errors appear on blur and clear once fixed", async ({ page }) => {
 test("a made-up phone number blocks the send and focuses the phone field", async ({ page }) => {
   const captured = await mockLead(page);
   const form = await openForm(page);
+  await fillRequired(form, ["phone"]);
   const phone = form.locator('input[name="phone"]');
-  await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="email"]').fill("pat@example.com");
-  await form.locator('input[name="zip"]').fill("63101");
   await phone.fill("314-555-0150");
   // Enter, not a click: leaving the field shows its error, which can move the button out from under a click.
   await phone.press("Enter");
@@ -97,37 +159,20 @@ test("a made-up phone number blocks the send and focuses the phone field", async
 test("an incomplete email blocks the send and focuses the email field", async ({ page }) => {
   const captured = await mockLead(page);
   const form = await openForm(page);
-  await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="phone"]').fill("314-555-2368");
+  await fillRequired(form, ["email"]);
   const email = form.locator('input[name="email"]');
   await email.fill("pat@");
   // Enter, not a click: leaving the field shows its error, which can move the button out from under a click.
   await email.press("Enter");
   await expect(email).toBeFocused();
-  await expect(await errorFor(email)).toHaveText(/looks incomplete/);
+  await expect(await errorFor(email)).toHaveText("Please enter a valid email address");
   expect(captured.body).toBeNull();
-});
-
-test("email is required: a missing email blocks the send with a plain message", async ({ page }) => {
-  const captured = await mockLead(page);
-  const form = await openForm(page);
-  await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="phone"]').fill("314-555-2368");
-  await submit(form).click();
-  const email = form.locator('input[name="email"]');
-  await expect(email).toBeFocused();
-  await expect(email).toHaveAttribute("aria-invalid", "true");
-  await expect(await errorFor(email)).toHaveText(/Please enter your email/);
-  expect(captured.body).toBeNull();
-  await expect(page).not.toHaveURL(/thank-you/);
 });
 
 test("a short ZIP shows a plain inline error, focuses the field and sends nothing", async ({ page }) => {
   const captured = await mockLead(page);
   const form = await openForm(page);
-  await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="phone"]').fill("314-555-2368");
-  await form.locator('input[name="email"]').fill("pat@example.com");
+  await fillRequired(form, ["zip"]);
   const zip = form.locator('input[name="zip"]');
   await zip.fill("6310");
   await zip.press("Enter");
@@ -143,29 +188,19 @@ test("a short ZIP shows a plain inline error, focuses the field and sends nothin
   expect(captured.body?.zip).toBe("63101");
 });
 
-test("an empty ZIP is required, and ZIP+4 is accepted", async ({ page }) => {
+test("a complete form sends name, phone, email, street address, city and ZIP", async ({ page }) => {
   const captured = await mockLead(page);
   const form = await openForm(page);
-  await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="phone"]').fill("314-555-2368");
-  await form.locator('input[name="email"]').fill("pat@example.com");
-  await submit(form).click();
-  const zip = form.locator('input[name="zip"]');
-  await expect(zip).toBeFocused();
-  await expect(await errorFor(zip)).toHaveText(/Please enter your 5-digit ZIP/);
-  expect(captured.body).toBeNull();
-  await zip.fill("63101-1234");
+  await fillRequired(form);
   await submit(form).click();
   await expect(page).toHaveURL(/\/thank-you$/);
-  expect(captured.body?.zip).toBe("63101-1234");
+  expect(captured.body).toMatchObject(VALID);
 });
 
 test("an email typo gets a suggestion that is applied only when tapped", async ({ page }) => {
   const captured = await mockLead(page);
   const form = await openForm(page);
-  await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="phone"]').fill("314-555-2368");
-  await form.locator('input[name="zip"]').fill("63101");
+  await fillRequired(form, ["email"]);
   const email = form.locator('input[name="email"]');
   await email.fill("pat@gmial.com");
   await email.blur();
@@ -182,9 +217,7 @@ test("an email typo gets a suggestion that is applied only when tapped", async (
 test("ignoring the suggestion sends the email exactly as typed", async ({ page }) => {
   const captured = await mockLead(page);
   const form = await openForm(page);
-  await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="phone"]').fill("314-555-2368");
-  await form.locator('input[name="zip"]').fill("63101");
+  await fillRequired(form, ["email"]);
   const email = form.locator('input[name="email"]');
   await email.fill("pat@yahoo.con");
   await email.blur();
@@ -201,14 +234,12 @@ test("the Illinois exterior form has the same inline errors", async ({ page }) =
   const name = form.locator('input[name="name"]');
   await expect(name).toBeFocused();
   await expect(name).toHaveAttribute("aria-invalid", "true");
+  await expect(await errorFor(form.locator('input[name="address"]'))).toHaveText("This field is required");
   expect(captured.body).toBeNull();
 });
 
 async function fillAndSubmit(form: Locator) {
-  await form.locator('input[name="name"]').fill("Test Homeowner");
-  await form.locator('input[name="phone"]').fill("314-555-2368");
-  await form.locator('input[name="email"]').fill("pat@example.com");
-  await form.locator('input[name="zip"]').fill("63101");
+  await fillRequired(form);
   await submit(form).click();
 }
 
