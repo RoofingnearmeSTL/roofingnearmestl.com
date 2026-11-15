@@ -5,7 +5,8 @@
 // (siding, gutters, soffit & fascia) until the Illinois roofing license. See src/lib/business.ts.
 import type { SitePage } from "./site-pages";
 import { EXTERIOR_SERVICE_BULLETS, INSURANCE_SENTENCE, PHONES } from "./business";
-import { IL_COMING_SOON, priceRange, usd } from "./pricing";
+import { IL_COMING_SOON } from "./pricing";
+import { ROOF_PRICE_GET, ROOF_PRICE_HOW } from "./estimate-offer";
 
 export type RegionId = "il-monroe-st-clair" | "il-madison" | "mo-st-charles" | "mo-west-county" | "mo-central-county" | "mo-north-county" | "mo-jefferson" | "mo-franklin";
 
@@ -292,7 +293,6 @@ function roofingPage(area: Area, index: number, nameOf: (slug: string) => string
   const phone = PHONES.MO.display;
   const nearby = area.nearby.map(nameOf).join(", ");
   const region = regions.find((candidate) => candidate.id === area.region)!;
-  const [s12, s24] = [priceRange(12, "architectural"), priceRange(24, "architectural")];
   return {
     slug: area.slug,
     kind: "city",
@@ -329,7 +329,7 @@ function roofingPage(area: Area, index: number, nameOf: (slug: string) => string
     ],
     faqs: [
       [`Do you serve ${place}?`, `Yes. We work throughout ${city} and nearby ${nearby}, plus the rest of the St. Louis area in Missouri.`],
-      [`How much does a new roof cost in ${city}?`, `A 30-year architectural shingle roof costs ${usd(s12.low)}-${usd(s24.high)} for most homes (12-24 squares, about 1,200-2,400 sq ft of roof). Low pitch is the low end and steep pitch the high end. Try the estimator, then get a free inspection to lock your price.`],
+      [`How much does a new roof cost in ${city}?`, `${ROOF_PRICE_HOW} ${ROOF_PRICE_GET}`],
       [`Can you check my roof after a storm in ${city}?`, "Yes. Our Free Photo-Documented Report includes shingle ID and damage photos you can keep and share with your insurance carrier."],
       [`Do you also do siding, gutters and other exterior work in ${city}?`, "Yes. Roofs plus siding and siding repair, gutters, downspouts, gutter cleaning and gutter guards, soffit and fascia, trim wraps for windows, doors, garage doors and porch beams, porch and patio decks, house and siding soft washing, attic ventilation correction and Christmas lights. One local crew, one point of contact."],
       [`Which number should I call in ${city}?`, `For an active leak or storm damage in ${city}, call our Missouri line at ${phone}; emergency tarping is available 24/7. For everything else, request a free evaluation online and we'll call as soon as it comes in during business hours.`],

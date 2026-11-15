@@ -39,8 +39,9 @@ const STORE_KEY = "project-request";
 /** /free-inspection's form box (sticky bar target). */
 export const FORM_ID = "project-form";
 const RESULT_ID = "project-request-result";
-/** "Get my rough estimate" buttons elsewhere on a page fill the form in with this event. */
+/** The estimator boxes elsewhere on a page fill the form in with this event. */
 export const PREFILL_EVENT = "project-request:prefill";
+type PrefillDetail = { state?: "MO" | "IL"; service?: string; inputs?: EstimateInputs; silent?: boolean };
 
 // ── Shared page state: the property state picks the phone number in /free-inspection's sticky bar ─────────────
 type PageState = { state: PropertyState; setState: (s: PropertyState) => void; done: boolean; setDone: (d: boolean) => void };
@@ -183,14 +184,29 @@ export function ProjectRequest({ tone = "dark", defaultState = "", defaultServic
     setErrors((prev) => ({ ...prev, state: undefined }));
   }
 
-  // "Get my rough estimate" buttons elsewhere on the page: Missouri + Roof Replacement, then the size field.
+  // The estimator boxes elsewhere on the page (EstimateBoxes): Missouri + Roof Replacement plus the size, material and
+  // pitch picked there. "silent" = a box changed (no focus move); otherwise focus the first empty field.
   useEffect(() => {
     function prefill(e: Event) {
-      const detail = (e as CustomEvent<{ state?: "MO" | "IL"; service?: string }>).detail ?? {};
+      const detail = (e as CustomEvent<PrefillDetail>).detail ?? {};
       if (detail.state) setStateLocal(detail.state);
-      if (detail.state && detail.service && offers(detail.state, detail.service)) { setService(detail.service); setIssue(""); }
+      if (detail.state && detail.service && offers(detail.state, detail.service)) {
+        setService(detail.service);
+        if (!detail.silent) setIssue("");
+      }
+      if (detail.inputs) {
+        const { size: s, material: m, pitch: p } = detail.inputs;
+        setSizeUnknown(s === null);
+        setSize(s === null ? "" : String(s));
+        setMaterial(m ?? "");
+        setPitch(p ?? "");
+      }
       setErrors({});
-      requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>('[name="roof_size"], [name="service"]')?.focus({ preventScroll: true }));
+      if (detail.silent) return;
+      requestAnimationFrame(() => {
+        const empty = [...(formRef.current?.querySelectorAll<HTMLInputElement>('input[name="name"], input[name="phone"], input[name="email"], input[name="address"], input[name="city"], input[name="zip"]') ?? [])].find((el) => !el.value.trim());
+        (empty ?? formRef.current?.querySelector<HTMLElement>('[name="service"]'))?.focus({ preventScroll: true });
+      });
     }
     window.addEventListener(PREFILL_EVENT, prefill);
     return () => window.removeEventListener(PREFILL_EVENT, prefill);
@@ -636,19 +652,75 @@ function EstimateBlock({ t, stored, initialEstimate }: { t: Theme; stored: Store
   );
 }
 
-// ── "Get my rough estimate": replaces the old instant-price estimator on pages that had one ───────────────────────
+// ── Estimator boxes (Mike, Nov 15): where the old instant-price estimator was. Roof size, material and pitch are
+// picked here and carried into the request form as they change; no price is shown until the form is sent and saved.
 export function EstimatePrompt({ headingLevel = "h2", targetId = "estimate" }: { headingLevel?: "h2" | "h3"; targetId?: string }) {
   const Heading = headingLevel;
-  function start() {
-    window.dispatchEvent(new CustomEvent(PREFILL_EVENT, { detail: { state: "MO", service: ESTIMATE_SERVICE } }));
+  const uid = useId();
+  const [size, setSize] = useState("");
+  const [unknown, setUnknown] = useState(false);
+  const [material, setMaterial] = useState<ShingleKey | "">("");
+  const [pitch, setPitch] = useState<PitchKey | "">("");
+  const custom = !!material && isCustom(material);
+
+  function send(next: { size?: string; unknown?: boolean; material?: ShingleKey | ""; pitch?: PitchKey | "" }, silent: boolean) {
+    const s = next.size ?? size, u = next.unknown ?? unknown, m = next.material ?? material, p = next.pitch ?? pitch;
+    const n = Number(s);
+    const inputs: EstimateInputs = { size: u || !s.trim() || !Number.isInteger(n) ? null : n, material: m || null, pitch: p || null };
+    window.dispatchEvent(new CustomEvent<PrefillDetail>(PREFILL_EVENT, { detail: { state: "MO", service: ESTIMATE_SERVICE, inputs, silent } }));
+  }
+  function change(next: { size?: string; unknown?: boolean; material?: ShingleKey | ""; pitch?: PitchKey | "" }) {
+    if (next.size !== undefined) setSize(next.size);
+    if (next.unknown !== undefined) setUnknown(next.unknown);
+    if (next.material !== undefined) setMaterial(next.material);
+    if (next.pitch !== undefined) setPitch(next.pitch);
+    send(next, true);
+  }
+  function goToForm() {
+    send({}, false);
     document.getElementById(targetId)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   }
+  const select = "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-3 font-medium text-black";
   return (
-    <div className="rounded-2xl border-2 border-brand/25 bg-white p-6 text-black shadow-sm">
+    <div className="rounded-2xl border-2 border-brand/25 bg-white p-6 text-black shadow-sm" data-estimate-boxes="">
       <Heading className="text-xl font-bold">Rough Roof Replacement Estimate</Heading>
-      <p className="mt-2 text-sm text-zinc-700">Missouri roof replacements: choose your roof size, material and pitch in the request form. {ESTIMATE_OFFER_TEXT.replace("Submit your request", "Send it")}</p>
-      <p className="mt-2 text-xs text-zinc-500">Don&apos;t know your roof size? That&apos;s fine: we measure it and quote it properly. Clay, metal and slate are custom quotes. {IL_COMING_SOON}.</p>
-      <button type="button" onClick={start} className="mt-4 rounded-full bg-brand-ink px-6 py-3 font-bold text-white shadow-md shadow-brand/20 hover:bg-brand-ink-dark">Get My Rough Estimate</button>
+      <p className="mt-1 text-sm text-zinc-600">Missouri roof replacement. Pick your roof size, material and pitch.</p>
+      <div className="mt-4">
+        <label htmlFor={`${uid}-size`} className="flex items-baseline justify-between gap-3 text-sm font-bold">
+          <span>Roof size in squares</span>
+          {size && !unknown && <span className="text-xs font-semibold text-zinc-500">≈ {(Number(size) * 100 || 0).toLocaleString("en-US")} sq ft of roof</span>}
+        </label>
+        <div className="mt-1 flex items-center gap-3">
+          <input id={`${uid}-size`} type="number" inputMode="numeric" min={SQ_MIN} max={SQ_MAX} step={1} placeholder="e.g. 18" value={size} disabled={unknown}
+            onChange={(e) => change({ size: e.target.value })} className="w-28 rounded-xl border border-zinc-300 bg-white px-3 py-3 font-bold disabled:bg-zinc-200" />
+          <input type="range" aria-label="Roof size slider" min={SQ_MIN} max={SQ_MAX} step={1} value={size ? Number(size) || SQ_MIN : SQ_MIN} disabled={unknown}
+            onChange={(e) => change({ size: e.target.value })} className="w-full accent-brand" />
+        </div>
+        <p className="mt-1 text-xs text-zinc-500">1 square = 100 sq ft of roof surface (not your home&apos;s floor area). Range {SQ_MIN}-{SQ_MAX}.</p>
+        <label className="mt-2 flex items-center gap-2 text-sm font-bold">
+          <input type="checkbox" checked={unknown} onChange={(e) => change({ unknown: e.target.checked })} className="h-5 w-5 accent-brand" />
+          I don&apos;t know my roof size
+        </label>
+      </div>
+      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label className="text-sm font-bold">Material
+          <select value={material} onChange={(e) => change({ material: e.target.value as ShingleKey | "" })} className={select}>
+            <option value="">Choose a material</option>
+            {SHINGLE_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+          </select>
+        </label>
+        <label className="text-sm font-bold">Roof pitch
+          <select value={pitch} disabled={custom} onChange={(e) => change({ pitch: e.target.value as PitchKey | "" })} className={select + " disabled:bg-zinc-200"}>
+            <option value="">Choose a pitch</option>
+            {(Object.keys(PITCHES) as PitchKey[]).map((key) => <option key={key} value={key}>{PITCHES[key].label}</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="mt-4 rounded-xl border border-brand/20 bg-brand-light p-4 text-center">
+        <p className="text-sm font-bold">{custom ? "Clay, metal and slate are custom quotes: we price them after looking at your roof." : unknown ? "No problem: we measure your roof and quote it properly. Send the request form to get started." : "Your price shows after you send the request form. It's saved, then shown here and emailed to you."}</p>
+        <button type="button" onClick={goToForm} className="mt-3 rounded-full bg-brand-ink px-6 py-3 font-bold text-white shadow-md shadow-brand/20 hover:bg-brand-ink-dark">Continue to the Request Form</button>
+      </div>
+      <p className="mt-2 text-xs text-zinc-500">Rough estimate only. Your free inspection sets the final price. {IL_COMING_SOON}.</p>
     </div>
   );
 }

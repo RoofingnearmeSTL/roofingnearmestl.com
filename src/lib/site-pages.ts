@@ -11,7 +11,8 @@
 // The wider St. Louis city pages are generated from src/lib/service-areas.ts.
 import { areaNames, buildAreaPages, regions, type RegionId } from "./service-areas";
 import { IL_LEAD_SERVICES, INSURANCE, INSURANCE_SENTENCE, LEGAL_NAME, PHONES } from "./business";
-import { IL_COMING_SOON, priceRange, usd } from "./pricing";
+import { IL_COMING_SOON } from "./pricing";
+import { ROOF_PRICE_GET, ROOF_PRICE_HOW } from "./estimate-offer";
 
 /**
  * Which services a page offers, which decides phones, process copy, certifications and lead-form choices:
@@ -49,8 +50,6 @@ export const SITE_URL = "https://www.roofingnearmestl.com";
 // Roofing choices are Missouri only; the exterior choices are offered in Missouri and Illinois.
 export const LEAD_SERVICES = ["Roof Repair", "Roof Replacement", "Leak / Emergency", "Storm Damage / Insurance", ...IL_LEAD_SERVICES];
 
-/** Whole-roof price range for an architectural roof of this size. The site shows totals only, never per-square rates. */
-const archTotal = (sq: number) => { const p = priceRange(sq, "architectural"); return `${usd(p.low)}-${usd(p.high)}`; };
 
 const corePages: SitePage[] = [
   {
@@ -96,9 +95,8 @@ const corePages: SitePage[] = [
           "Age alone doesn't decide it. We look for widespread granule loss, curling or cracked shingles, repeated leaks, soft decking, and storm damage across multiple slopes. If only one area is failing, a repair is often the better value, and we'll say so.",
       },
       {
-        heading: "Know your price before anyone visits",
-        body:
-          `A 30-year architectural shingle roof in the St. Louis area costs ${archTotal(12)} for about 1,200 sq ft of roof, ${archTotal(18)} for 1,800 and ${archTotal(24)} for 2,400. Low-pitch roofs land at the low end and steep roofs at the high end. Use the estimator below, then request a free evaluation to lock your price. Financing is available on retail projects.`,
+        heading: "Get a rough price before anyone visits",
+        body: `${ROOF_PRICE_HOW} ${ROOF_PRICE_GET} Financing is available on retail projects.`,
       },
       {
         heading: "Missouri roofing",
@@ -486,8 +484,6 @@ export function getSitePage(slug: string) {
   return sitePages.find((page) => page.slug === slug);
 }
 
-// Average St. Louis home (12-15 SQ) range for a shingle, from the estimator's pricing so they never disagree.
-const averageHome = (shingle: "3tab" | "architectural") => `${usd(priceRange(12, shingle).low)} - ${usd(priceRange(15, shingle).high)}`;
 
 // Homepage FAQ (also published as FAQPage schema). Same claim rules as above.
 // Answers keep their line breaks on the page (the cost answer is a short list).
@@ -500,14 +496,9 @@ export const homeFaqs: [question: string, answer: string][] = [
   ["What warranty?", "10-Year Workmanship Warranty on our work, plus the manufacturer warranty on the materials we install. 5.0★ Google Reviews."],
   ["Do you offer emergency tarping?", "Yes, in Missouri. We offer 24/7 emergency roof repair and tarping across the St. Louis area in Missouri. Call 314-202-7663."],
   ["What areas do you serve?", "We serve the St. Louis Metro Area on both sides of the river. Roofing: St. Louis and communities across St. Louis County, St. Charles County, Jefferson County and Franklin County in Missouri, including St. Charles, St. Peters, O'Fallon, Wentzville, Chesterfield, Kirkwood, Florissant, Arnold, Festus and Washington. Siding, gutters, soffit, fascia and other exterior work: those Missouri communities plus the Illinois Metro East, including Waterloo, Columbia, Belleville, O'Fallon, Fairview Heights, Edwardsville, Collinsville, Granite City and Alton. Illinois roofing is coming soon after our IL license."],
-  ["How much does a new roof cost?", `For the average home in St. Louis (12SQ-15SQ / 1,200-1,500 sq ft):
+  ["How much does a new roof cost?", `${ROOF_PRICE_HOW}
 
-- 3-Tab 25yr: ${averageHome("3tab")}
-- 30yr Architectural [Most Popular]: ${averageHome("architectural")}
-- Premium 50yr / Designer: Custom Quote
-- Clay, Metal, Slate: Call to Lock Price - Custom Quote
-
-Low pitch = low end of range, Medium pitch = middle, Steep pitch = high end.
+${ROOF_PRICE_GET}
 
 Final price depends on pitch, decking condition, tear-off layers, code related items pertaining to your area, and location. That's why we do a Free 12-pt Photo Inspection.`],
   ["Do you offer financing?", "Yes. Financing is available for retail roof, siding and gutter projects. Ask during your free evaluation."],
