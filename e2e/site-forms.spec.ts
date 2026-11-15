@@ -42,8 +42,9 @@ async function contact(form: Locator, zip = "63122", city = "Kirkwood") {
 test("homepage: no instant prices, state first, and an exterior request stays on the page", async ({ page }) => {
   const calls = await mockLead(page, { ok: true, ref: "r-home", email: "sent" });
   const form = await open(page, "/");
+  await expect(page.locator("main")).not.toContainText(/\$\d[\d,]*\s*(-|–|to)\s*\$\d/); // no written price ranges
   await expect(page.locator("#estimate")).not.toContainText(/\$\d/);
-  await expect(page.getByRole("button", { name: "Get My Rough Estimate" })).toBeVisible();
+  await expect(page.locator("[data-estimate-boxes]")).toBeVisible();
   await expect(form.locator('input[name="property_state"]:checked')).toHaveCount(0);
   await form.getByText("Missouri", { exact: true }).click();
   await form.getByLabel("Service needed").selectOption("Siding");
@@ -55,18 +56,24 @@ test("homepage: no instant prices, state first, and an exterior request stays on
   expect(calls.lead[0]).toMatchObject({ form: "project-request", property_state: "MO", service_type: "Siding", address: "123 Example St" });
 });
 
-test("homepage: Get My Rough Estimate fills in Missouri + Roof Replacement, and the price comes only after saving", async ({ page }) => {
+test("homepage: the estimator boxes carry size, material and pitch into the form; the price comes only after saving", async ({ page }) => {
   const calls = await mockLead(page, {
     ok: true, ref: "r-est", email: "sent", estimate_token: "v1.t",
     estimate: { status: "ready", estimate: { squares: 18, sizeLabel: "18 SQ (about 1,800 sq ft of roof)", materialLabel: "30-Year Architectural", pitchLabel: "Medium Pitch (5/12 - 7/12)", price: 10800, low: 8100, high: 13500 } },
   });
   const form = await open(page, "/");
-  await page.getByRole("button", { name: "Get My Rough Estimate" }).click();
+  const boxes = page.locator("[data-estimate-boxes]");
+  await boxes.getByLabel("Roof size in squares").fill("18");
+  await boxes.getByLabel("Material").selectOption("architectural");
+  await boxes.getByLabel("Roof pitch").selectOption("medium");
+  await expect(boxes).toContainText("Your price shows after you send the request form");
+  await expect(boxes).not.toContainText(/\$\d/);
+  await boxes.getByRole("button", { name: "Continue to the Request Form" }).click();
   await expect(form.locator('input[name="property_state"][value="MO"]')).toBeChecked();
   await expect(form.getByLabel("Service needed")).toHaveValue("Roof Replacement");
-  await form.getByLabel("Roof size in squares").fill("18");
-  await form.getByLabel("Material").selectOption("architectural");
-  await form.getByLabel("Roof pitch").selectOption("medium");
+  await expect(form.getByLabel("Roof size in squares")).toHaveValue("18");
+  await expect(form.getByLabel("Material")).toHaveValue("architectural");
+  await expect(form.getByLabel("Roof pitch")).toHaveValue("medium");
   await contact(form);
   await expect(page.locator("#estimate")).not.toContainText(/\$\d/);
   await form.getByRole("button", { name: "Send Request & Get Rough Estimate" }).click();

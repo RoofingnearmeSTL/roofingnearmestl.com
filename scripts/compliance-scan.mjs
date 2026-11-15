@@ -3,6 +3,7 @@
 // - Illinois pages offer roofing (225 ILCS 335: no roofing until the IL license)
 // - a claim we may never make (workers' comp, GAF Certified, Owens Corning Preferred, BBB A+, "500+ roofs")
 // - a per-square price or "Premium from" (whole-roof totals only, owner decision Oct 29 2026)
+// - a written roof price range on any page (no written prices, owner decision Nov 15 2026)
 // - the homepage project request form (with the form-first roof estimate), its estimate prompt or the text cost
 //   section is missing (instant-price estimator replaced Nov 15 2026, Mike)
 import fs from "node:fs";
@@ -31,6 +32,7 @@ const allowed = /RoofingnearmeSTL|roofing coming soon after il license|roofing i
 const banned = /\broof(er|ers|ing company|ing contractor|ing services?| repair| replacement| inspection| leak|s? (repaired|replaced|inspected))|\b(re-?roof|tarp|tarping|shingles?)\b|replace (your|the) roof|new roof|free photo-documented (roof )?report/i;
 const neverClaim = /workers'? ?comp|\$2M Liability|GAF Certified|Owens Corning Preferred|BBB A\+|500\+ roofs/i;
 const perSquare = /\$[\d,]+\s*\/\s*SQ\b|per square(?! f)|Premium from/i;
+const writtenPrice = /\$\d[\d,]*\s*(-|–|to)\s*\$\d/i;
 
 const errors = [];
 let pages = 0, ilPages = 0;
@@ -45,6 +47,10 @@ for (const f of files) {
   if (claim) errors.push(`${r}: claim we may not make -> "${claim[0]}"`);
   const price = all.match(perSquare);
   if (price) errors.push(`${r}: per-square price shown -> "${price[0]}"`);
+  // No written roof prices on pages (Mike, Nov 15 2026): a price range like "$5,400-$9,000" means one slipped back in.
+  // (Insurance limits on /accreditation are single amounts, not ranges.)
+  const written = all.match(writtenPrice);
+  if (written) errors.push(`${r}: written price shown -> "${written[0]}"`);
   if (/-il$/.test(r)) {
     ilPages++;
     const start = h.indexOf('<section class="relative isolate');
@@ -61,7 +67,7 @@ for (const f of files) {
 const home = fs.readFileSync(path.join(dir, "index.html"), "utf8");
 const checks = {
   "homepage project request form": home.includes("data-project-request"),
-  "homepage rough estimate prompt": home.includes("Get My Rough Estimate"),
+  "homepage estimator boxes": home.includes("data-estimate-boxes"),
   "homepage cost section": home.includes('id="cost-fallback"'),
   "at least 30 Illinois pages scanned": ilPages >= 30,
 };

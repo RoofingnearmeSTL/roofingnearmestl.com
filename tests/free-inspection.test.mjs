@@ -290,6 +290,25 @@ test('an explicit Missouri choice on an Illinois page is not treated as Illinois
   assert.equal(guard.isIllinoisRoofingRequest({ page, state: 'MO', zip: '63122', service: 'Roof Replacement' }), false)
 })
 
+test('no written roof prices: page text, FAQs and llms.txt never compute or print a price', () => {
+  for (const file of ['src/components/cost-fallback.tsx', 'src/lib/site-pages.ts', 'src/lib/service-areas.ts', 'src/lib/service-grid.ts',
+    'src/app/llms.txt/route.ts', 'src/app/blog/roof-replacement-cost-st-louis-mo/page.tsx', 'src/app/page.tsx', 'src/components/landing-page.tsx']) {
+    const source = read(file)
+    // Price helpers or a written range like "$5,400-$9,000" (insurance limits are single amounts and are fine).
+    assert.doesNotMatch(source, /\busd\(|priceRange\(|\bestimate\(|\$\d[\d,]*\s*(-|–|to)\s*\$\d/, file)
+  }
+  assert.match(read('scripts/compliance-scan.mjs'), /writtenPrice/)
+})
+
+test('the estimator boxes carry size, material and pitch into the form and show no price', () => {
+  const form = read('src/components/project-request.tsx')
+  const boxes = form.slice(form.indexOf('export function EstimatePrompt'), form.indexOf('export function ProjectStickyBar'))
+  assert.match(boxes, /data-estimate-boxes/)
+  assert.match(boxes, /PREFILL_EVENT, \{ detail: \{ state: "MO", service: ESTIMATE_SERVICE, inputs, silent \} \}/)
+  assert.match(boxes, /Continue to the Request Form/)
+  assert.doesNotMatch(boxes, /usd\(|roughEstimate\(|estimate\(/)
+})
+
 test('the form keeps the email typo helper and the optional roof age from the old form', () => {
   const form = read('src/components/project-request.tsx')
   assert.match(form, /suggestEmail\(value\)/)

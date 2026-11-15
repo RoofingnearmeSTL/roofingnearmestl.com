@@ -14,6 +14,15 @@ export const ROUGH_ESTIMATE_HEADLINE = "Your Rough Roof Replacement Estimate";
 export const ROUGH_ESTIMATE_NOTICE =
   "This is a rough planning estimate based on the information you entered, not a final quote. Actual cost depends on verified roof measurements, roof condition, materials, and project scope. Your inspection determines the final quote.";
 
+/**
+ * Written roof-price wording for pages, FAQs and llms.txt (Mike, Nov 15 2026): no dollar figures anywhere on the site;
+ * a rough number only after a saved request. Same words everywhere so pages never disagree.
+ */
+export const ROOF_PRICE_HOW =
+  "Roof replacement prices are whole-roof totals based on your roof size, material and pitch: low pitch lands at the low end of our range, medium in the middle and steep at the high end. 3-tab costs less than 30-year architectural; premium, clay, metal and slate are custom quotes.";
+export const ROOF_PRICE_GET =
+  "To see a rough estimate for your roof, fill out the request form with your roof size, material and pitch: your estimate shows as soon as your request is saved, and we email you a copy. Your free inspection sets the final price.";
+
 /** Shown before sending, only for an eligible Missouri roof replacement request. */
 export const ESTIMATE_OFFER_TEXT = "Submit your request to view a rough roof replacement estimate and receive a copy by email.";
 

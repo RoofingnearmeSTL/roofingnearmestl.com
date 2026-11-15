@@ -4,13 +4,14 @@ import ContentShell, { crumbSchema } from "@/components/content-shell";
 import { EstimatePrompt, ProjectRequest } from "@/components/project-request";
 import { SITE_URL, businessSchema, faqSchema } from "@/lib/site-pages";
 import { PHONES } from "@/lib/business";
-import { IL_COMING_SOON, PITCHES, TABLE_SQUARES, estimate, priceRange, usd, type PitchKey } from "@/lib/pricing";
+import { IL_COMING_SOON, PITCHES, type PitchKey } from "@/lib/pricing";
+import { ROOF_PRICE_GET, ROOF_PRICE_HOW } from "@/lib/estimate-offer";
 
+// Since Nov 15 2026 (Mike): no dollar figures on the site. This guide explains what drives the cost; the visitor gets a
+// rough whole-roof number only after a saved request (estimator boxes + request form, src/components/project-request.tsx).
 const path = "/blog/roof-replacement-cost-st-louis-mo";
-const [p12, p18, p24] = [12, 18, 24].map((sq) => priceRange(sq, "architectural"));
-const [t12, t24] = [12, 24].map((sq) => priceRange(sq, "3tab"));
 const title = "2026 Roof Replacement Cost in St. Louis, MO | RoofingnearmeSTL";
-const description = `A 30-yr architectural roof in St. Louis costs ${usd(p12.low)}-${usd(p24.high)} for most homes. Price table by roof size, pitch and shingle.`;
+const description = "What a new roof costs in St. Louis depends on roof size, shingle and pitch. Enter yours and get a rough whole-roof estimate after you send a request.";
 const crumbs = [{ name: "Blog", href: "/blog" }, { name: "Roof Replacement Cost", href: path }];
 
 export const metadata: Metadata = {
@@ -22,14 +23,15 @@ export const metadata: Metadata = {
 };
 
 const faqs: [string, string][] = [
-  ["How much does a new roof cost in St. Louis?", `A 30-year architectural shingle roof costs ${usd(p12.low)}-${usd(p24.high)} for most homes with 12-24 squares (about 1,200-2,400 sq ft of roof). 3-tab costs less: ${usd(t12.low)}-${usd(t24.high)}.`],
-  ["How much does a new roof cost in Missouri?", `In the St. Louis area of Missouri, our 2026 price for a 30-year architectural shingle roof is ${usd(p12.low)}-${usd(p24.high)} for most homes. Your free inspection sets the final number: rotted decking, extra old layers, flashing and ventilation can change it.`],
-  ["What is a roofing square?", "One square is 100 square feet of roof surface. A roof with 1,800 sq ft of surface is 18 squares."],
-  ["How does roof pitch change the price?", "Low pitch (2/12-4/12) is priced at the low end of the range, medium pitch (5/12-7/12) in the middle and steep pitch (8/12 and up) at the high end."],
-  ["Is 3-tab or architectural shingle better value?", `3-tab costs less (${usd(t12.low)}-${usd(t24.high)} for most homes, 25-year). Architectural shingles (${usd(p12.low)}-${usd(p24.high)}, 30-year) are thicker, last longer and are what most St. Louis homeowners choose.`],
+  ["How much does a new roof cost in St. Louis?", `${ROOF_PRICE_HOW} ${ROOF_PRICE_GET}`],
+  ["How much does a new roof cost in Missouri?", `It depends on your roof size, shingle and pitch. ${ROOF_PRICE_GET} Rotted decking, extra old layers, flashing and ventilation can change the final number.`],
+  ["What is a roofing square?", "One square is 100 square feet of roof surface. A roof with 1,800 sq ft of surface is 18 squares. Roof area is not your home's floor area: slopes and overhangs usually make the roof larger than the floor plan."],
+  ["How does roof pitch change the price?", "Low pitch (2/12-4/12) is priced at the low end of our range, medium pitch (5/12-7/12) in the middle and steep pitch (8/12 and up) at the high end."],
+  ["Is 3-tab or architectural shingle better value?", "3-tab (25-year) costs less. Architectural shingles (30-year) are thicker, last longer and are what most St. Louis homeowners choose. Pick either in the estimator to compare after you send your request."],
+  ["What if I don't know my roof size?", "Check \"I don't know my roof size\" and send your request anyway. We won't guess a number: we measure your roof and quote it properly."],
   ["Do you price clay, metal or slate online?", "No. Clay, metal and slate need an in-person look, so they're a custom quote. Call Mike to lock your price."],
   ["Do you offer financing?", "Yes. Financing is available for retail roof, siding and gutter projects. Ask during your free evaluation."],
-  ["Do these prices apply in Illinois?", `No. These prices are for roofing in the St. Louis area of Missouri. ${IL_COMING_SOON}; in Illinois we offer siding, gutters, soffit and fascia.`],
+  ["Does this apply in Illinois?", `No. Roof replacement estimates are for roofing in the St. Louis area of Missouri. ${IL_COMING_SOON}; in Illinois we offer siding, gutters, soffit and fascia.`],
 ];
 
 const schema = {
@@ -38,7 +40,7 @@ const schema = {
     businessSchema,
     {
       "@type": "Article", "@id": `${SITE_URL}${path}#article`, headline: "2026 Roof Replacement Cost in St. Louis, MO", description, url: `${SITE_URL}${path}`,
-      datePublished: "2026-10-20", dateModified: "2026-10-20", inLanguage: "en-US",
+      datePublished: "2026-10-20", dateModified: "2026-11-15", inLanguage: "en-US",
       author: { "@type": "Person", name: "Mike Williamson" }, publisher: { "@id": businessSchema["@id"] }, image: `${SITE_URL}/og-image.jpg`,
       about: { "@type": "Service", name: "Roof replacement", areaServed: { "@type": "State", name: "Missouri" } },
     },
@@ -52,52 +54,19 @@ export default function RoofCostGuide() {
   return (
     <ContentShell breadcrumbs={crumbs} schema={schema}>
       <article>
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand-ink">Cost guide · Updated October 2026</p>
+        <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand-ink">Cost guide · Updated November 2026</p>
         <h1 className="mt-2 text-4xl font-black tracking-tight text-black sm:text-5xl">2026 Roof Replacement Cost in St. Louis, MO</h1>
         <p className="mt-5 text-lg leading-relaxed text-zinc-700">
-          <b>A new 30-year architectural shingle roof in St. Louis, MO costs {usd(p12.low)}-{usd(p24.high)} for most homes with 12-24 squares (about 1,200-2,400 sq ft of roof).</b> 3-tab shingles cost less. Low-pitch roofs land at the low end and steep roofs at the high end. Clay, metal and slate are custom quotes.
+          <b>What a new roof costs depends on three things: your roof size, the shingle you choose and your roof pitch.</b> {ROOF_PRICE_HOW}
         </p>
-        <ul className="mt-5 grid gap-2 sm:grid-cols-3 text-center">
-          {[[12, p12], [18, p18], [24, p24]].map(([sq, range]) => (
-            <li key={String(sq)} className="rounded-xl border border-brand/20 bg-brand-light p-4"><div className="text-sm font-bold">{String(sq)} SQ · {(Number(sq) * 100).toLocaleString("en-US")} sq ft</div><div className="text-xl font-black text-brand-ink">{usd((range as { low: number }).low)}-{usd((range as { high: number }).high)}</div></li>
-          ))}
-        </ul>
-
-        <h2 className="mt-10 text-2xl font-extrabold text-black">Price by roof size, shingle and pitch</h2>
-        <p className="mt-2 text-zinc-700">Every row is a whole-roof price from our 2026 Missouri pricing. The pitch columns show the architectural estimate for each pitch.</p>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[640px] border-collapse text-sm">
-            <caption className="sr-only">Roof replacement cost in St. Louis, MO by roof size</caption>
-            <thead>
-              <tr className="bg-zinc-100 text-left">
-                <th className="border border-zinc-200 p-2">Roof size</th>
-                <th className="border border-zinc-200 p-2">3-Tab 25-yr</th>
-                <th className="border border-zinc-200 p-2">30-yr Architectural</th>
-                {pitches.map((key) => <th key={key} className="border border-zinc-200 p-2">Arch. {PITCHES[key].label.split(" (")[0]}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {TABLE_SQUARES.map((sq) => {
-                const t = priceRange(sq, "3tab"), a = priceRange(sq, "architectural");
-                return (
-                  <tr key={sq}>
-                    <th scope="row" className="border border-zinc-200 p-2 text-left">{sq} SQ ({(sq * 100).toLocaleString("en-US")} sq ft)</th>
-                    <td className="border border-zinc-200 p-2">{usd(t.low)}-{usd(t.high)}</td>
-                    <td className="border border-zinc-200 p-2 font-bold">{usd(a.low)}-{usd(a.high)}</td>
-                    {pitches.map((key) => <td key={key} className="border border-zinc-200 p-2">{usd(estimate(sq, "architectural", key)!.price)}</td>)}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <p className="mt-3 text-zinc-700">{ROOF_PRICE_GET}</p>
 
         <h2 className="mt-10 text-2xl font-extrabold text-black">Get your own rough estimate</h2>
         <div className="mt-4"><EstimatePrompt headingLevel="h3" /></div>
 
         <h2 className="mt-10 text-2xl font-extrabold text-black">How pitch changes the price</h2>
         <ul className="mt-3 list-disc space-y-1 pl-6 text-zinc-700">
-          {pitches.map((key) => <li key={key}><b>{PITCHES[key].label}:</b> {PITCHES[key].rule}. Example, 18 SQ architectural: {usd(estimate(18, "architectural", key)!.price)}.</li>)}
+          {pitches.map((key) => <li key={key}><b>{PITCHES[key].label}:</b> {PITCHES[key].rule}.</li>)}
         </ul>
 
         <h2 className="mt-10 text-2xl font-extrabold text-black">What can change your final price</h2>
@@ -112,8 +81,8 @@ export default function RoofCostGuide() {
         <h2 className="mt-10 text-2xl font-extrabold text-black">Clay, metal and slate</h2>
         <p className="mt-2 text-zinc-700">These need an in-person look, so they&apos;re a custom quote, not an online price. <a href={PHONES.MO.href} className="font-bold text-brand-ink underline">Call Mike to lock your price: {PHONES.MO.display}</a>.</p>
 
-        <h2 className="mt-10 text-2xl font-extrabold text-black">Where these prices apply</h2>
-        <p className="mt-2 text-zinc-700">These are our 2026 prices for roofing in the St. Louis area of Missouri. {IL_COMING_SOON}. In Illinois we offer <Link href="/siding" className="underline">siding</Link>, <Link href="/gutters-downspouts" className="underline">gutters</Link>, and <Link href="/soffit-fascia" className="underline">soffit &amp; fascia</Link>.</p>
+        <h2 className="mt-10 text-2xl font-extrabold text-black">Where these estimates apply</h2>
+        <p className="mt-2 text-zinc-700">Roof replacement estimates are for roofing in the St. Louis area of Missouri. {IL_COMING_SOON}. In Illinois we offer <Link href="/siding" className="underline">siding</Link>, <Link href="/gutters-downspouts" className="underline">gutters</Link>, and <Link href="/soffit-fascia" className="underline">soffit &amp; fascia</Link>.</p>
 
         <h2 className="mt-10 text-2xl font-extrabold text-black">Roof cost FAQ</h2>
         <div className="mt-4 space-y-3">
@@ -123,7 +92,7 @@ export default function RoofCostGuide() {
         </div>
 
         <div id="estimate" className="mt-12 scroll-mt-40 rounded-2xl border-2 border-brand/30 bg-brand-light p-7">
-          <h2 className="text-2xl font-bold text-black">Lock your price: free photo-documented inspection</h2>
+          <h2 className="text-2xl font-bold text-black">Get your rough estimate: free photo-documented inspection</h2>
           <p className="mt-2 mb-6 text-sm text-zinc-600">Missouri roofing. During business hours, we call as soon as your request comes in.</p>
           <ProjectRequest tone="light" defaultState="MO" defaultService="Roof Replacement" footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
         </div>
