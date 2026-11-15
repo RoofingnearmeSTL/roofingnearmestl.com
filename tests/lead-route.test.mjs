@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import vm from 'node:vm'
+import crypto from 'node:crypto'
 import ts from 'typescript'
 
 const guardSource = ts.transpileModule(fs.readFileSync('src/lib/illinois-guard.ts', 'utf8'), {
@@ -24,6 +25,18 @@ const customerEmail = {}
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/customer-email.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText, { exports: customerEmail })
+
+// /free-inspection estimate modules (pricing.ts is the one price source; the token uses Node's crypto).
+const loadTs = (file, imports = {}, extra = {}) => {
+  const out = {}
+  vm.runInNewContext(ts.transpileModule(fs.readFileSync(file, 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText, { exports: out, require: (name) => { if (name in imports) return imports[name]; throw new Error(`Unexpected import: ${name}`) }, ...extra })
+  return out
+}
+const pricing = loadTs('src/lib/pricing.ts')
+const estimateOffer = loadTs('src/lib/estimate-offer.ts', { './pricing': pricing })
+const estimateToken = loadTs('src/lib/estimate-token.ts', { 'node:crypto': crypto }, { Buffer, Date })
 
 const source = ts.transpileModule(fs.readFileSync('src/app/api/lead/route.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
@@ -61,6 +74,9 @@ function handler({ insertError = null, insertErrors = [], emailError = null, ema
       if (name.endsWith('contact-check')) return contactCheck
       if (name.endsWith('/business')) return business
       if (name.endsWith('customer-email')) return customerEmail
+      if (name.endsWith('estimate-offer')) return estimateOffer
+      if (name.endsWith('estimate-token')) return estimateToken
+      if (name === 'node:crypto') return crypto
       if (name.endsWith('email-domain-check')) return { checkEmailDomain: async (email) => {
         calls.emailChecks.push(email)
         if (emailCheckDelayMs) {
@@ -1076,4 +1092,126 @@ test('the browser form has a required ZIP field wired like phone and email', () 
   // Street address sits in the main form, not inside the optional "Add more details" section.
   assert.ok(form.indexOf('name="address"') < form.indexOf('<details'))
   assert.match(form, /zip: fd\.get\("zip"\)/)
+})
+
+// ── /free-inspection project requests (Mike's brief, Nov 14 2026) ─────────────────────────────────────────────
+const project = {
+  form: 'project-request', property_state: 'MO', name: 'Pat Q', phone: '3145552368', email: 'pat@example.invalid',
+  address: '123 Example St', city: 'Kirkwood', zip: '63122', service_type: 'Roof Replacement', issue_type: 'Aging roof / replacement',
+}
+const ask = (size, material = 'architectural', pitch = 'medium') => ({ estimate_request: { size, material, pitch } })
+const tokenEnv = { SUPABASE_SERVICE_ROLE_KEY: 'test-server-key' }
+
+test('project request: a Missouri roof replacement is saved once, priced on the server and emailed in one message', async () => {
+  const { calls, post } = handler()
+  // A browser-sent price must be ignored.
+  const response = await post({ ...project, ...ask(20, 'architectural', 'steep'), est_price: 1, est_price_low: 1, est_price_high: 2 })
+  assert.equal(response.status, 200)
+  assert.equal(calls.inserts.length, 1)
+  const expected = pricing.estimate(20, 'architectural', 'steep')
+  assert.equal(response.data.estimate.status, 'ready')
+  assert.equal(response.data.estimate.estimate.price, expected.price)
+  assert.equal(response.data.estimate.estimate.low, expected.low)
+  assert.equal(response.data.estimate.estimate.high, expected.high)
+  const row = calls.inserts[0][0]
+  assert.match(row.roof_size, /^20 SQ/)
+  assert.equal(row.roof_material, '30-Year Architectural')
+  assert.match(row.roof_pitch, /^Steep Pitch/)
+  // One customer email, carrying the same numbers and the notice; "sent" only because Resend accepted it.
+  assert.equal(toCustomer(calls).length, 1)
+  const customer = toCustomer(calls)[0]
+  assert.match(customer.subject, /rough roof estimate/)
+  assert.ok(customer.text.includes(`$${expected.price.toLocaleString('en-US')}`))
+  assert.ok(customer.text.includes(estimateOffer.ROUGH_ESTIMATE_NOTICE))
+  assert.ok(customer.text.includes('314-202-7663'))
+  assert.equal(response.data.email, 'sent')
+  assert.match(toOwner(calls)[0].text, /Rough Estimate: \$/)
+  // The update token opens only on the server and carries the saved address, never readable in the response.
+  const claims = estimateToken.openEstimateToken(response.data.estimate_token, tokenEnv)
+  assert.equal(claims.email, 'pat@example.invalid')
+  assert.equal(claims.ref, response.data.ref)
+  assert.doesNotMatch(JSON.stringify(response.data), /pat@example|123 Example/)
+})
+
+test('project request: no roof size gives no number, and nothing is invented for the lead', async () => {
+  const { calls, post } = handler()
+  const response = await post({ ...project, estimate_request: { size: null, material: null, pitch: null } })
+  assert.equal(response.data.estimate.status, 'needs_measurements')
+  assert.equal(response.data.estimate_token, undefined)
+  const row = calls.inserts[0][0]
+  assert.match(row.roof_size, /Not known/)
+  assert.equal(row.roof_material, null)
+  assert.equal(row.roof_pitch, null)
+  assert.doesNotMatch(toCustomer(calls)[0].text, /Rough estimate: \$/)
+})
+
+test('project request: clay, metal and slate stay custom quotes', async () => {
+  const { post } = handler()
+  const response = await post({ ...project, estimate_request: { size: 24, material: 'metal', pitch: null } })
+  assert.equal(response.data.estimate.status, 'custom_quote')
+  assert.equal(response.data.estimate_token, undefined)
+})
+
+test('project request: Illinois never gets a roofing estimate (state picked, or an Illinois ZIP or town)', async () => {
+  for (const extra of [{ property_state: 'IL' }, { zip: '62298' }, { city: 'Waterloo' }]) {
+    const { calls, post } = handler()
+    const response = await post({ ...project, ...ask(20), ...extra })
+    assert.equal(response.data.area, 'il-pending', JSON.stringify(extra))
+    assert.equal(response.data.estimate, undefined)
+    assert.equal(calls.inserts[0][0].status, 'il_license_pending')
+    assert.doesNotMatch(toCustomer(calls)[0].text, /Rough estimate/)
+  }
+})
+
+test('project request: other services and roofing repairs get no estimate', async () => {
+  for (const service_type of ['Roof Repair', 'Siding']) {
+    const { post } = handler()
+    const response = await post({ ...project, service_type, ...ask(20) })
+    assert.equal(response.data.estimate, undefined, service_type)
+    assert.equal(typeof response.data.ref, 'string')
+  }
+})
+
+test('project request: a failed customer email keeps the saved lead and the estimate, and says so', async () => {
+  const { calls, post } = handler({ emailError: { name: 'application_error' } })
+  const response = await post({ ...project, ...ask(18) })
+  assert.equal(response.status, 200)
+  assert.equal(calls.inserts.length, 1)
+  assert.equal(response.data.estimate.status, 'ready')
+  assert.equal(response.data.email, 'failed')
+})
+
+test('project request: a suspected bot is saved but gets no email and no update token', async () => {
+  const { calls, post } = handler({ bot: { isBot: true, isVerifiedBot: false } })
+  const response = await post({ ...project, ...ask(18) })
+  assert.equal(response.data.suspected, true)
+  assert.equal(response.data.email, 'not_sent')
+  assert.equal(response.data.estimate_token, undefined)
+  assert.equal(toCustomer(calls).length, 0)
+})
+
+test('project request: impossible estimator inputs save the lead without a number', async () => {
+  for (const estimate_request of [{ size: 5, material: 'architectural', pitch: 'low' }, { size: 18.5, material: 'architectural', pitch: 'low' },
+    { size: 18, material: 'gold', pitch: 'low' }, { size: 18, material: 'architectural' }, 'big']) {
+    const { calls, post } = handler()
+    const response = await post({ ...project, estimate_request })
+    assert.equal(response.status, 200)
+    assert.equal(calls.inserts.length, 1)
+    assert.equal(response.data.estimate, undefined, JSON.stringify(estimate_request))
+  }
+})
+
+test('project request: the CRM webhook gets the server price, not the browser one', async () => {
+  const { calls, post } = handler({ env: { LEAD_WEBHOOK_URL: 'https://hooks.example.invalid/lead' } })
+  await post({ ...project, ...ask(20, '3tab', 'low'), est_price: 1 })
+  const hook = calls.sms.find((c) => String(c.url).startsWith('https://hooks.example.invalid'))
+  const sent = JSON.parse(hook.body)
+  assert.equal(sent.estimate_price, pricing.estimate(20, '3tab', 'low').price)
+  assert.equal(sent.state, 'MO')
+})
+
+test('the existing site form response is unchanged (no ref, no estimate fields)', async () => {
+  const { post } = handler()
+  const response = await post({ ...mo, zip: '63122', email: 'pat@example.invalid' })
+  assert.deepEqual(Object.keys(response.data).sort(), ['ok'])
 })

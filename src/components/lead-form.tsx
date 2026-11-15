@@ -89,6 +89,24 @@ export function useLandingUtm() {
   };
 }
 
+/** Where the lead came from, sent with every form on the site (campaign tags, ad click IDs, landing page, referrer). */
+export function attributionFields(utm: ReturnType<typeof useLandingUtm>) {
+  return {
+    utm_source: utm.source,
+    utm_medium: utm.medium,
+    utm_campaign: utm.campaign,
+    utm_content: utm.content,
+    utm_term: utm.term,
+    gclid: utm.gclid,
+    gbraid: utm.gbraid,
+    wbraid: utm.wbraid,
+    referrer: utm.referrer,
+    fbclid: utm.fbclid,
+    landing_page: utm.landing,
+    page: typeof window !== "undefined" ? window.location.href : "",
+  };
+}
+
 const SERVICES = LEAD_SERVICES;
 const inputClass = "w-full bg-white border border-zinc-300 rounded-xl px-4 py-3.5 text-black placeholder:text-zinc-400 shadow-sm focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none";
 
