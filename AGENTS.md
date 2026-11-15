@@ -43,7 +43,10 @@ This repo is public: never add anything here you would not publish.
   clay/metal/slate = custom quote; low pitch = low end, medium = middle, steep = high end).
 - Never hard-code a dollar amount in a page; compute it from `pricing.ts` so the estimator, FAQ and
   cost guide always agree. Tests in `tests/pricing.test.mjs` must keep passing.
-- Do not remove the adjustable estimator (`src/components/roof-estimator.tsx`).
+- Do not remove the adjustable roof estimator. Since Nov 15 2026 (Mike) it is part of the project request form
+  (`src/components/project-request.tsx`) on every page: Missouri roof replacement only, form first, and the price
+  appears only after the request is saved, worked out on the server (`src/lib/estimate-offer.ts`). The old
+  instant-price `src/components/roof-estimator.tsx` is no longer on any page.
 - Show whole-roof totals only. Never publish per-square rates ("$X/SQ", "per square") or a
   "Premium from" price anywhere on the site, in metadata or in llms.txt (owner decision, Oct 29 2026).
   Premium, clay, metal and slate are custom quotes. `tests/pricing.test.mjs` checks this.

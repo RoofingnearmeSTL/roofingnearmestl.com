@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ContentShell, { crumbSchema } from "@/components/content-shell";
-import RoofEstimator from "@/components/roof-estimator";
-import LeadForm from "@/components/lead-form";
+import { EstimatePrompt, ProjectRequest } from "@/components/project-request";
 import { SITE_URL, businessSchema, faqSchema } from "@/lib/site-pages";
 import { PHONES } from "@/lib/business";
 import { IL_COMING_SOON, PITCHES, TABLE_SQUARES, estimate, priceRange, usd, type PitchKey } from "@/lib/pricing";
@@ -93,8 +92,8 @@ export default function RoofCostGuide() {
           </table>
         </div>
 
-        <h2 className="mt-10 text-2xl font-extrabold text-black">Try the estimator</h2>
-        <div className="mt-4"><RoofEstimator headingLevel="h3" /></div>
+        <h2 className="mt-10 text-2xl font-extrabold text-black">Get your own rough estimate</h2>
+        <div className="mt-4"><EstimatePrompt headingLevel="h3" /></div>
 
         <h2 className="mt-10 text-2xl font-extrabold text-black">How pitch changes the price</h2>
         <ul className="mt-3 list-disc space-y-1 pl-6 text-zinc-700">
@@ -126,7 +125,7 @@ export default function RoofCostGuide() {
         <div id="estimate" className="mt-12 scroll-mt-40 rounded-2xl border-2 border-brand/30 bg-brand-light p-7">
           <h2 className="text-2xl font-bold text-black">Lock your price: free photo-documented inspection</h2>
           <p className="mt-2 mb-6 text-sm text-zinc-600">Missouri roofing. During business hours, we call as soon as your request comes in.</p>
-          <LeadForm defaultService="Roof Replacement" footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
+          <ProjectRequest tone="light" defaultState="MO" defaultService="Roof Replacement" footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
         </div>
 
         <p className="mt-8 text-sm text-zinc-600">More answers: <Link href="/questions/will-insurance-pay-for-a-new-roof-in-missouri" className="underline">Will insurance pay for a new roof?</Link> · <Link href="/roof-replacement" className="underline">Roof replacement</Link></p>

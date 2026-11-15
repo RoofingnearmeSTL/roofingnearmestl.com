@@ -9,11 +9,11 @@ import { GOOGLE_REVIEWS_URL, businessSchema, faqSchema, homeFaqs, jsonLd, sitePa
 import ReviewsSection from "@/components/reviews-section";
 import ServiceAreaDirectory from "@/components/service-area-directory";
 import CostFallback from "@/components/cost-fallback";
-import { HomeEstimateProvider, HomeEstimator, HomeLeadForm } from "@/components/home-estimate";
+import { EstimatePrompt, ProjectRequest } from "@/components/project-request";
 import { INSURANCE_SHORT } from "@/lib/business";
 
 export default function Home() {
-  // Server page: only the estimator and lead form (HomeEstimateProvider) run in the browser.
+  // Server page: only the project request form (with the form-first rough estimate) runs in the browser.
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", "@graph": [websiteSchema, businessSchema, faqSchema(homeFaqs)] })} />
@@ -31,7 +31,6 @@ export default function Home() {
       </div>
 
       <main id="main">
-      <HomeEstimateProvider>
       <section className="relative isolate bg-black">
         <HeroBackground />
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-16 grid lg:grid-cols-2 gap-10 items-start">
@@ -49,7 +48,7 @@ export default function Home() {
           <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Honest Evaluation in 30 Seconds</h2>
           <p className="text-zinc-600 text-sm mt-2 mb-6"><span className="text-brand-ink font-bold">★★★★★ 5.0 Google Reviews</span> - Why Your Neighbors Chose Us</p>
           
-          <HomeLeadForm footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
+          <ProjectRequest tone="light" footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
         </div>
 
         <div className="lg:col-start-1 lg:row-start-2">
@@ -61,12 +60,11 @@ export default function Home() {
           </div>
 
           <div className="mt-10">
-            <HomeEstimator />
+            <EstimatePrompt />
           </div>
         </div>
         </div>
       </section>
-      </HomeEstimateProvider>
 
       <section aria-label="Roof replacement cost" className="bg-white px-6 pt-4">
         <div className="max-w-4xl mx-auto">

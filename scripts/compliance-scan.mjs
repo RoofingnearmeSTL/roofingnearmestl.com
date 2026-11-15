@@ -3,7 +3,8 @@
 // - Illinois pages offer roofing (225 ILCS 335: no roofing until the IL license)
 // - a claim we may never make (workers' comp, GAF Certified, Owens Corning Preferred, BBB A+, "500+ roofs")
 // - a per-square price or "Premium from" (whole-roof totals only, owner decision Oct 29 2026)
-// - the homepage estimator or its text cost section is missing
+// - the homepage project request form (with the form-first roof estimate), its estimate prompt or the text cost
+//   section is missing (instant-price estimator replaced Nov 15 2026, Mike)
 import fs from "node:fs";
 import path from "node:path";
 
@@ -59,7 +60,8 @@ for (const f of files) {
 
 const home = fs.readFileSync(path.join(dir, "index.html"), "utf8");
 const checks = {
-  "homepage estimator slider": /type="range"[^>]*min="10"[^>]*max="40"|min="10" max="40"/.test(home),
+  "homepage project request form": home.includes("data-project-request"),
+  "homepage rough estimate prompt": home.includes("Get My Rough Estimate"),
   "homepage cost section": home.includes('id="cost-fallback"'),
   "at least 30 Illinois pages scanned": ilPages >= 30,
 };

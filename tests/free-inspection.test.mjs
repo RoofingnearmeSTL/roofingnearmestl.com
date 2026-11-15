@@ -237,14 +237,14 @@ test('Illinois gets no roofing service choice; the page never hard-codes a price
   const config = read('src/lib/free-inspection.ts')
   assert.match(config, /IL: \[\.\.\.IL_LEAD_SERVICES\]/)
   for (const s of business.IL_LEAD_SERVICES) assert.doesNotMatch(s, /roof/i)
-  for (const file of ['src/app/free-inspection/page.tsx', 'src/app/free-inspection/project-request.tsx']) {
+  for (const file of ['src/app/free-inspection/page.tsx', 'src/components/project-request.tsx']) {
     assert.doesNotMatch(read(file), /\$\d/, file)
   }
 })
 
 test('the page uses the brief wording and the right buttons', () => {
   const page = read('src/app/free-inspection/page.tsx')
-  const form = read('src/app/free-inspection/project-request.tsx')
+  const form = read('src/components/project-request.tsx')
   assert.ok(page.includes('Your Next Exterior Project Starts Here.'))
   assert.ok(page.includes('Tell us what your home needs. Get straightforward answers and a clear next step.'))
   assert.ok(page.includes("Let&apos;s Talk About Your Project."))
@@ -254,4 +254,45 @@ test('the page uses the brief wording and the right buttons', () => {
   assert.ok(form.includes("I don&apos;t know my roof size"))
   assert.doesNotMatch(form, /defaultChecked|checked=\{true\}/) // no prechecked boxes
   assert.match(read('src/components/mobile-call-bar.tsx'), /"\/free-inspection"/)
+})
+
+// ── Sitewide (Mike, Nov 15 2026): the same form-first flow on every page ──────────────────────────────────────
+test('no page uses the old lead form or the instant-price estimator any more', () => {
+  const pages = []
+  ;(function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = `${dir}/${entry.name}`
+      if (entry.isDirectory()) walk(p)
+      else if (/\.tsx$/.test(entry.name)) pages.push(p)
+    }
+  })('src/app')
+  pages.push('src/components/landing-page.tsx')
+  for (const file of pages) {
+    const source = read(file)
+    assert.doesNotMatch(source, /<LeadForm\b|<RoofEstimator\b|<HomeEstimator\b|<HomeLeadForm\b/, file)
+  }
+  assert.match(read('src/app/page.tsx'), /<ProjectRequest tone="light"/)
+  assert.match(read('src/app/blog/roof-replacement-cost-st-louis-mo/page.tsx'), /<ProjectRequest tone="light" defaultState="MO" defaultService="Roof Replacement"/)
+})
+
+test('Illinois pages start on Illinois; Missouri roofing pages start on Missouri', () => {
+  const landing = read('src/components/landing-page.tsx')
+  assert.match(landing, /defaultState=\{model\.scope === "il-exterior" \? "IL" : roofing \? "MO" : ""\}/)
+})
+
+test('an explicit Missouri choice on an Illinois page is not treated as Illinois, but an Illinois ZIP or town still is', () => {
+  const guard = loadTs('src/lib/illinois-guard.ts')
+  const page = 'https://www.roofingnearmestl.com/siding-gutters-waterloo-il'
+  assert.equal(guard.looksIllinois({ page, state: 'MO', zip: '63122', city: 'Kirkwood' }), false)
+  assert.equal(guard.looksIllinois({ page }), true)
+  assert.equal(guard.looksIllinois({ page, state: 'MO', zip: '62298' }), true)
+  assert.equal(guard.looksIllinois({ page, state: 'MO', city: 'Waterloo' }), true)
+  assert.equal(guard.isIllinoisRoofingRequest({ page, state: 'MO', zip: '63122', service: 'Roof Replacement' }), false)
+})
+
+test('the form keeps the email typo helper and the optional roof age from the old form', () => {
+  const form = read('src/components/project-request.tsx')
+  assert.match(form, /suggestEmail\(value\)/)
+  assert.match(form, /Did you mean/)
+  assert.match(form, /name="roof_age"/)
 })

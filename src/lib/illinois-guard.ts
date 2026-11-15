@@ -36,7 +36,8 @@ export function looksIllinois(input: { city?: unknown; address?: unknown; estLoc
   if (/\b6[0-2]\d{3}\b/.test(text)) return true; // Illinois ZIP codes are 600xx-629xx
   if (typeof input.zip === "string" && /^\s*6[0-2]\d{3}(?:-?\d{4})?\s*$/.test(input.zip)) return true; // the ZIP field alone says Illinois
   if (typeof input.city === "string" && ILLINOIS_ONLY_CITIES.has(normalize(input.city).replace(/,.*$/, ""))) return true;
-  if (typeof input.page === "string" && /-il(?:[/?#]|$)/.test(input.page)) return true; // sent from an Illinois page
+  // Sent from an Illinois page, unless the homeowner explicitly picked Missouri (an Illinois ZIP or town still wins above).
+  if (input.state !== "MO" && typeof input.page === "string" && /-il(?:[/?#]|$)/.test(input.page)) return true;
   return false;
 }
 

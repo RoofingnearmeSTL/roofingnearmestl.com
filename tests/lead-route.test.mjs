@@ -206,11 +206,10 @@ for (const [material, label] of [['clay', 'Clay Tile'], ['slate', 'Slate'], ['me
     assert.equal(payload.est_price, null) // custom quote: no price
     assert.equal(payload.est_price_low, null)
     assert.match(estimator, /estimatorExtras\(\{ squares, shingle, pitch, place, state \}\)/)
-    // Homepage: the server page renders the estimator and form through the client wrapper, which shares the extras.
-    const homeEstimate = fs.readFileSync('src/components/home-estimate.tsx', 'utf8')
-    assert.match(page, /<HomeEstimateProvider>[\s\S]*<HomeLeadForm[\s\S]*<HomeEstimator \/>[\s\S]*<\/HomeEstimateProvider>/)
-    assert.match(homeEstimate, /<RoofEstimator onChange=\{estimate\?\.setExtras\} \/>/)
-    assert.match(homeEstimate, /<LeadForm extras=\{estimate\?\.extras\}/)
+    // Homepage (since Nov 15 2026): the project request form, with the form-first estimate, plus the "Get My Rough
+    // Estimate" prompt where the instant-price estimator used to be.
+    assert.match(page, /<ProjectRequest tone="light"[\s\S]*<EstimatePrompt \/>/)
+    assert.doesNotMatch(page, /HomeEstimat|RoofEstimator|<LeadForm/)
     assert.match(leadForm, /name="roof_age"/)
     assert.match(leadForm, /name="emergency" type="checkbox"/)
     const { calls, post } = handler()
