@@ -4,14 +4,13 @@ import Link from "next/link";
 import BrandHeader from "@/components/brand-header";
 import BrandFooter from "@/components/brand-footer";
 import EmergencyBar from "@/components/emergency-bar";
-import LeadForm from "@/components/lead-form";
+import { EstimatePrompt, ProjectRequest } from "@/components/project-request";
 import HeroBackground from "@/components/hero-background";
 import ProcessSteps from "@/components/process-steps";
 import Certifications from "@/components/certifications";
-import RoofEstimator from "@/components/roof-estimator";
 import CostFallback from "@/components/cost-fallback";
 import CityReviews from "@/components/city-reviews";
-import { IL_LEAD_SERVICES, INSURANCE_SHORT, PHONES } from "@/lib/business";
+import { INSURANCE_SHORT, PHONES } from "@/lib/business";
 import { jsonLd, type Scope, type SitePage } from "@/lib/site-pages";
 
 export type LandingModel = {
@@ -85,7 +84,8 @@ export default function LandingPage({ model }: { model: LandingModel }) {
           <div id="estimate" className="lg:col-start-2 lg:row-start-1 lg:row-span-2 bg-brand-light border-2 border-brand/30 rounded-2xl p-7 shadow-xl scroll-mt-40">
             <h2 className="text-black font-bold text-2xl leading-tight">Get Your Free Honest {roofing ? "Evaluation" : "Estimate"} in 30 Seconds</h2>
             <p className="text-zinc-600 text-sm mt-2 mb-6">During business hours, we call as soon as we receive your request{roofing ? " with your free photo-documented options" : ""}.</p>
-            <LeadForm defaultService={model.defaultService} defaultCity={model.city} services={model.scope === "il-exterior" ? IL_LEAD_SERVICES : undefined} exteriorOnly={model.scope === "il-exterior"} footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
+            {/* Illinois pages start on Illinois (exterior only); Missouri roofing and city pages start on Missouri. */}
+            <ProjectRequest tone="light" defaultState={model.scope === "il-exterior" ? "IL" : roofing ? "MO" : ""} defaultService={model.defaultService} defaultCity={model.city} footer={<p className="text-xs text-zinc-500 text-center">No spam. ★★★★★ 5.0 Google Rated</p>} />
           </div>
 
           <div className="lg:col-start-1 lg:row-start-2">
@@ -113,7 +113,7 @@ export default function LandingPage({ model }: { model: LandingModel }) {
           ))}
           {model.estimatorPlace && (
             <div>
-              <RoofEstimator defaultPlace={model.estimatorPlace} headingLevel="h2" />
+              <EstimatePrompt headingLevel="h2" />
               <CostFallback headingLevel="h3" />
               <p className="mt-3 text-sm"><Link href="/blog/roof-replacement-cost-st-louis-mo" className="font-bold text-brand-ink underline">Full 2026 St. Louis roof cost guide →</Link></p>
             </div>

@@ -11,7 +11,7 @@ import { AD_VIDEO, CLEANUP_CONFIRMED, CLEANUP_PRACTICES, TWO_WEEK_START_CONFIRME
 import { IL_COMING_SOON } from "@/lib/pricing";
 import { publicTown, quoteFor, reviews } from "@/lib/reviews";
 import { GOOGLE_BUSINESS_URL } from "@/lib/site-pages";
-import { AdVideo, ProjectPageProvider, ProjectRequest, ProjectStickyBar, FORM_ID, yellowButton } from "./project-request";
+import { AdVideo, ProjectPageProvider, ProjectRequest, ProjectStickyBar, FORM_ID, yellowButton } from "@/components/project-request";
 
 export const metadata: Metadata = {
   title: "Start Your Exterior Project | RoofingnearmeSTL",
