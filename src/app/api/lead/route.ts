@@ -7,6 +7,9 @@ import { checkPhone, checkZip, stateFromZip, isEmailSyntax, emailDomain, PHONE_R
 import { checkEmailDomain, type EmailCheckField } from '../../../lib/email-domain-check'
 import { PHONES } from '../../../lib/business'
 import { buildCustomerEmail, escapeHtml, introVideoUrl } from '../../../lib/customer-email'
+import { ROUGH_ESTIMATE_HEADLINE, ROUGH_ESTIMATE_NOTICE, estimateEligible, estimateLeadFields, parseEstimateInputs, roughEstimate } from '../../../lib/estimate-offer'
+import { TOKEN_TTL_MS, sealEstimateToken } from '../../../lib/estimate-token'
+import { randomUUID } from 'node:crypto'
 
 // node:dns (email domain check) needs the Node.js runtime, which is also the Next 16 default.
 export const runtime = 'nodejs'
@@ -76,9 +79,18 @@ export async function POST(req: Request) {
     console.log('LEAD ZIP CHECK', { result: zipResult })
     // Illinois rule: no roof work on Illinois homes until the IL roofing license (225 ILCS 335/9). The request is
     // still saved, tagged il_license_pending, and the team email says not to quote or schedule roofing.
-    const homeLocation = { city: body.city, address: body.address, estLocation: body.est_location, page: body.page, zip: zip5 }
+    // The /free-inspection form asks for the property state first; Illinois always counts as Illinois.
+    const propertyState = body.property_state === 'MO' || body.property_state === 'IL' ? body.property_state as 'MO' | 'IL' : ''
+    const homeLocation = { city: body.city, address: body.address, estLocation: body.est_location, page: body.page, zip: zip5, state: propertyState }
     const illinois = looksIllinois(homeLocation)
     const ilLicensePending = isIllinoisRoofingRequest({ ...homeLocation, service: body.service_type ?? body.service, emergency: body.emergency === true })
+    // /free-inspection project request (Mike's brief, Nov 14): a Missouri roof replacement can get a rough estimate.
+    // Worked out here from pricing.ts with the checked inputs only; a price sent by the browser is never used.
+    const projectRequest = body.form === 'project-request'
+    const estimateInputs = projectRequest && estimateEligible({ state: propertyState, service: field(body.service_type ?? body.service, 80), illinois })
+      ? parseEstimateInputs(body.estimate_request) : null
+    const estimateOutcome = estimateInputs ? roughEstimate(estimateInputs) : null
+    const serverEstimate = estimateOutcome?.status === 'ready' ? estimateOutcome.estimate : null
     // Illinois pages ask "storm damage to siding, gutters or trim?" instead of the roof tarp box.
     const urgentExterior = body.urgent === true
     if (ilLicensePending) console.log('LEAD ILLINOIS ROOFING LICENSE PENDING')
@@ -109,6 +121,7 @@ export async function POST(req: Request) {
       roof_size: field(body.roof_size ?? body.est_size, 40),
       roof_pitch: field(body.roof_pitch ?? body.est_pitch, 40),
       roof_material: field(body.roof_material ?? body.est_material, 40),
+      ...(estimateInputs ? estimateLeadFields(estimateInputs) : {}),
       emergency: body.emergency === true || urgentExterior,
       // Every other lead keeps the table default ("new").
       ...(bot.suspected ? { status: SUSPECTED_BOT } : ilLicensePending ? { status: IL_LICENSE_PENDING } : {}),
@@ -172,6 +185,10 @@ export async function POST(req: Request) {
           ['Roof Size', leadValue(lead.roof_size)],
           ['Pitch', leadValue(lead.roof_pitch)],
           ['Material', leadValue(lead.roof_material)],
+          ...(propertyState ? [['Property State', propertyState === 'IL' ? 'Illinois' : 'Missouri']] : []),
+          ...(estimateOutcome ? [['Rough Estimate', serverEstimate
+            ? `$${serverEstimate.price.toLocaleString('en-US')} shown to the homeowner (range $${serverEstimate.low.toLocaleString('en-US')} - $${serverEstimate.high.toLocaleString('en-US')}). Rough only: measure before quoting.`
+            : estimateOutcome.status === 'custom_quote' ? 'None shown: custom quote material' : 'None shown: homeowner did not know the roof size']] : []),
           ['Message', leadValue(lead.message)],
           ['Source', sourceLabel],
           ['Landing Page', leadValue(lead.landing_page)],
@@ -213,7 +230,8 @@ export async function POST(req: Request) {
     }
     // One combined follow-up email to the customer (FUP-01); RoofLink sends none. Sent the moment the lead is saved
     // (only when they gave an email). Transactional: it answers their own request. Replies go to the owner's inbox.
-    // Must not fail a saved lead.
+    // Must not fail a saved lead. "sent" means only that Resend accepted it, never that it reached the inbox.
+    let customerEmailStatus: 'sent' | 'failed' | 'not_sent' = 'not_sent'
     try {
       // Only when the owner inbox is set: the owner must get the lead, and replies need somewhere to go.
       // Never to a suspected bot: the form must not be usable to send our email to strangers.
@@ -229,6 +247,7 @@ export async function POST(req: Request) {
           illinois, ilLicensePending, emergencyTarp: body.emergency === true, leadEmergency: lead.emergency === true, urgentExterior,
           roofing: !illinois && isRoofingRequest(lead.service_type, body.emergency === true),
           videoUrl, phones: { IL: PHONES.IL.display, MO: PHONES.MO.display },
+          roughEstimate: serverEstimate ? { headline: ROUGH_ESTIMATE_HEADLINE, notice: ROUGH_ESTIMATE_NOTICE, ...serverEstimate } : null,
         })
         const resend = new Resend(process.env.RESEND_API_KEY)
         const { data: confirmData, error: confirmError } = await resend.emails.send({
@@ -240,12 +259,15 @@ export async function POST(req: Request) {
           text: customerEmail.text,
         })
         if (confirmError) {
+          customerEmailStatus = 'failed'
           console.error('CUSTOMER CONFIRMATION FAILED', { name: confirmError.name })
         } else {
-          console.log('CUSTOMER CONFIRMATION SENT', { id: confirmData?.id })
+          customerEmailStatus = 'sent'
+          console.log('CUSTOMER CONFIRMATION SENT', { id: confirmData?.id, estimate: !!serverEstimate })
         }
       }
     } catch (confirmError) {
+      customerEmailStatus = 'failed'
       console.error('CUSTOMER CONFIRMATION CRASH', { name: confirmError instanceof Error ? confirmError.name : 'UnknownError' })
     }
     // Optional text alert via Twilio; skipped until all four variables are set. Must not fail a saved lead.
@@ -280,10 +302,14 @@ export async function POST(req: Request) {
         const location = leadValue(field(body.est_location, 80)) || leadValue(lead.city)
         // The ZIP decides the state when it is in the metro (a "St. Louis, MO" city with an East St. Louis ZIP is IL);
         // otherwise the typed location, then IL for a license-pending request.
-        const state = stateFromZip(zip5) || (/\bIL\b|illinois/i.test(location) ? 'IL' : /\bMO\b|missouri/i.test(location) ? 'MO' : '') || (ilLicensePending ? 'IL' : '')
+        const state = stateFromZip(zip5) || propertyState || (/\bIL\b|illinois/i.test(location) ? 'IL' : /\bMO\b|missouri/i.test(location) ? 'MO' : '') || (ilLicensePending ? 'IL' : '')
         const cityName = leadValue(lead.city) || location.split(',')[0].trim()
         const service = leadValue(lead.service_type)
-        const estimate = leadValue(field(body.est_price))
+        // A project-request estimate comes from the server; the homepage estimator still sends its own.
+        const estPrice = projectRequest ? serverEstimate?.price ?? null : field(body.est_price)
+        const estLow = projectRequest ? serverEstimate?.low ?? null : field(body.est_price_low)
+        const estHigh = projectRequest ? serverEstimate?.high ?? null : field(body.est_price_high)
+        const estimate = leadValue(estPrice)
         // RoofLink needs a first name and an address; without a street, the city is used and the note says so.
         const rooflinkJob = {
           name: `${leadValue(lead.name)} - ${service || 'Website lead'}`,
@@ -343,9 +369,9 @@ export async function POST(req: Request) {
             zip: zip5 || null,
             zipcode: zip5 || null,
             estimator_location: field(body.est_location, 80),
-            estimate_price: field(body.est_price),
-            estimate_low: field(body.est_price_low),
-            estimate_high: field(body.est_price_high),
+            estimate_price: estPrice,
+            estimate_low: estLow,
+            estimate_high: estHigh,
             lead_source: sourceLabel,
             website: 'roofingnearmestl.com',
             submitted_at: new Date().toISOString(),
@@ -361,7 +387,22 @@ export async function POST(req: Request) {
       console.error('LEAD WEBHOOK CRASH', { name: hookError instanceof Error ? hookError.name : 'UnknownError' })
     }
     // Tells the form which thank-you page to show (a license-pending lead is not reported as an ad conversion).
-    return NextResponse.json({ ok: true, ...(bot.suspected ? { suspected: true } : {}), ...(ilLicensePending ? { area: 'il-pending' } : illinois ? { area: 'il' } : {}) })
+    const area = ilLicensePending ? { area: 'il-pending' } : illinois ? { area: 'il' } : {}
+    if (projectRequest) {
+      // ref: a random id for this saved request (ad conversion dedupe and the update token); no customer data.
+      const ref = randomUUID()
+      const firstName = leadValue(lead.name).split(/\s+/)[0] || ''
+      // Updated-estimate emails only for a real (not flagged) request with a number and a deliverable address.
+      const estimateToken = serverEstimate && lead.email && !bot.suspected && emailCheck !== 'no_mail_server'
+        ? sealEstimateToken({ ref, email: lead.email, firstName, exp: Date.now() + TOKEN_TTL_MS }, process.env) : null
+      return NextResponse.json({
+        ok: true, ref, ...(bot.suspected ? { suspected: true } : {}), ...area,
+        email: customerEmailStatus,
+        ...(estimateOutcome ? { estimate: estimateOutcome } : {}),
+        ...(estimateToken ? { estimate_token: estimateToken } : {}),
+      })
+    }
+    return NextResponse.json({ ok: true, ...(bot.suspected ? { suspected: true } : {}), ...area })
   } catch (error) {
     console.error('LEAD API FAILED', { name: error instanceof Error ? error.name : 'UnknownError' })
     return NextResponse.json({ error: 'Unable to submit lead' }, { status: 500 })
