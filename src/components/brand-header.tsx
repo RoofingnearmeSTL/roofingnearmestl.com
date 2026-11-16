@@ -2,6 +2,7 @@ import EstimateLink from "./estimate-link";
 import Image from "next/image";
 import Link from "next/link";
 import { DesktopNav, MobileNav } from "./nav-menus";
+import { visibleProjects } from "@/lib/projects";
 
 export default function BrandHeader() {
   return (
@@ -19,9 +20,9 @@ export default function BrandHeader() {
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-4 xl:gap-6 shrink-0">
-          <DesktopNav />
+          <DesktopNav ourWork={visibleProjects().length > 0} />
           <EstimateLink className="bg-brand-ink hover:bg-brand-ink-dark text-white rounded-full px-4 sm:px-7 py-3 font-bold text-xs sm:text-sm shadow-md shadow-brand/20 whitespace-nowrap">Get Free Quote</EstimateLink>
-          <MobileNav />
+          <MobileNav ourWork={visibleProjects().length > 0} />
         </div>
       </div>
     </header>

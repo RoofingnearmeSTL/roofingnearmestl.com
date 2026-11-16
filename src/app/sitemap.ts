@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { SITE_URL, sitePages } from '@/lib/site-pages';
 import { gridPages } from '@/lib/service-grid';
 import { questions } from '@/lib/questions';
+import { hasRealProjects } from '@/lib/projects';
 
 // Generated from the same lists that build the pages, so every URL here is a real page and new
 // pages (cities, city + service pages, questions) are added automatically.
@@ -20,5 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry('/questions', 0.6),
     ...questions.map((q) => entry(`/questions/${q.slug}`, 0.7)),
     entry('/accreditation', 0.5),
+    // Only once a real project exists (sample layouts never reach the live site).
+    ...(hasRealProjects() ? [entry('/our-work', 0.7)] : []),
   ];
 }

@@ -6,7 +6,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { INSURANCE, INSURANCE_SHORT, LEGAL_NAME, PHONES } from "@/lib/business";
+import { BRAND_PROMISE, INSURANCE, INSURANCE_SHORT, LEGAL_NAME, PHONES } from "@/lib/business";
+import { visibleProjects } from "@/lib/projects";
+import ProjectCard from "@/components/project-card";
 import { AD_VIDEO, CLEANUP_CONFIRMED, CLEANUP_PRACTICES, TWO_WEEK_START_CONFIRMED, TWO_WEEK_START_TEXT } from "@/lib/free-inspection";
 import { IL_COMING_SOON } from "@/lib/pricing";
 import { publicTown, quoteFor, reviews } from "@/lib/reviews";
@@ -25,6 +27,8 @@ const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 
 // Real Google reviews only. A roofing review from an Illinois job stays off this page (it serves Illinois visitors too).
 const shownReviews = reviews.filter((r) => !(r.work === "roofing" && r.town?.state === "IL")).slice(0, 2);
+// One before & after pair beside the form (below it on phones), never a gallery in front of the form.
+const featuredProject = visibleProjects().find((p) => p.featured);
 const average = reviews.length ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : null;
 
 const STEPS = [
@@ -79,6 +83,7 @@ export default function FreeInspectionPage() {
                 <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#1CA3D8]">RoofingnearmeSTL · St. Louis Metro Area</p>
                 <h1 className="mt-2 text-4xl font-black leading-tight tracking-tight sm:text-5xl">Your Next Exterior Project Starts Here.</h1>
                 <p className="mt-4 text-lg text-zinc-200">Tell us what your home needs. Get straightforward answers and a clear next step.</p>
+                <p className="mt-3 text-base font-bold text-white">{BRAND_PROMISE}</p>
                 {TWO_WEEK_START_CONFIRMED && <p className="mt-3 text-base text-zinc-200">{TWO_WEEK_START_TEXT}</p>}
                 <ul className="mt-5 flex flex-wrap gap-2 text-sm font-bold">
                   <li className="rounded-full border border-[#1CA3D8]/60 px-3 py-1">Roofing in Missouri</li>
@@ -103,6 +108,12 @@ export default function FreeInspectionPage() {
                       <li>✓ Photos of what we find, so you see what we see</li>
                       <li>✓ A clear quote before anything is scheduled</li>
                     </ul>
+                  </div>
+                )}
+                {featuredProject && (
+                  <div>
+                    <ProjectCard project={featuredProject} tone="dark" />
+                    <p className="mt-2 text-sm"><a href="/our-work" target="_blank" rel="noopener" className="font-bold text-[#1CA3D8] underline">See more of our work</a> <span className="text-zinc-400">(opens in a new tab)</span></p>
                   </div>
                 )}
               </div>

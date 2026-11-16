@@ -227,7 +227,10 @@ test('another site, a bot or a failed send are refused or reported honestly', as
 // ── Page rules ────────────────────────────────────────────────────────────────────────────────────────────────
 test('the page keeps unconfirmed claims and missing media switched off', () => {
   const config = read('src/lib/free-inspection.ts')
-  assert.match(config, /TWO_WEEK_START_CONFIRMED = false/)
+  // Two-week start confirmed by Mike Nov 15 2026; it must keep its conditions and never read as a guarantee.
+  assert.match(config, /TWO_WEEK_START_CONFIRMED = true/)
+  assert.match(config, /TWO_WEEK_START_TEXT =\s*"[^"]*depending on scope, materials and weather/)
+  assert.doesNotMatch(config, /guarantee[ds]? (a )?(start|two weeks)/i)
   assert.match(config, /CLEANUP_CONFIRMED = false/)
   assert.match(config, /AD_VIDEO:[^=]*= null/)
   assert.doesNotMatch(config, /cleaner than we found/i)

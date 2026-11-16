@@ -7,6 +7,7 @@ import Certifications from "@/components/certifications";
 import Link from "next/link";
 import { GOOGLE_REVIEWS_URL, businessSchema, faqSchema, homeFaqs, jsonLd, sitePages, websiteSchema } from "@/lib/site-pages";
 import ReviewsSection from "@/components/reviews-section";
+import HomeProjects from "@/components/home-projects";
 import ServiceAreaDirectory from "@/components/service-area-directory";
 import CostFallback from "@/components/cost-fallback";
 import { EstimatePrompt, ProjectRequest } from "@/components/project-request";
@@ -103,6 +104,7 @@ export default function Home() {
         </div>
       </section>
 
+      <HomeProjects />
       <ReviewsSection />
       <ProcessSteps />
       <Certifications />
