@@ -36,3 +36,12 @@ Then: photos to `public/projects/<slug>/`, an entry in `projects.ts`, delete one
   sitemap entry go live with this. The siding and gutter samples were removed; 2 roof samples stay preview-only.
 - Photos resized to 1600px with all hidden data (GPS, camera info) removed. Mid-job house-wrap photo not used.
 - Next jobs: add another entry to `projects` in src/lib/projects.ts; it shows on the same pages automatically.
+
+## Second real project + full-width showcase (Nov 15 2026, Mike)
+- Homepage and /our-work show each real job as a full-width gallery with every photo (PR #82). Up to 2 featured jobs
+  are stacked on the homepage; from 3 jobs the homepage switches to cards, with every photo on /our-work.
+- `missouri-roof-replacement`: hail and wind damage, paid through the homeowner's insurance claim. Homeowner's written
+  OK for the photos and for mentioning insurance (Mike confirmed in chat). Missouri, no town.
+- New photo `stage: "During"` (before slot only, blue "During" badge): the roof job reads before → during → after,
+  each finished shot under the matching start shot. Faces of two people by the van blurred; no readable plates,
+  house numbers or street signs. The two sample roof layouts were removed (a real roof job replaces them).

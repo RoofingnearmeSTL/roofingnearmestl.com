@@ -8,9 +8,11 @@ import { quoteFor } from "@/lib/reviews";
 
 type Tone = "dark" | "light";
 
-function Frame({ photo, label, tone }: { photo: ProjectPhoto | null; label: "Before" | "After"; tone: Tone }) {
+function Frame({ photo, label: slot, tone }: { photo: ProjectPhoto | null; label: "Before" | "After"; tone: Tone }) {
   // Photos come in landscape and portrait; the 4:3 frame crops to the middle so every pair lines up.
-  const badge = label === "Before" ? "bg-black/75 text-white" : "bg-[#FFD400] text-black";
+  // A before-slot photo taken while the work was under way shows "During".
+  const label = slot === "Before" && photo?.stage === "During" ? "During" : slot;
+  const badge = label === "Before" ? "bg-black/75 text-white" : label === "During" ? "bg-[#1CA3D8] text-black" : "bg-[#FFD400] text-black";
   return (
     <figure className="relative">
       {photo ? (
