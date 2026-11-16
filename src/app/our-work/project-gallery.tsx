@@ -15,7 +15,7 @@ export default function ProjectGallery({ filters, cards }: { filters: string[]; 
           </button>
         ))}
       </div>
-      <div className="mt-6 grid gap-6 md:grid-cols-2">{shown.map((card, i) => <div key={i}>{card.node}</div>)}</div>
+      <div className="mt-6 space-y-8">{shown.map((card, i) => <div key={i}>{card.node}</div>)}</div>
     </div>
   );
 }

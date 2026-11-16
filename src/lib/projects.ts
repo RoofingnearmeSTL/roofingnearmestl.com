@@ -4,9 +4,11 @@
 // HOW TO ADD A REAL PROJECT
 // 1. Put the photos in public/projects/<slug>/ (e.g. before-1.jpg, after-1.jpg), straight from the phone is fine.
 //    Same angle before and after. Crop or blur house numbers, street signs, plates and people first.
+//    A photo taken while the work was under way goes in the before slot with `stage: "During"` (badge "During"),
+//    paired with the finished shot from the same spot.
 // 2. Add an entry below with `permission.photos: true` (the homeowner said yes, in writing).
 //    Set `town` only if the homeowner also OK'd naming the town (`permission.town: true`). Never a street address.
-// 3. Delete one `placeholder: true` entry. Placeholders never show on the live site (see showProject).
+// 3. `featured: true` puts it on the homepage. Placeholders (sample layouts) never show on the live site.
 //
 // Rules (checked when the site builds and by tests/projects.test.mjs):
 // - Real photos of our own work only. No stock, no AI images, no editing beyond brightness and cropping.
@@ -17,7 +19,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { reviews, type Review } from "./reviews";
 
-export type ProjectPhoto = { src: string; alt: string; width: number; height: number };
+export type ProjectPhoto = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  /** "During" = taken while the work was under way. Before slot only; shown with a "During" badge. */
+  stage?: "During";
+};
 
 export type Project = {
   slug: string;
@@ -48,6 +57,7 @@ export const SERVICE_FILTERS = ["Roofing", "Siding", "Gutters", "Soffit & Fascia
 export type ServiceFilter = (typeof SERVICE_FILTERS)[number];
 
 const metro = "/projects/st-louis-metro-siding-gutters-fascia";
+const roof = "/projects/missouri-roof-replacement";
 
 export const projects: Project[] = [
   {
@@ -75,27 +85,31 @@ export const projects: Project[] = [
     featured: true,
   },
   {
-    slug: "sample-roof-replacement",
-    placeholder: true,
-    service: "Roof replacement",
+    // Mike, Nov 15 2026: hail and wind roof replacement paid through the homeowner's insurance claim. Homeowner's
+    // written OK for the photos and for mentioning the insurance claim (Mike confirmed in chat). Missouri, no town.
+    // A walkthrough: the house as the job started, the work under way ("During"), then the finished roof from the
+    // same spots. No street address, homeowner name or price, ever. Two people in after-2.jpg are blurred.
+    slug: "missouri-roof-replacement",
+    service: "Roof Replacement",
     work: "roofing",
     state: "MO",
-    problem: "Sample project: the real problem we found goes here.",
-    solution: "Sample project: what we installed (for example, 30-year architectural shingles) goes here.",
-    pairs: [{ before: null, after: null }],
-    permission: { photos: false, town: false },
-    featured: true,
-  },
-  {
-    slug: "sample-storm-damage-roof",
-    placeholder: true,
-    service: "Storm damage roof repair",
-    work: "roofing",
-    state: "MO",
-    problem: "Sample project: the storm damage we documented goes here.",
-    solution: "Sample project: the repair we made goes here.",
-    pairs: [{ before: null, after: null }],
-    permission: { photos: false, town: false },
+    problem: "Hail and wind damage to the old shingles; the homeowner's insurance claim paid for a full replacement.",
+    solution: "Tore the old roof off down to the decking, then installed RhinoRoof synthetic underlayment, Owens Corning TruDefinition Duration shingles in Onyx Black, ridge cap and a ridge vent.",
+    pairs: [
+      {
+        before: { src: `${roof}/before-1.jpg`, alt: "Front of the two-story brick home as the job started, with the old roof still on", width: 1600, height: 1200 },
+        after: { src: `${roof}/after-1.jpg`, alt: "The finished roof from the top: new dark shingles with ridge cap and a ridge vent", width: 1600, height: 1200 },
+      },
+      {
+        before: { src: `${roof}/during-1.jpg`, alt: "Old shingles torn off down to the wood decking on the lower roof by the driveway", width: 1600, height: 1200, stage: "During" },
+        after: { src: `${roof}/after-2.jpg`, alt: "The same lower roof by the driveway finished with new Owens Corning shingles", width: 1600, height: 1200 },
+      },
+      {
+        before: { src: `${roof}/during-2.jpg`, alt: "Synthetic underlayment down and Owens Corning Duration shingle bundles loaded along the ridge", width: 1600, height: 1200, stage: "During" },
+        after: { src: `${roof}/after-3.jpg`, alt: "The same ridge finished with ridge cap shingles over the ridge vent", width: 1600, height: 1200 },
+      },
+    ],
+    permission: { photos: true, town: false },
     featured: true,
   },
 ];
@@ -153,6 +167,7 @@ export function assertProjectRules(list: Project[] = projects): void {
           if (!photo) throw new Error(`Project ${p.slug}: every pair needs a before and an after photo`);
           if (!photo.src.startsWith(`/projects/${p.slug}/`)) throw new Error(`Project ${p.slug}: photos live in public/projects/${p.slug}/`);
           if (!photo.alt.trim()) throw new Error(`Project ${p.slug}: every photo needs alt text`);
+          if (photo.stage && photo !== pair.before) throw new Error(`Project ${p.slug}: only a before photo can be marked "During"`);
         }
       }
     }

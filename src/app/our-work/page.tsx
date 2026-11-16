@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ContentShell, { crumbSchema } from "@/components/content-shell";
 import ProjectCard from "@/components/project-card";
+import ProjectShowcase from "@/components/project-showcase";
 import EstimateLink from "@/components/estimate-link";
 import { SERVICE_FILTERS, serviceFilters, visibleProjects } from "@/lib/projects";
 import { BRAND_PROMISE } from "@/lib/business";
@@ -43,7 +44,7 @@ export default function OurWork() {
       <p className="mt-3 text-lg text-zinc-700">{BRAND_PROMISE}</p>
       <p className="mt-2 text-zinc-600">Every photo here is from our own jobs, shared with the homeowner&apos;s OK. Roofing projects are in Missouri; siding, gutters, soffit and fascia in Missouri and Illinois (Illinois roofing: {IL_COMING_SOON}).</p>
       <div className="mt-8">
-        <ProjectGallery filters={[...filters]} cards={list.map((p) => ({ filters: serviceFilters(p), node: <ProjectCard project={p} full /> }))} />
+        <ProjectGallery filters={[...filters]} cards={list.map((p) => ({ filters: serviceFilters(p), node: p.placeholder ? <ProjectCard project={p} /> : <ProjectShowcase project={p} /> }))} />
       </div>
       <div className="mt-10 rounded-2xl border border-brand/30 bg-brand-light p-6 text-center">
         <p className="text-xl font-extrabold text-black">Want results like these on your home?</p>
