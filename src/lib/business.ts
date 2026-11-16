@@ -58,3 +58,10 @@ export const INSURANCE = {
 };
 export const INSURANCE_SHORT = "Fully Insured: $1M/$2M General Liability";
 export const INSURANCE_SENTENCE = "Fully insured with general liability coverage of $1,000,000 per occurrence and $2,000,000 aggregate";
+
+/**
+ * Mike's brand line, confirmed true by Mike in chat on Nov 15 2026 ("Born & Raised in St. Louis" and
+ * "No waiting, no runarounds"). Use these exact words; no timed promise is added to them.
+ */
+export const BRAND_ORIGIN = "Born & raised in St. Louis. Local, not storm chasers.";
+export const BRAND_PROMISE = `${BRAND_ORIGIN} Straightforward answers, great communication, no waiting, no runarounds.`;

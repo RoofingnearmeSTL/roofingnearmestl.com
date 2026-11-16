@@ -4,12 +4,12 @@
 import { IL_LEAD_SERVICES } from "./business";
 
 /**
- * "Project starts may be available as soon as two weeks after signing..." stays off until Mike confirms what starts
- * two weeks after signing, which services qualify, and that the timing is achievable right now.
+ * Two-week start: Mike confirmed in chat on Nov 15 2026 that projects start about two weeks after signing.
+ * Always worded with its conditions (scope, materials, weather), never as a guarantee.
  */
-export const TWO_WEEK_START_CONFIRMED = false;
+export const TWO_WEEK_START_CONFIRMED = true;
 export const TWO_WEEK_START_TEXT =
-  "Project starts may be available as soon as two weeks after signing, depending on scope, materials, weather, and scheduling.";
+  "Ready to move? Most projects start about two weeks after signing, depending on scope, materials and weather.";
 
 /** Cleanup practices Mike proposed; the section shows only once he confirms they are done on every job. */
 export const CLEANUP_CONFIRMED = false;

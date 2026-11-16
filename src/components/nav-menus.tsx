@@ -59,12 +59,13 @@ function DesktopMenu({ label, items, all }: (typeof menus)[number]) {
   );
 }
 
-export function DesktopNav() {
+export function DesktopNav({ ourWork = false }: { ourWork?: boolean }) {
   const root = useCloseMenus();
   return (
     <div ref={root} className="contents">
       <nav aria-label="Main navigation" className="hidden md:flex items-center gap-4 xl:gap-6 text-sm font-medium text-zinc-600">
         {menus.map((menu) => <DesktopMenu key={menu.label} {...menu} />)}
+        {ourWork && <Link href="/our-work" className="hover:text-black">Our Work</Link>}
         <Link href="/blog/roof-replacement-cost-st-louis-mo" className="hover:text-black">Roof Cost</Link>
         <Link href="/#faq" className="hover:text-black">FAQ</Link>
       </nav>
@@ -72,7 +73,7 @@ export function DesktopNav() {
   );
 }
 
-export function MobileNav() {
+export function MobileNav({ ourWork = false }: { ourWork?: boolean }) {
   const root = useCloseMenus();
   return (
     <div ref={root} className="md:hidden">
@@ -93,6 +94,7 @@ export function MobileNav() {
               </ul>
             </div>
           ))}
+          {ourWork && <Link href="/our-work" className="block rounded-lg px-3 py-3 text-base font-bold text-black hover:bg-brand-light">Our Work</Link>}
           <Link href="/blog/roof-replacement-cost-st-louis-mo" className="block rounded-lg px-3 py-3 text-base font-bold text-black hover:bg-brand-light">Roof Cost Guide</Link>
           <Link href="/questions" className="block rounded-lg px-3 py-3 text-base font-bold text-black hover:bg-brand-light">Questions</Link>
           <Link href="/#faq" className="block rounded-lg px-3 py-3 text-base font-bold text-black hover:bg-brand-light">FAQ</Link>

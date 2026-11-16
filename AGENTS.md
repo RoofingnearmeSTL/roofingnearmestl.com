@@ -32,6 +32,11 @@ This repo is public: never add anything here you would not publish.
   5.0★ Google rating; shingle brands **we install** (Owens Corning, CertainTeed, TAMKO, IKO);
   Building Experts Institute certificates; general liability $1M per occurrence / $2M aggregate
   (`INSURANCE` in `src/lib/business.ts`).
+  Added by Mike Nov 15 2026: "Born & raised in St. Louis. Local, not storm chasers." and "no waiting, no runarounds"
+  (`BRAND_PROMISE` in `src/lib/business.ts`); "most projects start about two weeks after signing", always with its
+  conditions (scope, materials, weather), never as a guarantee (`TWO_WEEK_START_TEXT` in `src/lib/free-inspection.ts`).
+- **Before & after photos** (`src/lib/projects.ts`): real photos of our own jobs only, with the homeowner's written OK;
+  no stock or AI images; no street addresses; roofing projects Missouri only. Sample layouts never show on the live site.
 - **Never claim:** GAF Certified, Owens Corning Preferred (or any "certified/preferred" manufacturer
   status), BBB A+, "500+ roofs", workers' compensation coverage, or anything not listed above.
   Ask the owner before adding any new fact.
