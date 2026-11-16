@@ -91,3 +91,15 @@ test('St. Louis Metro projects: universal for both states, exterior only, no tow
   assert.doesNotMatch(read('src/components/project-card.tsx'), /PHONES|phoneFor|tel:/, 'no state-specific phone on the card')
   for (const photo of [...metro.pairs.flatMap((pair) => [pair.before, pair.after]), ...metro.extras]) assert.ok(fs.existsSync('public' + photo.src), photo.src)
 })
+
+test('one real job fills the section: full-width showcase with every photo, no lone card (Mike, Nov 15 2026)', () => {
+  const home = read('src/components/home-projects.tsx')
+  assert.match(home, /<ProjectShowcase project=\{featured\[0\]\}/)
+  assert.match(read('src/app/our-work/page.tsx'), /<ProjectShowcase project=\{p\}/)
+  assert.doesNotMatch(read('src/app/our-work/project-gallery.tsx'), /md:grid-cols-2/, 'one job per row, full width')
+  const show = read('src/components/project-showcase.tsx')
+  assert.match(show, /project\.pairs\.flatMap\(\(pair\) => \(pair\.before/)
+  assert.match(show, /\.\.\.\(project\.extras \?\? \[\]\)/, 'extra after photos are included')
+  const metro = lib.projects.find((p) => p.state === 'METRO')
+  assert.equal(metro.pairs.length * 2 + metro.extras.length, 5, 'all 5 photos of the St. Louis Metro job')
+})
