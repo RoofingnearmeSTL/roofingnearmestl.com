@@ -2,9 +2,9 @@
 // Service filter for /our-work. Plain buttons (no URL params), so the page stays static and fast.
 import { useState, type ReactNode } from "react";
 
-export default function ProjectGallery({ filters, cards }: { filters: string[]; cards: { filter: string; node: ReactNode }[] }) {
+export default function ProjectGallery({ filters, cards }: { filters: string[]; cards: { filters: string[]; node: ReactNode }[] }) {
   const [active, setActive] = useState<string>("All");
-  const shown = active === "All" ? cards : cards.filter((card) => card.filter === active);
+  const shown = active === "All" ? cards : cards.filter((card) => card.filters.includes(active));
   return (
     <div>
       <div role="group" aria-label="Filter projects by service" className="flex flex-wrap gap-2">

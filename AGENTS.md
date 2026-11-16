@@ -37,6 +37,8 @@ This repo is public: never add anything here you would not publish.
   conditions (scope, materials, weather), never as a guarantee (`TWO_WEEK_START_TEXT` in `src/lib/free-inspection.ts`).
 - **Before & after photos** (`src/lib/projects.ts`): real photos of our own jobs only, with the homeowner's written OK;
   no stock or AI images; no street addresses; roofing projects Missouri only. Sample layouts never show on the live site.
+  A "St. Louis Metro" project (`state: "METRO"`, Mike Nov 15 2026) is the universal example for both states: exterior
+  work only, no town, no state-specific phone number.
 - **Never claim:** GAF Certified, Owens Corning Preferred (or any "certified/preferred" manufacturer
   status), BBB A+, "500+ roofs", workers' compensation coverage, or anything not listed above.
   Ask the owner before adding any new fact.

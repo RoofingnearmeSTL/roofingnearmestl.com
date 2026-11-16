@@ -26,3 +26,13 @@ Then: photos to `public/projects/<slug>/`, an entry in `projects.ts`, delete one
 - Drag slider on top of the side-by-side pair (keyboard accessible).
 - Single project pages once a project has 5+ photos and a real write-up.
 - City pages showing projects done in that town.
+
+## First real project (Nov 15 2026, Mike)
+- `st-louis-metro-siding-gutters-fascia`: siding, gutters, fascia and window wraps. Homeowner OK for the photos given
+  to Mike. No address, homeowner name or price. Labelled "Siding, Gutters, Fascia & Window Wraps — St. Louis Metro".
+- `state: "METRO"` = universal example for both states until a true Missouri job and a true Illinois job arrive.
+  Exterior only (the build refuses roofing wording or a town on a METRO project); the card has no phone number.
+- Shows on /our-work (2 pairs + front close-up), homepage, /free-inspection. /our-work, its menu/footer links and the
+  sitemap entry go live with this. The siding and gutter samples were removed; 2 roof samples stay preview-only.
+- Photos resized to 1600px with all hidden data (GPS, camera info) removed. Mid-job house-wrap photo not used.
+- Next jobs: add another entry to `projects` in src/lib/projects.ts; it shows on the same pages automatically.

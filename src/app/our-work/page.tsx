@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import ContentShell, { crumbSchema } from "@/components/content-shell";
 import ProjectCard from "@/components/project-card";
 import EstimateLink from "@/components/estimate-link";
-import { SERVICE_FILTERS, serviceFilter, visibleProjects } from "@/lib/projects";
+import { SERVICE_FILTERS, serviceFilters, visibleProjects } from "@/lib/projects";
 import { BRAND_PROMISE } from "@/lib/business";
 import { GOOGLE_BUSINESS_URL, SITE_URL, businessSchema } from "@/lib/site-pages";
 import { IL_COMING_SOON } from "@/lib/pricing";
@@ -36,14 +36,14 @@ const schema = {
 export default function OurWork() {
   const list = visibleProjects();
   if (list.length === 0) notFound();
-  const filters = SERVICE_FILTERS.filter((f) => list.some((p) => serviceFilter(p) === f));
+  const filters = SERVICE_FILTERS.filter((f) => list.some((p) => serviceFilters(p).includes(f)));
   return (
     <ContentShell breadcrumbs={crumbs} schema={schema}>
       <h1 className="text-4xl font-black tracking-tight text-black">Our Work: Before &amp; After</h1>
       <p className="mt-3 text-lg text-zinc-700">{BRAND_PROMISE}</p>
       <p className="mt-2 text-zinc-600">Every photo here is from our own jobs, shared with the homeowner&apos;s OK. Roofing projects are in Missouri; siding, gutters, soffit and fascia in Missouri and Illinois (Illinois roofing: {IL_COMING_SOON}).</p>
       <div className="mt-8">
-        <ProjectGallery filters={[...filters]} cards={list.map((p) => ({ filter: serviceFilter(p), node: <ProjectCard project={p} /> }))} />
+        <ProjectGallery filters={[...filters]} cards={list.map((p) => ({ filters: serviceFilters(p), node: <ProjectCard project={p} full /> }))} />
       </div>
       <div className="mt-10 rounded-2xl border border-brand/30 bg-brand-light p-6 text-center">
         <p className="text-xl font-extrabold text-black">Want results like these on your home?</p>
