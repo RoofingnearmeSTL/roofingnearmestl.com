@@ -251,7 +251,7 @@ test('the page uses the brief wording and the right buttons', () => {
   assert.ok(page.includes('Your Next Exterior Project Starts Here.'))
   assert.ok(page.includes('Tell us what your home needs. Get straightforward answers and a clear next step.'))
   assert.ok(page.includes("Let&apos;s Talk About Your Project."))
-  assert.ok(form.includes('Send My Project Request'))
+  assert.ok(form.includes('Get My Free Inspection →'))
   assert.ok(form.includes('Send Request &amp; Get Rough Estimate') || form.includes('Send Request & Get Rough Estimate'))
   assert.ok(form.includes('Email My Updated Estimate'))
   assert.ok(form.includes("I don&apos;t know my roof size"))

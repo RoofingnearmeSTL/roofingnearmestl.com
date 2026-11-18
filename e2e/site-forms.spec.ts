@@ -49,7 +49,7 @@ test("homepage: no instant prices, state first, and an exterior request stays on
   await form.getByText("Missouri", { exact: true }).click();
   await form.getByLabel("Service needed").selectOption("Siding");
   await contact(form);
-  await form.getByRole("button", { name: "Send My Project Request" }).click();
+  await form.getByRole("button", { name: "Get My Free Inspection →" }).click();
   await expect(page.getByText("Your project request is received. We'll contact you to discuss the details and arrange the next step.")).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
   expect(calls.lead).toHaveLength(1);
@@ -91,7 +91,7 @@ test("an Illinois page starts on Illinois, offers exterior work only, and keeps 
   await expect(field(form, "city")).toHaveValue("Waterloo");
   await form.getByLabel("Service needed").selectOption("Gutters / Downspouts");
   await contact(form, "62298", "Waterloo");
-  await form.getByRole("button", { name: "Send My Project Request" }).click();
+  await form.getByRole("button", { name: "Get My Free Inspection →" }).click();
   await expect(page.getByText("Your project request is received. We'll contact you to discuss the details and arrange the next step.")).toBeVisible();
   expect(calls.lead[0]).toMatchObject({ property_state: "IL", service_type: "Gutters / Downspouts" });
 });
@@ -117,7 +117,7 @@ test("a failed save keeps every answer and offers both phone numbers", async ({ 
   await form.getByText("Missouri", { exact: true }).click();
   await form.getByLabel("Service needed").selectOption("Siding");
   await contact(form);
-  await form.getByRole("button", { name: "Send My Project Request" }).click();
+  await form.getByRole("button", { name: "Get My Free Inspection →" }).click();
   const alert = form.getByRole("alert");
   await expect(alert).toContainText("Your answers are still filled in");
   await expect(alert).toContainText("314-202-7663");
@@ -136,7 +136,7 @@ test("an email typo gets a suggestion that is applied only when tapped", async (
   await expect(form.getByText(/Did you mean pat@gmail\.com\?/)).toBeVisible();
   await form.getByRole("button", { name: "Use pat@gmail.com" }).click();
   await expect(field(form, "email")).toHaveValue("pat@gmail.com");
-  await form.getByRole("button", { name: "Send My Project Request" }).click();
+  await form.getByRole("button", { name: "Get My Free Inspection →" }).click();
   await expect(page.getByText(/Your project request is received/)).toBeVisible();
   expect(calls.lead[0].email).toBe("pat@gmail.com");
 });
@@ -148,7 +148,7 @@ test("ad click IDs and the referring website reach the payload", async ({ page }
   await form.getByText("Missouri", { exact: true }).click();
   await form.getByLabel("Service needed").selectOption("Siding");
   await contact(form);
-  await form.getByRole("button", { name: "Send My Project Request" }).click();
+  await form.getByRole("button", { name: "Get My Free Inspection →" }).click();
   await expect(page.getByText(/Your project request is received/)).toBeVisible();
   expect(calls.lead[0].gbraid).toBe("test-gbraid-1");
   expect(String(calls.lead[0].landing_page)).toContain("gbraid=test-gbraid-1");
@@ -158,7 +158,7 @@ test("ad click IDs and the referring website reach the payload", async ({ page }
 test("an empty submit shows inline errors and sends nothing", async ({ page }) => {
   const calls = await mockLead(page, { ok: true });
   const form = await open(page, "/");
-  await form.getByRole("button", { name: "Send My Project Request" }).click();
+  await form.getByRole("button", { name: "Get My Free Inspection →" }).click();
   await expect(form.getByText("Choose the state the property is in.")).toBeVisible();
   await expect(form.getByText("Please enter a valid email address")).toBeVisible();
   await expect(form.getByText("This field is required").first()).toBeVisible();

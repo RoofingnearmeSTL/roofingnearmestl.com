@@ -9,6 +9,7 @@ import { PHONES } from '../../../lib/business'
 import { buildCustomerEmail, escapeHtml, introVideoUrl } from '../../../lib/customer-email'
 import { ROUGH_ESTIMATE_HEADLINE, ROUGH_ESTIMATE_NOTICE, estimateEligible, estimateLeadFields, parseEstimateInputs, roughEstimate } from '../../../lib/estimate-offer'
 import { TOKEN_TTL_MS, sealEstimateToken } from '../../../lib/estimate-token'
+import { leadSourceLabel } from '../../../lib/lead-source'
 import { randomUUID } from 'node:crypto'
 
 // node:dns (email domain check) needs the Node.js runtime, which is also the Next 16 default.
@@ -141,8 +142,8 @@ export async function POST(req: Request) {
       ...(wbraid !== null ? { wbraid } : {}),
       ...(referrer !== null ? { referrer } : {}),
     }
-    const sourceLabel = [leadValue(lead.utm_source), leadValue(lead.utm_medium), leadValue(lead.utm_campaign)].filter(Boolean).join(' / ')
-      || (lead.gclid || lead.gbraid || lead.wbraid ? 'Google Ads click' : lead.fbclid ? 'Facebook / Instagram click' : 'Direct or unknown')
+    // Plain words: ad click ID, else the site that sent them, else Direct; campaign tags in brackets (src/lib/lead-source.ts).
+    const sourceLabel = leadSourceLabel({ ...lead, referrer })
     // The email domain check runs alongside the save, never rejects and gives up after 1.5 s.
     const emailCheckPending: Promise<EmailCheckField> = lead.email ? checkEmailDomain(lead.email).catch(() => 'unknown' as const) : Promise.resolve('none' as const)
     const firstTry = await supabase.from('leads').insert([lead])
@@ -191,6 +192,7 @@ export async function POST(req: Request) {
             : estimateOutcome.status === 'custom_quote' ? 'None shown: custom quote material' : 'None shown: homeowner did not know the roof size']] : []),
           ['Message', leadValue(lead.message)],
           ['Source', sourceLabel],
+          ...(referrer !== null ? [['Came From', leadValue(referrer)]] : []),
           ['Landing Page', leadValue(lead.landing_page)],
           ['Form Page', leadValue(lead.page_url)],
         ]
