@@ -49,6 +49,42 @@ export async function pdfToPages(file: File): Promise<{ pages: StoredFile[]; tot
   return pdfBlobToPages(file, file.name)
 }
 
+/**
+ * The selectable text of a PDF (all pages, up to MAX_PDF_PAGES), for reading the cover details off an uploaded
+ * document. Returns '' when the PDF has no text layer (e.g. a scanned image), since there is nothing to read.
+ * Everything happens on this computer; no file is uploaded.
+ */
+export async function pdfToText(file: File, maxPages = MAX_PDF_PAGES): Promise<string> {
+  if (file.size > MAX_FILE_BYTES) throw new Error(`${file.name} is larger than 60 MB.`)
+  const pdfjs = await import('pdfjs-dist')
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
+  const task = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), enableXfa: false })
+  let doc: Awaited<typeof task.promise>
+  try {
+    doc = await task.promise
+  } catch {
+    await task.destroy().catch(() => undefined)
+    throw new Error(`${file.name} could not be opened as a PDF (it may be damaged or password protected).`)
+  }
+  const parts: string[] = []
+  try {
+    for (let i = 1; i <= Math.min(doc.numPages, maxPages); i++) {
+      const page = await doc.getPage(i)
+      const content = await page.getTextContent()
+      let line = ''
+      for (const item of content.items as Array<{ str?: string; hasEOL?: boolean }>) {
+        if (typeof item.str !== 'string') continue // skip marked-content items, which have no text
+        line += item.str + (item.hasEOL ? '\n' : ' ')
+      }
+      parts.push(line)
+      page.cleanup()
+    }
+  } finally {
+    await task.destroy().catch(() => undefined)
+  }
+  return parts.join('\n')
+}
+
 /** Mike's Building Experts Institute certificates, served by this website (public/certifications). */
 export const CERTIFICATES = [
   { path: '/certifications/bei-hail-damage-identification.pdf', title: 'Hail Damage Identification on Asphalt Shingle Roofs' },
