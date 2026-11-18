@@ -1,5 +1,6 @@
 // Browser only. Reports one saved lead to every configured tag (Google Ads, GA4, Meta Pixel). Each tag reports on its
-// own, so one blocked tag never stops the others. Used by /thank-you and by /free-inspection (which stays on the page).
+// own, so one blocked tag never stops the others. Used only by the project request form (every page that has the form;
+// it stays on the page with "Request received"). The old /thank-you copy was removed (Mike, Nov 18 2026).
 import { ADS_LEAD_SEND_TO, META_PIXEL_ID } from "./tracking";
 
 type AnalyticsWindow = Window & {
