@@ -121,7 +121,7 @@ test("I don't know my roof size: sends without a guess and gets the right messag
   await moReplacement(form);
   await form.getByText("I don't know my roof size").click();
   await contact(form);
-  await form.getByRole("button", { name: "Send My Project Request" }).click();
+  await form.getByRole("button", { name: "Get My Free Inspection →" }).click();
   await expect(page.getByText("Your project request is received. We'll contact you to arrange the next step and confirm the details needed for your quote.")).toBeVisible();
   expect((calls.lead[0].estimate_request as { size: unknown }).size).toBeNull();
   await expect(formArea(page)).not.toContainText(/\$\d/);
@@ -139,7 +139,7 @@ test("Illinois offers exterior services only, with the approved roofing wording"
   await contact(form);
   await field(form, "city").fill("Waterloo");
   await field(form, "zip").fill("62298");
-  await form.getByRole("button", { name: "Send My Project Request" }).click();
+  await form.getByRole("button", { name: "Get My Free Inspection →" }).click();
   await expect(page.getByText("Your project request is received. We'll contact you to discuss the details and arrange the next step.")).toBeVisible();
   await expect(page.getByRole("status").getByRole("link", { name: "618-612-5192" })).toBeVisible();
   expect(calls.lead[0]).toMatchObject({ property_state: "IL", service_type: "Siding" });
@@ -157,7 +157,7 @@ test("a Missouri roof replacement with an Illinois ZIP shows the license note an
 test("an empty submit shows inline errors, focuses the first one and sends nothing", async ({ page }) => {
   const calls = await mock(page, { body: { ok: true } });
   const form = await open(page);
-  await form.getByRole("button", { name: "Send My Project Request" }).click();
+  await form.getByRole("button", { name: "Get My Free Inspection →" }).click();
   await expect(form.getByText("Choose the state the property is in.")).toBeVisible();
   await expect(form.getByText("Choose the service you need.")).toBeVisible();
   await expect(form.getByText("This field is required").first()).toBeVisible();
@@ -170,7 +170,7 @@ test("roof size is required unless the visitor says they don't know it", async (
   const form = await open(page);
   await moReplacement(form);
   await contact(form);
-  await form.getByRole("button", { name: "Send My Project Request" }).click();
+  await form.getByRole("button", { name: "Get My Free Inspection →" }).click();
   await expect(form.getByText(/Enter a whole number from 10 to 40/)).toBeVisible();
   await expect(form.getByLabel("Roof size in squares")).toBeFocused();
   expect(calls.lead).toHaveLength(0);

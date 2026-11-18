@@ -223,7 +223,7 @@ export function ProjectRequest({ tone = "dark", defaultState = "", defaultServic
     pitch: pitch || null,
   };
   const numberPossible = showEstimator && !sizeUnknown && Number.isInteger(inputs.size) && canShowNumber(inputs);
-  const submitLabel = numberPossible ? "Send Request & Get Rough Estimate" : "Send My Project Request";
+  const submitLabel = numberPossible ? "Send Request & Get Rough Estimate" : "Get My Free Inspection →";
 
   // Read the value right away: React clears e.currentTarget once the handler returns, before a state updater runs.
   function contactBlur(e: React.FocusEvent<HTMLInputElement>) {

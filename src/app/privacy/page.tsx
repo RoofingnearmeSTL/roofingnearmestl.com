@@ -26,6 +26,7 @@ const sections: { heading: string; body: React.ReactNode }[] = [
       <>
         <p><b>How you found us.</b> If you arrive from an ad, a link with campaign tags (for example from Google, Facebook or a printed QR code) or another website, your browser stores that source, the address of the website that sent you (if any) and the page you landed on for up to 30 days. If you then send a request, it is sent along with it so we know which ads, websites and listings are working.</p>
         <p><b>Analytics and advertising tags.</b> We may use Google Analytics, Google Ads and the Meta (Facebook) Pixel. These tools use cookies and similar technology to record pages you view, buttons you tap (such as call or review buttons) and whether a request was sent, so we can measure and improve our advertising. Google and Meta handle that data under their own privacy policies.</p>
+        <p>When you fill out a form, for marketing purposes, we may use your information to help better our customers&apos; experience. To do that, your email and phone are turned into a scrambled code before anything is sent to Google. Google cannot read the original details from this scrambled form, and we do not sell this information.</p>
       </>
     ),
   },
@@ -82,7 +83,7 @@ export default function PrivacyPage() {
       <main className="px-6 py-14">
         <article className="mx-auto max-w-3xl">
           <h1 className="text-4xl font-black tracking-tight">Privacy Policy</h1>
-          <p className="mt-3 text-sm text-zinc-500">Last updated November 9, 2026</p>
+          <p className="mt-3 text-sm text-zinc-500">Last updated November 18, 2026</p>
           <p className="mt-6 leading-relaxed text-zinc-700">This policy explains what information RoofingnearmeSTL collects through roofingnearmestl.com, how we use it and the choices you have.</p>
           {sections.map((section) => (
             <section key={section.heading} className="mt-9">
