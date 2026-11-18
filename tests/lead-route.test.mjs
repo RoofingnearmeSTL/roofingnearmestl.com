@@ -37,6 +37,7 @@ const loadTs = (file, imports = {}, extra = {}) => {
 const pricing = loadTs('src/lib/pricing.ts')
 const estimateOffer = loadTs('src/lib/estimate-offer.ts', { './pricing': pricing })
 const estimateToken = loadTs('src/lib/estimate-token.ts', { 'node:crypto': crypto }, { Buffer, Date })
+const leadSource = loadTs('src/lib/lead-source.ts', {}, { URL })
 
 const source = ts.transpileModule(fs.readFileSync('src/app/api/lead/route.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
@@ -76,6 +77,7 @@ function handler({ insertError = null, insertErrors = [], emailError = null, ema
       if (name.endsWith('customer-email')) return customerEmail
       if (name.endsWith('estimate-offer')) return estimateOffer
       if (name.endsWith('estimate-token')) return estimateToken
+      if (name.endsWith('lead-source')) return leadSource
       if (name === 'node:crypto') return crypto
       if (name.endsWith('email-domain-check')) return { checkEmailDomain: async (email) => {
         calls.emailChecks.push(email)
@@ -305,7 +307,7 @@ test('configured CRM webhook receives the saved lead as JSON', async () => {
   assert.equal(sent.email, 'customer@example.invalid')
   assert.equal(sent.state, 'MO')
   assert.equal(sent.estimate_price, null)
-  assert.equal(sent.lead_source, 'google / cpc')
+  assert.equal(sent.lead_source, 'Tagged link (tags: google / cpc)')
   assert.equal(sent.emergency, true)
   assert.match(sent.submitted_at, /^\d{4}-\d{2}-\d{2}T/)
   // RoofLink "Create a new job" body: first name and address are required.
@@ -318,7 +320,7 @@ test('configured CRM webhook receives the saved lead as JSON', async () => {
   assert.deepEqual(job.customer, { first_name: 'Pat', last_name: 'Q Customer', phone: '3145550100', email: 'customer@example.invalid' })
   assert.equal(job.platform, 'Website')
   assert.match(job.note.message, /^Website lead from roofingnearmestl\.com\nEMERGENCY - needs a tarp now\nService: repair\nIssue: leak/)
-  assert.match(job.note.message, /Source: google \/ cpc/)
+  assert.match(job.note.message, /Source: Tagged link \(tags: google \/ cpc\)/)
 })
 
 test('RoofLink job uses the city when no street address is given', async () => {
@@ -378,7 +380,7 @@ test('saves lead source fields and shows the source in the email', async () => {
   assert.equal(row.fbclid, 'fb123')
   assert.equal(row.landing_page, 'https://www.roofingnearmestl.com/?utm_source=facebook')
   assert.equal(row.page_url, 'https://www.roofingnearmestl.com/roof-repair')
-  assert.ok(calls.emails[0].text.includes('Source: facebook / social / page'))
+  assert.ok(calls.emails[0].text.includes('Source: Facebook / Instagram click (tags: facebook / social / page)'))
   assert.ok(calls.emails[0].text.includes('Form Page: https://www.roofingnearmestl.com/roof-repair'))
 })
 
@@ -387,7 +389,7 @@ test('an ad click without UTM tags is still labeled in the email', async () => {
   await post({ ...lead, gclid: 'abc' })
   assert.ok(calls.emails[0].text.includes('Source: Google Ads click'))
   await post({ ...lead })
-  assert.ok(calls.emails.filter((e) => e.to === 'recipient@example.invalid')[1].text.includes('Source: Direct or unknown'))
+  assert.ok(calls.emails.filter((e) => e.to === 'recipient@example.invalid')[1].text.includes('Source: Direct (typed in, bookmark or app; no click ID)'))
 })
 
 test('Illinois roofing requests are saved, tagged license pending, and flagged to the team', async () => {
@@ -920,13 +922,13 @@ test('the new tracking keys are absent from the row when not sent', async () => 
 })
 
 for (const key of ['gbraid', 'wbraid']) {
-  test(`only a ${key} counts as a Google Ads click, and UTM tags still win`, async () => {
+  test(`only a ${key} counts as a Google Ads click, and UTM tags are added`, async () => {
     const one = handler()
     await one.post({ ...mo, [key]: 'abc' })
     assert.match(toOwner(one.calls)[0].text, /Source: Google Ads click/)
     const tagged = handler()
     await tagged.post({ ...mo, [key]: 'abc', utm_source: 'google', utm_medium: 'cpc' })
-    assert.match(toOwner(tagged.calls)[0].text, /Source: google \/ cpc/)
+    assert.match(toOwner(tagged.calls)[0].text, /Source: Google Ads click \(tags: google \/ cpc\)/)
   })
 }
 
@@ -1213,4 +1215,37 @@ test('the existing site form response is unchanged (no ref, no estimate fields)'
   const { post } = handler()
   const response = await post({ ...mo, zip: '63122', email: 'pat@example.invalid' })
   assert.deepEqual(Object.keys(response.data).sort(), ['ok'])
+})
+
+// Mike, Nov 18 2026: the Source line says in plain words how the visitor arrived, so a test explains itself.
+test('the Source line names the click ID, else the site that sent the visitor, else Direct', () => {
+  const cases = [
+    [{ gclid: 'abc', referrer: 'https://www.google.com/' }, 'Google Ads click'],
+    [{ fbclid: 'fb1' }, 'Facebook / Instagram click'],
+    [{ fbclid: 'fb1', utm_source: 'facebook', utm_medium: 'paid' }, 'Facebook / Instagram click (tags: facebook / paid)'],
+    [{ referrer: 'https://www.google.com/' }, 'Google search, Maps or business listing (no ad click ID)'],
+    [{ referrer: 'https://www.google.co.uk/' }, 'Google search, Maps or business listing (no ad click ID)'],
+    [{ referrer: 'https://l.facebook.com/' }, 'Facebook (no click ID)'],
+    [{ referrer: 'https://lm.facebook.com/l.php' }, 'Facebook (no click ID)'],
+    [{ referrer: 'https://l.instagram.com/' }, 'Instagram (no click ID)'],
+    [{ referrer: 'https://www.bing.com/search?q=roof' }, 'Bing search'],
+    [{ referrer: 'https://duckduckgo.com/' }, 'DuckDuckGo search'],
+    [{ referrer: 'https://example.org/roofers' }, 'Other website: example.org'],
+    [{ referrer: 'https://notgoogle.example/' }, 'Other website: notgoogle.example'],
+    [{ referrer: 'not a url' }, 'Direct (typed in, bookmark or app; no click ID)'],
+    [{}, 'Direct (typed in, bookmark or app; no click ID)'],
+  ]
+  for (const [input, label] of cases) assert.equal(leadSource.leadSourceLabel(input), label, JSON.stringify(input))
+})
+
+test('the team email shows the plain Source and where the visitor came from', async () => {
+  const { calls, post } = handler({ env: hook })
+  await post({ ...mo, referrer: 'https://www.google.com/' })
+  const text = toOwner(calls)[0].text
+  assert.match(text, /Source: Google search, Maps or business listing \(no ad click ID\)/)
+  assert.match(text, /Came From: https:\/\/www\.google\.com\//)
+  assert.equal(JSON.parse(calls.sms[0].body).lead_source, 'Google search, Maps or business listing (no ad click ID)')
+  const direct = handler()
+  await direct.post({ ...mo })
+  assert.doesNotMatch(toOwner(direct.calls)[0].text, /Came From:/)
 })
