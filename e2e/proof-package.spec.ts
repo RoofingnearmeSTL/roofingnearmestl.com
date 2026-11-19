@@ -27,8 +27,8 @@ function png(width: number, height: number): Buffer {
   return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk("IHDR", ihdr), chunk("IDAT", zlib.deflateSync(raw)), chunk("IEND", Buffer.alloc(0))]);
 }
 
-/** A one-page PDF with one line of text. */
-function pdf(): Buffer {
+/** A one-page PDF with one line of text (no parentheses or backslashes in `line`). */
+function pdf(line = "Hail history test page"): Buffer {
   const objs = [
     "<< /Type /Catalog /Pages 2 0 R >>",
     "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
@@ -36,7 +36,28 @@ function pdf(): Buffer {
     null,
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
   ];
-  const stream = "BT /F1 24 Tf 72 700 Td (Hail history test page) Tj ET";
+  const stream = `BT /F1 12 Tf 72 700 Td (${line}) Tj ET`;
+  objs[3] = `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`;
+  let out = "%PDF-1.4\n";
+  const offsets: number[] = [];
+  objs.forEach((o, i) => { offsets.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  const xref = out.length;
+  out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offsets.map((o) => `${String(o).padStart(10, "0")} 00000 n \n`).join("");
+  out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  return Buffer.from(out, "latin1");
+}
+
+/** A one-page PDF with several short text lines (no parentheses or backslashes in the lines). */
+function pdfLines(lines: string[]): Buffer {
+  const objs = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+    null,
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+  ];
+  const body = lines.map((l, i) => `${i === 0 ? "" : "0 -20 Td "}(${l}) Tj`).join(" ");
+  const stream = `BT /F1 12 Tf 72 720 Td ${body} ET`;
   objs[3] = `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`;
   let out = "%PDF-1.4\n";
   const offsets: number[] = [];
@@ -138,6 +159,37 @@ test.describe("signed in", () => {
     await page.getByLabel("Open a draft").selectOption({ label: (await page.getByLabel("Open a draft").locator("option", { hasText: "123 Example St" }).textContent()) ?? "" });
     await expect(page.getByLabel("Caption", { exact: true })).toHaveValue("Hail hit on the north slope");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
+  test("the top drop zone fills blank cover fields from a PDF and never overwrites typed ones", async ({ page }) => {
+    await blockTags(page);
+    await page.goto("/dashboard/proof-package");
+
+    // The drop zone sits at the top of the edit view.
+    await expect(page.getByRole("heading", { name: "Start from a document (optional)" })).toBeVisible();
+
+    // A homeowner name typed by hand must survive the autofill.
+    await page.getByLabel("Homeowner name", { exact: true }).fill("Already Typed");
+
+    const doc = pdfLines([
+      "Prepared For: Test Insurance Co",
+      "Homeowner: Pat Q Sample",
+      "Property Address: 1423 Maple Avenue",
+      "City/State/ZIP: Kirkwood, MO 63122",
+      "Claim #: ABC-12345",
+      "Date of Loss: 05/10/2026",
+    ]);
+    await page.getByRole("button", { name: "Choose a PDF to read" }).setInputFiles({ name: "claim-letter.pdf", mimeType: "application/pdf", buffer: doc });
+
+    await expect(page.getByText(/Filled from claim-letter\.pdf:/)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByLabel("Prepared for (insurance company)", { exact: true })).toHaveValue("Test Insurance Co");
+    await expect(page.getByLabel("Street address", { exact: true })).toHaveValue("1423 Maple Avenue");
+    await expect(page.getByLabel("City, state and ZIP", { exact: true })).toHaveValue("Kirkwood, MO 63122");
+    await expect(page.getByLabel("Claim number", { exact: true })).toHaveValue("ABC-12345");
+    await expect(page.getByLabel("Storm event date (date of loss)", { exact: true })).toHaveValue("2026-05-10");
+    // The field the user already typed is left alone and is not listed as filled.
+    await expect(page.getByLabel("Homeowner name", { exact: true })).toHaveValue("Already Typed");
+    await expect(page.getByText(/Filled from claim-letter\.pdf:/)).not.toContainText("homeowner");
   });
 
   test("an Illinois property shows the roofing warning and uses the Illinois number", async ({ page }) => {

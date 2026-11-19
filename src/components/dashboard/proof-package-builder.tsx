@@ -9,7 +9,8 @@ import { CLADDING, FRAMING, iceBarrier } from "@/lib/proof-package/ice-barrier";
 import { ST_LOUIS_COUNTY_JURISDICTION, ST_LOUIS_COUNTY_LIBRARY } from "@/lib/proof-package/code-library";
 import { TOOLS } from "@/lib/proof-package/tools";
 import { deleteDraft, listDrafts, loadDraft, saveDraft, type DraftSummary } from "@/lib/proof-package/drafts";
-import { certificatePages, logoDataUrl, MAX_PDF_PAGES, pdfToPages, photoToStored } from "@/lib/proof-package/browser-files";
+import { certificatePages, logoDataUrl, MAX_PDF_PAGES, pdfToPages, pdfToText, photoToStored } from "@/lib/proof-package/browser-files";
+import { COVER_AUTOFILL_LABELS, extractCoverFields, mergeCoverAutofill, type CoverAutofillField } from "@/lib/proof-package/autofill";
 import { Area, btnLine, btnMain, Card, Check, Pick, small, Sub, Text, ToolLink } from "./proof-package-fields";
 
 // Evidence package builder (owner dashboard), laid out like Mike's own evidence package. Photos and documents never
@@ -34,6 +35,14 @@ const JUMPS = [
   ["cover", "Cover"], ["damage", "Damage"], ["photos", "Photos"], ["weather", "Weather"], ["code", "Code"], ["scope", "Scope & cost"], ["attachments", "Attachments"],
 ] as const;
 
+/** The current value of each cover field the document reader can fill, so it only touches the blank ones. */
+function coverValues(p: ProofPackage): Record<CoverAutofillField, string> {
+  return {
+    preparedFor: p.preparedFor, owner: p.owner, address: p.address, cityStateZip: p.cityStateZip,
+    claimNumber: p.claimNumber, dateOfLoss: p.dateOfLoss, inspectionDate: p.inspectionDate,
+  };
+}
+
 export default function ProofPackageBuilder() {
   const [pkg, setPkg] = useState<ProofPackage>(() => emptyPackage(new Date(), starterCodes()));
   const [files, setFiles] = useState<Record<string, StoredFile>>({});
@@ -45,6 +54,8 @@ export default function ProofPackageBuilder() {
   const [problem, setProblem] = useState<string | null>(null);
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [stormState, setStormState] = useState<{ loading: boolean; error: string | null; unread: string[] }>({ loading: false, error: null, unread: [] });
+  const [dragging, setDragging] = useState(false);
+  const [autofillNote, setAutofillNote] = useState<{ kind: "done" | "info"; text: string } | null>(null);
   const unsaved = useRef<Map<string, StoredFile>>(new Map());
   const urlsRef = useRef<Record<string, string>>({});
   const frame = useRef<HTMLIFrameElement>(null);
@@ -181,6 +192,35 @@ export default function ProofPackageBuilder() {
     if (errors.length) setProblem(errors.join(" "));
   }
 
+  // Read the cover details off a dropped/chosen document and fill only the blank cover boxes. The file is read
+  // here on this computer and is not uploaded or kept; to put the document in the package, attach it below.
+  async function onAutofill(list: FileList | null) {
+    const file = list?.[0];
+    if (!file) return;
+    setProblem(null);
+    setAutofillNote(null);
+    const isPdf = /pdf/i.test(file.type) || /\.pdf$/i.test(file.name);
+    if (!isPdf) {
+      setAutofillNote({ kind: "info", text: `${file.name} is a photo, so there is no text to read. Type the cover details, or drop the PDF version of the document. You can still add photos under Attachments.` });
+      return;
+    }
+    setBusy(`Reading ${file.name} for the cover details…`);
+    try {
+      const text = await pdfToText(file);
+      const { patch, applied } = mergeCoverAutofill(coverValues(pkg), extractCoverFields(text));
+      if (applied.length === 0) {
+        setAutofillNote({ kind: "info", text: `No new cover details were found in ${file.name}. Nothing was changed — fill the cover in by hand, or attach the file below.` });
+      } else {
+        update((p) => ({ ...p, ...patch }));
+        setAutofillNote({ kind: "done", text: `Filled from ${file.name}: ${applied.map((f) => COVER_AUTOFILL_LABELS[f]).join(", ")}. Check each box before you finish the cover.` });
+      }
+    } catch (e) {
+      setProblem((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function addCertificates() {
     setProblem(null);
     setBusy("Adding the certificates…");
@@ -306,6 +346,29 @@ export default function ProofPackageBuilder() {
         </div>
       ) : (
         <>
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={(e) => { if (e.currentTarget === e.target) setDragging(false); }}
+            onDrop={(e) => { e.preventDefault(); setDragging(false); onAutofill(e.dataTransfer.files); }}
+            className={`rounded-xl border-2 border-dashed p-5 text-center transition-colors ${dragging ? "border-brand-ink bg-brand-light" : "border-zinc-300 bg-brand-light/40"}`}
+          >
+            <h2 className="text-lg font-black tracking-tight text-brand-ink">Start from a document (optional)</h2>
+            <p className="mx-auto mt-1 max-w-2xl text-sm text-zinc-700">
+              Drag a claim letter, adjuster summary or hail report PDF onto this box, and it reads the cover details off the text:
+              the insurance company, homeowner, address, claim number, and the storm and inspection dates. Only blank boxes are filled,
+              so anything you have already typed is left alone. The file stays on this computer and is not uploaded.
+            </p>
+            <label className={`${btnMain} mt-3 cursor-pointer`}>
+              Choose a PDF to read
+              <input type="file" accept=".pdf,application/pdf,image/jpeg,image/png,image/webp" className="sr-only" disabled={!!busy} onChange={(e) => { onAutofill(e.target.files); e.target.value = ""; }} />
+            </label>
+            {autofillNote && (
+              <p className={`mx-auto mt-3 max-w-2xl rounded-lg p-2 text-sm ${autofillNote.kind === "done" ? "border border-green-300 bg-green-50 text-green-900" : "border border-zinc-300 bg-white text-zinc-700"}`} role="status">
+                {autofillNote.text} <button type="button" className="underline" onClick={() => setAutofillNote(null)}>Dismiss</button>
+              </p>
+            )}
+          </div>
+
           <Card title="Drafts" hint="Everything is saved in this browser on this computer only. Photos are never uploaded.">
             <div className="flex flex-wrap items-end gap-2">
               <label className="block flex-1 text-sm font-bold">Open a draft
