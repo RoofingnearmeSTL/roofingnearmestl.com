@@ -237,9 +237,14 @@ test('the page keeps unconfirmed claims and missing media switched off', () => {
 })
 
 test('Illinois gets no roofing service choice; the page never hard-codes a price', () => {
-  const config = read('src/lib/free-inspection.ts')
-  assert.match(config, /IL: \[\.\.\.IL_LEAD_SERVICES\]/)
-  for (const s of business.IL_LEAD_SERVICES) assert.doesNotMatch(s, /roof/i)
+  // Every Illinois choice (the exterior services plus "Not sure") is checked: none mentions roofing or counts as roofing.
+  const config = loadTs('src/lib/free-inspection.ts', { './business': business })
+  const guard = loadTs('src/lib/illinois-guard.ts')
+  assert.deepEqual([...config.SERVICES_BY_STATE.IL], [config.NOT_SURE_SERVICE, ...business.IL_LEAD_SERVICES])
+  for (const s of config.SERVICES_BY_STATE.IL) {
+    assert.doesNotMatch(s, /roof/i)
+    assert.ok(!guard.isRoofingRequest(s, false), s)
+  }
   for (const file of ['src/app/free-inspection/page.tsx', 'src/components/project-request.tsx']) {
     assert.doesNotMatch(read(file), /\$\d/, file)
   }
@@ -317,4 +322,23 @@ test('the form keeps the email typo helper and the optional roof age from the ol
   assert.match(form, /suggestEmail\(value\)/)
   assert.match(form, /Did you mean/)
   assert.match(form, /name="roof_age"/)
+})
+
+// Mike, Nov 20 2026: a "not sure" choice in each dropdown, so a homeowner who doesn't know what's wrong can still ask.
+test('every dropdown has a not-sure choice that never counts as roofing', () => {
+  const config = loadTs('src/lib/free-inspection.ts', { './business': business })
+  const guard = loadTs('src/lib/illinois-guard.ts')
+  const notSure = 'Not sure - want your opinion / advice'
+  assert.equal(config.NOT_SURE_SERVICE, notSure)
+  for (const state of ['MO', 'IL']) assert.equal(config.SERVICES_BY_STATE[state][0], notSure)
+  assert.ok(!guard.isRoofingRequest(notSure, false))
+  assert.ok(!guard.isIllinoisRoofingRequest({ service: notSure, state: 'IL', zip: '62298' }))
+  for (const service of [notSure, ...config.SERVICES_BY_STATE.MO]) {
+    const choices = config.issueChoices(service)
+    assert.equal(choices.at(-1), notSure, service)
+    assert.ok(!choices.includes('Not sure'), service)
+  }
+  const form = read('src/components/project-request.tsx')
+  assert.match(form, /"20\+ years", "Not sure"\]/)
+  assert.ok(!form.includes('"Unknown"'))
 })
