@@ -130,7 +130,7 @@ type Theme = (typeof THEMES)[Tone];
 
 type FieldName = "state" | "service" | "size" | "material" | "pitch" | ContactField;
 const CONTACT_FIELDS: ContactField[] = ["name", "phone", "email", "address", "city", "zip"];
-const ROOF_AGES = ["<5 years", "5-10 years", "10-15 years", "15-20 years", "20+ years", "Unknown"];
+const ROOF_AGES = ["<5 years", "5-10 years", "10-15 years", "15-20 years", "20+ years", "Not sure"];
 
 export function ProjectRequest({ tone = "dark", defaultState = "", defaultService = "", defaultCity = "", footer }: {
   tone?: Tone;

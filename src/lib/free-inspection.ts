@@ -29,17 +29,24 @@ export const AD_VIDEO: { src: string; poster: string; captions?: string; width: 
 
 /** Roofing is offered in Missouri only, until the Illinois roofing license. */
 export const MO_ROOFING_SERVICES = ["Roof Repair", "Roof Replacement", "Leak / Emergency", "Storm Damage / Insurance"];
+/**
+ * For homeowners who don't know what's wrong (Mike, Nov 20 2026). First choice in both states; saved in the same service
+ * field as any other choice. It is not a roofing service, so it never brings roofing to an Illinois home.
+ */
+export const NOT_SURE_SERVICE = "Not sure - want your opinion / advice";
+/** The matching "What's going on?" choice, offered for every service. */
+export const NOT_SURE_ISSUE = "Not sure - want your opinion / advice";
 export const SERVICES_BY_STATE = {
-  MO: [...MO_ROOFING_SERVICES, ...IL_LEAD_SERVICES],
-  IL: [...IL_LEAD_SERVICES],
+  MO: [NOT_SURE_SERVICE, ...MO_ROOFING_SERVICES, ...IL_LEAD_SERVICES],
+  IL: [NOT_SURE_SERVICE, ...IL_LEAD_SERVICES],
 } as const;
 
 /** Issue choices adapted to the service (saved in the lead's existing issue field). */
 export function issueChoices(service: string): string[] {
-  if (MO_ROOFING_SERVICES.includes(service)) return ["Roof leak", "Storm damage", "Aging roof / replacement", "Not sure"];
-  if (service === "Gutter Cleaning" || service === "House & Siding Soft Wash") return ["Cleaning needed", "Not sure"];
-  if (service === "Christmas Lights") return ["New light installation", "Not sure"];
-  if (service === "Gable & Wall Vents") return ["Hot or stuffy attic", "Moisture or frost in the attic", "Not sure"];
+  if (MO_ROOFING_SERVICES.includes(service)) return ["Roof leak", "Storm damage", "Aging roof / replacement", NOT_SURE_ISSUE];
+  if (service === "Gutter Cleaning" || service === "House & Siding Soft Wash") return ["Cleaning needed", NOT_SURE_ISSUE];
+  if (service === "Christmas Lights") return ["New light installation", NOT_SURE_ISSUE];
+  if (service === "Gable & Wall Vents") return ["Hot or stuffy attic", "Moisture or frost in the attic", NOT_SURE_ISSUE];
   if (!service) return [];
-  return ["Repair needed", "Storm damage", "New installation or replacement", "Not sure"];
+  return ["Repair needed", "Storm damage", "New installation or replacement", NOT_SURE_ISSUE];
 }
