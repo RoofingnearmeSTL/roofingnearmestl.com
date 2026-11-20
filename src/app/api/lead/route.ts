@@ -31,6 +31,18 @@ const SUSPECTED_BOT = 'suspected_bot'
 /** A person needs at least this long to fill in the form; faster submissions are flagged, never dropped. */
 const MIN_FORM_MS = 2000
 
+/**
+ * An obvious test entry (Mike, Nov 18 2026): the name or the street address is just "test". Handled like a suspected
+ * bot: saved and emailed to the team marked POSSIBLE SPAM, but no customer email and no ad conversion. Exact words
+ * only, so "Pat Test" or "12 Test Ave" are normal leads.
+ */
+const TEST_ENTRY = 'test entry'
+const TEST_WORDS = new Set(['test', 'testing', 'test test'])
+const plainWords = (value: unknown) => (typeof value === 'string' ? value.toLowerCase().replace(/[^a-z]+/g, ' ').trim() : '')
+function looksLikeTestEntry(body: { name?: unknown; address?: unknown }): boolean {
+  return TEST_WORDS.has(plainWords(body.name)) || TEST_WORDS.has(plainWords(body.address))
+}
+
 /** Bot check that can never block a lead: an error or timeout counts as "not a bot". */
 async function looksAutomated(formMs: unknown): Promise<{ suspected: boolean; reason: string }> {
   if (typeof formMs === 'number' && Number.isFinite(formMs) && formMs >= 0 && formMs < MIN_FORM_MS) {
@@ -60,10 +72,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'name and phone required' }, { status: 400 })
     }
     // Spam trap: the hidden "company" field is invisible to people, so a value means a bot.
-    // Answer like a success so the bot moves on, but save and send nothing.
+    // Answer like a success so the bot moves on, but save and send nothing. "suspected" also stops the browser from
+    // reporting an ad conversion, in case the bot runs the page's scripts.
     if (typeof body.company === 'string' && body.company.trim()) {
       console.log('LEAD SPAM TRAP')
-      return NextResponse.json({ ok: true })
+      return NextResponse.json({ ok: true, suspected: true })
     }
     if (body.phone.replace(/\D/g, '').length < 10) {
       return NextResponse.json({ error: 'valid phone required' }, { status: 400 })
@@ -97,7 +110,7 @@ export async function POST(req: Request) {
     if (ilLicensePending) console.log('LEAD ILLINOIS ROOFING LICENSE PENDING')
     // Bot protection (Phase 1): a suspected bot is saved and emailed to the team marked POSSIBLE SPAM, but gets
     // no customer email and no ad conversion. A real lead that is wrongly flagged is therefore never lost.
-    const bot = await looksAutomated(body.form_ms)
+    const bot = looksLikeTestEntry(body) ? { suspected: true, reason: TEST_ENTRY } : await looksAutomated(body.form_ms)
     if (bot.suspected) console.log('LEAD SUSPECTED BOT', { reason: bot.reason })
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in Production')
@@ -166,7 +179,7 @@ export async function POST(req: Request) {
         console.error('RESEND CONFIGURATION MISSING: RESEND_API_KEY or LEAD_TO_EMAIL')
       } else {
         const fields = [
-          ...(bot.suspected ? [['Possible spam', `YES - looks automated (${bot.reason}). Saved anyway; no confirmation email was sent to the address given. Check before calling.`]] : []),
+          ...(bot.suspected ? [['Possible spam', `YES - ${bot.reason === TEST_ENTRY ? 'looks like a test entry' : `looks automated (${bot.reason})`}. Saved anyway; no confirmation email was sent to the address given. Check before calling.`]] : []),
           ...(ilLicensePending ? [['Illinois License Pending', 'YES - roofing request for an Illinois home. Do NOT quote, schedule or do any roof work. Call back fast, help with exterior work, and point roof needs to a licensed Illinois roofer.']] : []),
           ['Name', leadValue(lead.name)],
           ['Phone', leadValue(lead.phone)],

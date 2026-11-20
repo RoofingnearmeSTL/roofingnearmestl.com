@@ -6,7 +6,6 @@ import EmergencyBar from "@/components/emergency-bar";
 import { PHONES } from "@/lib/business";
 import { introVideoUrl } from "@/lib/customer-email";
 import IntroVideoLink from "@/components/intro-video-link";
-import Conversion from "./conversion";
 
 export const metadata: Metadata = {
   title: "Thank You | RoofingnearmeSTL",
@@ -18,6 +17,8 @@ export const metadata: Metadata = {
 // ?area=il         an Illinois exterior request (siding, gutters, soffit & fascia and other exterior work)
 // ?area=il-pending a roofing request for an Illinois home: saved, but no roof work until the IL license
 // &urgent=1        the homeowner checked the emergency box
+// This page reports no conversion (Mike, Nov 18 2026): the live form stays on its page and reports the lead itself
+// (src/lib/lead-conversion.ts), so a visit here can never count a lead twice.
 export default async function ThankYou({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const query = await searchParams;
   const area = query.area === "il" || query.area === "il-pending" ? query.area : "";
@@ -29,7 +30,6 @@ export default async function ThankYou({ searchParams }: { searchParams: Promise
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
-      <Conversion />
       {!illinois && <EmergencyBar />}
       <BrandHeader />
       <main className="bg-brand-light/50 border-y px-6 py-16 lg:py-24">

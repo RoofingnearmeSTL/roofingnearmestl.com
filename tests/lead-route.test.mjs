@@ -351,6 +351,9 @@ test('spam trap answers ok but saves and sends nothing', async () => {
   assert.equal(calls.inserts.length, 0)
   assert.equal(calls.emails.length, 0)
   assert.equal(calls.sms.length, 0)
+  // ...and the browser is told it is not an ad conversion, in case the bot runs the page's scripts.
+  assert.equal(response.data.ok, true)
+  assert.equal(response.data.suspected, true)
 })
 
 test('rejects phone numbers without 10 digits', async () => {
@@ -491,8 +494,60 @@ test('the browser form always sends, shows the Illinois note in small print, and
   assert.doesNotMatch(form, /res\.status === 422|setSending\(false\);\n\s*return;/)
   assert.match(form, /ilRoofing && <p role="status" className="px-1 text-xs leading-snug text-zinc-500">/)
   assert.match(form, /name="urgent" type="checkbox"/)
-  const conversion = fs.readFileSync('src/app/thank-you/conversion.tsx', 'utf8')
-  assert.match(conversion, /lead\.ilPending === true\) \{[\s\S]*pendingTags\.delete\("ads"\);[\s\S]*pendingTags\.delete\("meta"\);/)
+})
+
+test('one Google Ads lead conversion: the live form after the save, never a /thank-you copy (Mike, Nov 18 2026)', () => {
+  // The old /thank-you copy is gone: a visit there can never count a lead twice.
+  assert.equal(fs.existsSync('src/app/thank-you/conversion.tsx'), false)
+  assert.doesNotMatch(fs.readFileSync('src/app/thank-you/page.tsx', 'utf8'), /Conversion|gtag|send_to/)
+  // The project request form (homepage and every form page) reports it once the server answers ok, on the same page.
+  const form = fs.readFileSync('src/components/project-request.tsx', 'utf8')
+  assert.match(form, /if \(!res\.ok \|\| !data\.ok\) throw new Error\("not saved"\)/)
+  assert.match(form, /reportLeadConversion\(typeof data\.ref === "string" \? data\.ref : crypto\.randomUUID\(\), ilPending \|\| data\.suspected === true, "Project request"\)/)
+  assert.doesNotMatch(form, /router\.push|\/thank-you/, 'no redirect: the inline "Request received" message stays')
+  assert.match(fs.readFileSync('src/app/page.tsx', 'utf8'), /<ProjectRequest /)
+  // Google Ads + Meta are skipped for a pending or suspected lead; the request id is the transaction id (no double count).
+  const conversion = fs.readFileSync('src/lib/lead-conversion.ts', 'utf8')
+  assert.match(conversion, /if \(notAnAdConversion\) \{\s*pendingTags\.delete\("ads"\);\s*pendingTags\.delete\("meta"\);/)
+  assert.match(conversion, /w\.gtag\("event", "conversion", \{ send_to: ADS_LEAD_SEND_TO, transaction_id: leadId \}\)/)
+  assert.match(fs.readFileSync('src/lib/tracking.ts', 'utf8'), /"AW-18498850414\/07H2CKnl4qMdEO6c-PRE"/)
+})
+
+test("Mike's firing rules for the Google Ads lead conversion (Nov 18 2026)", async () => {
+  // What the browser does with the answer: an Ads conversion unless area is "il-pending" or suspected is true.
+  const firesAds = (data) => data.ok === true && data.area !== 'il-pending' && data.suspected !== true
+  const real = { ...lead, form: 'project-request', name: 'Pat Customer', address: '123 Example St', emergency: false, form_ms: 9000 }
+  // Illinois siding with real contact details: FIRE.
+  const ilSiding = await handler().post({ ...real, property_state: 'IL', city: 'Waterloo', service_type: 'Siding' })
+  assert.equal(ilSiding.data.area, 'il')
+  assert.equal(firesAds(ilSiding.data), true)
+  // Missouri roofing: FIRE.
+  assert.equal(firesAds((await handler().post({ ...real, property_state: 'MO', service_type: 'Roof Replacement' })).data), true)
+  // Illinois roofing (license pending): saved, but DO NOT FIRE.
+  const ilRoof = handler()
+  const ilRoofing = await ilRoof.post({ ...real, property_state: 'IL', city: 'Waterloo', service_type: 'Roof Replacement' })
+  assert.equal(ilRoof.calls.inserts.length, 1)
+  assert.equal(ilRoofing.data.area, 'il-pending')
+  assert.equal(firesAds(ilRoofing.data), false)
+  // Name "test", email no@email.com, address "test": saved and flagged for the team, DO NOT FIRE, no customer email.
+  const junk = handler()
+  const testEntry = await junk.post({ ...real, property_state: 'MO', name: 'test', email: 'no@email.com', address: 'test' })
+  assert.equal(testEntry.data.suspected, true)
+  assert.equal(firesAds(testEntry.data), false)
+  assert.equal(junk.calls.inserts[0][0].status, 'suspected_bot')
+  assert.match(junk.calls.emails[0].subject, /^\[POSSIBLE SPAM\]/)
+  assert.match(junk.calls.emails[0].text, /^Possible spam: YES - looks like a test entry/)
+  assert.equal(junk.calls.emails.filter((e) => e.to === 'no@email.com').length, 0)
+  // Either field alone counts; real names and streets that contain the word do not.
+  assert.equal((await handler().post({ ...real, name: 'TEST' })).data.suspected, true)
+  assert.equal((await handler().post({ ...real, address: 'Testing' })).data.suspected, true)
+  for (const fine of [{ name: 'Pat Test' }, { address: '12 Test Ave' }, { name: 'TEST DO NOT CALL' }]) {
+    assert.equal((await handler().post({ ...real, ...fine })).data.suspected, undefined, JSON.stringify(fine))
+  }
+  // Phone taps are a GA4-only click_to_call event, never an Ads conversion.
+  const tags = fs.readFileSync('src/components/google-ads.tsx', 'utf8')
+  assert.match(tags, /w\.gtag\?\.\("event", "click_to_call"/)
+  assert.doesNotMatch(tags, /"conversion"|send_to/)
 })
 
 test('the customer gets an instant confirmation email when they give an email', async () => {
