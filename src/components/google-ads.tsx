@@ -4,12 +4,13 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { rememberLandingSource } from "./lead-form";
-import { ADS_TAG_ID, META_PIXEL_ID } from "@/lib/tracking";
+import { ADS_TAG_ID, LIVE_HOST, META_PIXEL_ID } from "@/lib/tracking";
 
 // Marketing tags:
 // - Google Ads: always on; conversion IDs live in src/lib/tracking.ts (Vercel env vars can override them)
 // - NEXT_PUBLIC_GA4_ID (G-XXXXXXX): Google Analytics 4, off until set in Vercel
-// - Meta (Facebook/Instagram) Pixel: always on; ID in src/lib/tracking.ts (NEXT_PUBLIC_META_PIXEL_ID overrides it)
+// - Meta (Facebook/Instagram) Pixel: on for the live site only; ID in src/lib/tracking.ts (NEXT_PUBLIC_META_PIXEL_ID
+//   overrides it). Lead fires only after the server saves a request (src/lib/lead-conversion.ts).
 const googleTagIds = [
   ADS_TAG_ID,
   /^G-[A-Z0-9]+$/.test(process.env.NEXT_PUBLIC_GA4_ID ?? "") ? process.env.NEXT_PUBLIC_GA4_ID! : "",
@@ -65,7 +66,9 @@ export default function GoogleAds() {
         ${googleTagIds.map((id) => `window.gtag('config', ${JSON.stringify(id)});`).join("\n        ")}
       `}</Script>
     </>}
+    {/* Meta Pixel base code (Events Manager). One copy, here only; it loads on the live host only (LIVE_HOST). */}
     {metaPixelId && <Script id="meta-pixel" strategy="afterInteractive">{`
+      if (new RegExp(${JSON.stringify(LIVE_HOST.source)}).test(location.hostname)) {
       !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
       n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
       n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
@@ -73,6 +76,12 @@ export default function GoogleAds() {
       document,'script','https://connect.facebook.net/en_US/fbevents.js');
       fbq('init', ${JSON.stringify(metaPixelId)});
       fbq('track', 'PageView');
+      }
     `}</Script>}
+    {metaPixelId && <noscript>
+      {/* eslint-disable-next-line @next/next/no-img-element -- Meta's no-JavaScript PageView fallback */}
+      <img height="1" width="1" style={{ display: "none" }} alt=""
+        src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`} />
+    </noscript>}
   </>;
 }
