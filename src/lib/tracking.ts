@@ -16,3 +16,10 @@ export const ADS_TAG_ID = ADS_LEAD_SEND_TO.split("/")[0];
 /** Meta Pixel "RoofingnearmeSTL Website" (Events Manager, ad account 1245694118635705). Public ID; Vercel can override it. */
 const META_PIXEL = /^\d{6,20}$/;
 export const META_PIXEL_ID = META_PIXEL.test(process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "") ? process.env.NEXT_PUBLIC_META_PIXEL_ID! : "1445098534241466";
+
+/**
+ * The Meta Pixel only loads on the live site (roofingnearmestl.com and www). Local runs, the Playwright lead-form tests
+ * and Vercel preview links never load it, so their test submits are not counted as real Leads (Nov 23 2026: 320 of 325
+ * Leads in one week came from localhost).
+ */
+export const LIVE_HOST = /(^|\.)roofingnearmestl\.com$/;

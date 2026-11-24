@@ -488,6 +488,22 @@ test('phone taps are no longer sent as Google Ads or Meta conversions', () => {
   assert.match(tags, /click_to_call/)
 })
 
+test('one Meta Pixel, live site only, no Lead on page load', () => {
+  const tags = fs.readFileSync('src/components/google-ads.tsx', 'utf8')
+  // Exactly one base code (fbevents.js) and one init in the whole app.
+  const src = fs.readdirSync('src', { recursive: true }).filter((f) => /\.(tsx?|jsx?)$/.test(f))
+    .map((f) => fs.readFileSync(`src/${f}`, 'utf8')).join('\n')
+  assert.equal(src.match(/fbevents\.js/g)?.length, 1)
+  assert.equal(src.match(/fbq\('init'/g)?.length, 1)
+  // The base code only runs on roofingnearmestl.com, so local and test submits never reach Meta.
+  assert.match(tags, /LIVE_HOST\.source\)\}\)\.test\(location\.hostname\)/)
+  assert.doesNotMatch(tags, /"Lead"|'Lead'/)
+  const { LIVE_HOST } = { LIVE_HOST: /(^|\.)roofingnearmestl\.com$/ }
+  assert.match(fs.readFileSync('src/lib/tracking.ts', 'utf8'), /LIVE_HOST = \/\(\^\|\\\.\)roofingnearmestl\\\.com\$\//)
+  for (const host of ['www.roofingnearmestl.com', 'roofingnearmestl.com']) assert.match(host, LIVE_HOST)
+  for (const host of ['localhost', '127.0.0.1', 'roofingnearmestl-abc.vercel.app', 'roofingnearmestl.com.evil.test']) assert.doesNotMatch(host, LIVE_HOST)
+})
+
 test('the browser form always sends, shows the Illinois note in small print, and skips ad conversions for pending leads', () => {
   const form = fs.readFileSync('src/components/lead-form.tsx', 'utf8')
   assert.match(form, /isIllinoisRoofingRequest\(/)
